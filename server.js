@@ -2,25 +2,33 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const Anthropic = require('@anthropic-ai/sdk');
+const path = require('path');
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
+// Initialize Claude
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
+// Routes
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK' });
+  res.json({ status: 'OK', timestamp: new Date() });
 });
 
 app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/api/status', (req, res) => {
   res.json({
     status: 'online',
     message: 'Sovereign Empire API - AI Content Automation',
@@ -34,6 +42,7 @@ app.get('/', (req, res) => {
   });
 });
 
+// Generate Blog Post
 app.post('/api/blog', async (req, res) => {
   const { topic, tone = 'professional', length = 'medium' } = req.body;
 
@@ -76,6 +85,7 @@ app.post('/api/blog', async (req, res) => {
   }
 });
 
+// Generate Social Media Post
 app.post('/api/social', async (req, res) => {
   const { topic, platform = 'twitter', style = 'engaging' } = req.body;
 
@@ -122,6 +132,7 @@ app.post('/api/social', async (req, res) => {
   }
 });
 
+// Generate SEO Content
 app.post('/api/seo', async (req, res) => {
   const { keyword, contentType = 'meta' } = req.body;
 
@@ -162,6 +173,7 @@ app.post('/api/seo', async (req, res) => {
   }
 });
 
+// Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`AI Model: Claude Sonnet 4.5 ready`);
