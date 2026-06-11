@@ -1,0 +1,21 @@
+{
+  "name": "sovereign-empire-dna",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "12-Agent Autonomous AI Content Empire with Agent DNA architecture",
+  "main": "schedule.js",
+  "scripts": {
+    "start": "node schedule.js",
+    "test": "node test-all-agents-dna.js",
+    "dev": "node test-all-agents-dna.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.20.0",
+    "@supabase/supabase-js": "^2.39.0",
+    "dotenv": "^16.3.1",
+    "node-cron": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
