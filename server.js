@@ -7,8 +7,8 @@ const path = require('path');
 dotenv.config();
 
 const app = express();
-// Use Railway's port or default to 3000
-const PORT = process.env.PORT || 3000;
+// CRITICAL: Railway expects port 8080
+const PORT = process.env.PORT || 8080;
 
 // Middleware
 app.use(cors());
@@ -18,25 +18,44 @@ app.use(express.static('public'));
 // Initialize Claude
 let anthropic;
 try {
-  anthropic = new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY,
-  });
-  console.log('Claude initialized successfully');
+  if (process.env.ANTHROPIC_API_KEY) {
+    anthropic = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY,
+    });
+    console.log('✓ Claude initialized successfully');
+  } else {
+    console.warn('⚠ ANTHROPIC_API_KEY not found');
+  }
 } catch (error) {
-  console.error('Failed to initialize Claude:', error.message);
+  console.error('✗ Claude init failed:', error.message);
 }
 
-// Health check
+// Health check (must be first)
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date(), port: PORT });
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    port: PORT,
+    anthropic: !!anthropic
+  });
 });
 
 // Serve HTML page
 app.get('/', (req, res) => {
-  try {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-  } catch (error) {
-    res.json({ message: 'Sovereign Empire API is running', status: 'online' });
+  const indexPath = path.join(__dirname, 'public', 'index.html');
+  if (require('fs').existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.json({ 
+      status: 'online', 
+      message: 'Sovereign Empire API is running',
+      endpoints: {
+        'POST /api/blog': 'Generate blog post',
+        'POST /api/social': 'Generate social media post', 
+        'POST /api/seo': 'Generate SEO content',
+        'GET /health': 'Health check'
+      }
+    });
   }
 });
 
@@ -46,12 +65,8 @@ app.get('/api/status', (req, res) => {
     status: 'online',
     message: 'Sovereign Empire API - AI Content Automation',
     ai_model: 'Claude Sonnet 4.5',
-    endpoints: {
-      'POST /api/blog': 'Generate blog post',
-      'POST /api/social': 'Generate social media post',
-      'POST /api/seo': 'Generate SEO content',
-      'GET /health': 'Health check'
-    }
+    anthropic_ready: !!anthropic,
+    timestamp: new Date().toISOString()
   });
 });
 
@@ -111,7 +126,7 @@ app.post('/api/social', async (req, res) => {
   }
 
   if (!anthropic) {
-    return res.status(500).json({ error: 'Claude API not configured. Please add ANTHROPIC_API_KEY to Railway variables.' });
+    return res.status(500).json({ error: 'Claude API not configured.' });
   }
 
   const platformLimits = {
@@ -162,7 +177,7 @@ app.post('/api/seo', async (req, res) => {
   }
 
   if (!anthropic) {
-    return res.status(500).json({ error: 'Claude API not configured. Please add ANTHROPIC_API_KEY to Railway variables.' });
+    return res.status(500).json({ error: 'Claude API not configured.' });
   }
 
   try {
@@ -198,8 +213,25 @@ app.post('/api/seo', async (req, res) => {
   }
 });
 
-// Start server
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`AI Model: Claude Sonnet 4.5 ready`);
+// Handle graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, closing gracefully...');
+  process.exit(0);
 });
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received, closing gracefully...');
+  process.exit(0);
+});
+
+// Start server
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`✓ Server running on port ${PORT}`);
+  console.log(`✓ AI Model: Claude Sonnet 4.5 ready`);
+  console.log(`✓ Health check: http://localhost:${PORT}/health`);
+});
+
+// Keep alive with ping
+setInterval(() => {
+  console.log('Heartbeat: Server is alive');
+}, 30000);
