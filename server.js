@@ -9,7 +9,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// Simple routes that ALWAYS work
+// HEALTH CHECK - This is what Railway needs
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'OK', 
@@ -18,6 +18,7 @@ app.get('/health', (req, res) => {
   });
 });
 
+// HOMEPAGE
 app.get('/', (req, res) => {
   res.send(`
     <!DOCTYPE html>
@@ -29,6 +30,7 @@ app.get('/', (req, res) => {
         h1 { font-size: 3rem; }
         .status { background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin: 20px auto; max-width: 500px; }
         .green { color: #90ff90; font-weight: bold; }
+        code { background: #333; padding: 5px 10px; border-radius: 5px; }
       </style>
     </head>
     <body>
@@ -40,15 +42,25 @@ app.get('/', (req, res) => {
         <p>Time: ${new Date().toLocaleString()}</p>
       </div>
       <p>✅ Your API is working!</p>
-      <p>Endpoint: <code>/health</code></p>
+      <p>Try: <code>/health</code> or <code>/api/status</code></p>
     </body>
     </html>
   `);
 });
 
+// API STATUS
+app.get('/api/status', (req, res) => {
+  res.json({
+    status: 'online',
+    message: 'Sovereign Empire API',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Start server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✓ Server running on port ${PORT}`);
-  console.log(`✓ Health: http://localhost:${PORT}/health`);
+  console.log(`✓ Health: /health`);
 });
 
 // Keep alive
