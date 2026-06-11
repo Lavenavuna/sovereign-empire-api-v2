@@ -1,7 +1,7 @@
 {
   "name": "sovereign-empire-api-v2",
   "version": "1.0.0",
-  "description": "AI Content Automation API",
+  "description": "AI Content Automation API with Claude Sonnet 4.5",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -10,6 +10,7 @@
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "@anthropic-ai/sdk": "^0.24.0"
   }
 }
