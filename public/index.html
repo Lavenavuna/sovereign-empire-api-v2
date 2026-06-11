@@ -87,11 +87,6 @@
             margin-bottom: 15px;
         }
 
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
         button {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -114,6 +109,7 @@
             background: #f8f9fa;
             border-radius: 10px;
             border-left: 4px solid #667eea;
+            display: none;
         }
 
         .result pre {
@@ -147,15 +143,14 @@
             100% { transform: rotate(360deg); }
         }
 
-        .api-url {
-            background: #333;
-            color: #0f0;
-            padding: 10px;
-            border-radius: 8px;
-            font-family: monospace;
-            margin-bottom: 20px;
-            font-size: 14px;
-            word-break: break-all;
+        .error {
+            color: red;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .error.active {
+            display: block;
         }
     </style>
 </head>
@@ -163,10 +158,6 @@
     <div class="container">
         <h1>🏰 Sovereign Empire AI</h1>
         <div class="subtitle">Content Automation Studio · Powered by Claude Sonnet 4.5</div>
-
-        <div class="api-url">
-            🔗 API: https://sovereign-empire-api-v2.up.railway.app
-        </div>
 
         <div class="tabs">
             <button class="tab active" onclick="showPanel('blog')">📝 Blog Writer</button>
@@ -194,7 +185,8 @@
                 <div class="spinner"></div>
                 <p>Claude is writing...</p>
             </div>
-            <div class="result" id="blogResult" style="display:none;">
+            <div class="error" id="blogError"></div>
+            <div class="result" id="blogResult">
                 <pre id="blogContent"></pre>
             </div>
         </div>
@@ -220,7 +212,8 @@
                 <div class="spinner"></div>
                 <p>Claude is creating your post...</p>
             </div>
-            <div class="result" id="socialResult" style="display:none;">
+            <div class="error" id="socialError"></div>
+            <div class="result" id="socialResult">
                 <pre id="socialContent"></pre>
             </div>
         </div>
@@ -239,14 +232,16 @@
                 <div class="spinner"></div>
                 <p>Claude is optimizing...</p>
             </div>
-            <div class="result" id="seoResult" style="display:none;">
+            <div class="error" id="seoError"></div>
+            <div class="result" id="seoResult">
                 <pre id="seoContent"></pre>
             </div>
         </div>
     </div>
 
     <script>
-        const API_URL = 'https://sovereign-empire-api-v2.up.railway.app';
+        // Use the current window location for API calls
+        const API_URL = window.location.origin;
 
         function showPanel(panel) {
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -258,13 +253,14 @@
 
         async function generateBlog() {
             const topic = document.getElementById('blogTopic').value;
-            if (!topic) { alert('Please enter a topic'); return; }
+            if (!topic) { showError('blogError', 'Please enter a topic'); return; }
 
             const tone = document.getElementById('blogTone').value;
             const length = document.getElementById('blogLength').value;
 
             document.getElementById('blogLoading').classList.add('active');
             document.getElementById('blogResult').style.display = 'none';
+            hideError('blogError');
 
             try {
                 const response = await fetch(`${API_URL}/api/blog`, {
@@ -272,12 +268,21 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ topic, tone, length })
                 });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
                 
                 document.getElementById('blogContent').textContent = data.content;
                 document.getElementById('blogResult').style.display = 'block';
             } catch (error) {
-                alert('Error: ' + error.message);
+                showError('blogError', error.message);
             } finally {
                 document.getElementById('blogLoading').classList.remove('active');
             }
@@ -285,13 +290,14 @@
 
         async function generateSocial() {
             const topic = document.getElementById('socialTopic').value;
-            if (!topic) { alert('Please enter a topic'); return; }
+            if (!topic) { showError('socialError', 'Please enter a topic'); return; }
 
             const platform = document.getElementById('socialPlatform').value;
             const style = document.getElementById('socialStyle').value;
 
             document.getElementById('socialLoading').classList.add('active');
             document.getElementById('socialResult').style.display = 'none';
+            hideError('socialError');
 
             try {
                 const response = await fetch(`${API_URL}/api/social`, {
@@ -299,7 +305,16 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ topic, platform, style })
                 });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
                 
                 let output = data.content;
                 if (data.hashtags && data.hashtags.length) {
@@ -308,7 +323,7 @@
                 document.getElementById('socialContent').textContent = output;
                 document.getElementById('socialResult').style.display = 'block';
             } catch (error) {
-                alert('Error: ' + error.message);
+                showError('socialError', error.message);
             } finally {
                 document.getElementById('socialLoading').classList.remove('active');
             }
@@ -316,12 +331,13 @@
 
         async function generateSEO() {
             const keyword = document.getElementById('seoKeyword').value;
-            if (!keyword) { alert('Please enter a keyword'); return; }
+            if (!keyword) { showError('seoError', 'Please enter a keyword'); return; }
 
             const contentType = document.getElementById('seoType').value;
 
             document.getElementById('seoLoading').classList.add('active');
             document.getElementById('seoResult').style.display = 'none';
+            hideError('seoError');
 
             try {
                 const response = await fetch(`${API_URL}/api/seo`, {
@@ -329,15 +345,35 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ keyword, contentType })
                 });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
                 
                 document.getElementById('seoContent').textContent = data.content;
                 document.getElementById('seoResult').style.display = 'block';
             } catch (error) {
-                alert('Error: ' + error.message);
+                showError('seoError', error.message);
             } finally {
                 document.getElementById('seoLoading').classList.remove('active');
             }
+        }
+
+        function showError(elementId, message) {
+            const errorEl = document.getElementById(elementId);
+            errorEl.textContent = '❌ ' + message;
+            errorEl.classList.add('active');
+        }
+
+        function hideError(elementId) {
+            const errorEl = document.getElementById(elementId);
+            errorEl.classList.remove('active');
         }
     </script>
 </body>
