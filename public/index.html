@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sovereign Empire AI - Content Studio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 40px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            background: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .panel {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .panel.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result pre {
+            white-space: pre-wrap;
+            font-family: inherit;
+            line-height: 1.5;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .api-url {
+            background: #333;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: monospace;
+            margin-bottom: 20px;
+            font-size: 14px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏰 Sovereign Empire AI</h1>
+        <div class="subtitle">Content Automation Studio · Powered by Claude Sonnet 4.5</div>
+
+        <div class="api-url">
+            🔗 API: https://sovereign-empire-api-v2.up.railway.app
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showPanel('blog')">📝 Blog Writer</button>
+            <button class="tab" onclick="showPanel('social')">🐦 Social Media</button>
+            <button class="tab" onclick="showPanel('seo')">🔍 SEO Tools</button>
+        </div>
+
+        <!-- Blog Panel -->
+        <div id="blogPanel" class="panel active">
+            <h2>Write a Blog Post</h2>
+            <input type="text" id="blogTopic" placeholder="Topic (e.g., The Future of Artificial Intelligence)">
+            <select id="blogTone">
+                <option value="professional">Professional</option>
+                <option value="friendly">Friendly</option>
+                <option value="humorous">Humorous</option>
+                <option value="educational">Educational</option>
+            </select>
+            <select id="blogLength">
+                <option value="short">Short (~300 words)</option>
+                <option value="medium">Medium (~600 words)</option>
+                <option value="long">Long (~1000 words)</option>
+            </select>
+            <button onclick="generateBlog()">✨ Generate Blog Post</button>
+            <div class="loading" id="blogLoading">
+                <div class="spinner"></div>
+                <p>Claude is writing...</p>
+            </div>
+            <div class="result" id="blogResult" style="display:none;">
+                <pre id="blogContent"></pre>
+            </div>
+        </div>
+
+        <!-- Social Panel -->
+        <div id="socialPanel" class="panel">
+            <h2>Create Social Media Content</h2>
+            <input type="text" id="socialTopic" placeholder="What's your post about?">
+            <select id="socialPlatform">
+                <option value="twitter">Twitter/X</option>
+                <option value="linkedin">LinkedIn</option>
+                <option value="instagram">Instagram</option>
+                <option value="facebook">Facebook</option>
+            </select>
+            <select id="socialStyle">
+                <option value="engaging">Engaging</option>
+                <option value="professional">Professional</option>
+                <option value="casual">Casual</option>
+                <option value="funny">Funny</option>
+            </select>
+            <button onclick="generateSocial()">🚀 Generate Post</button>
+            <div class="loading" id="socialLoading">
+                <div class="spinner"></div>
+                <p>Claude is creating your post...</p>
+            </div>
+            <div class="result" id="socialResult" style="display:none;">
+                <pre id="socialContent"></pre>
+            </div>
+        </div>
+
+        <!-- SEO Panel -->
+        <div id="seoPanel" class="panel">
+            <h2>SEO Content Generator</h2>
+            <input type="text" id="seoKeyword" placeholder="Target Keyword (e.g., best running shoes)">
+            <select id="seoType">
+                <option value="meta">Meta Tags (Title & Description)</option>
+                <option value="headings">Heading Structure (H1/H2/H3)</option>
+                <option value="full">Full SEO Article</option>
+            </select>
+            <button onclick="generateSEO()">📈 Generate SEO Content</button>
+            <div class="loading" id="seoLoading">
+                <div class="spinner"></div>
+                <p>Claude is optimizing...</p>
+            </div>
+            <div class="result" id="seoResult" style="display:none;">
+                <pre id="seoContent"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://sovereign-empire-api-v2.up.railway.app';
+
+        function showPanel(panel) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            
+            document.getElementById(panel + 'Panel').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        async function generateBlog() {
+            const topic = document.getElementById('blogTopic').value;
+            if (!topic) { alert('Please enter a topic'); return; }
+
+            const tone = document.getElementById('blogTone').value;
+            const length = document.getElementById('blogLength').value;
+
+            document.getElementById('blogLoading').classList.add('active');
+            document.getElementById('blogResult').style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_URL}/api/blog`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topic, tone, length })
+                });
+                const data = await response.json();
+                
+                document.getElementById('blogContent').textContent = data.content;
+                document.getElementById('blogResult').style.display = 'block';
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                document.getElementById('blogLoading').classList.remove('active');
+            }
+        }
+
+        async function generateSocial() {
+            const topic = document.getElementById('socialTopic').value;
+            if (!topic) { alert('Please enter a topic'); return; }
+
+            const platform = document.getElementById('socialPlatform').value;
+            const style = document.getElementById('socialStyle').value;
+
+            document.getElementById('socialLoading').classList.add('active');
+            document.getElementById('socialResult').style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_URL}/api/social`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topic, platform, style })
+                });
+                const data = await response.json();
+                
+                let output = data.content;
+                if (data.hashtags && data.hashtags.length) {
+                    output += '\n\n---\n📌 Hashtags: ' + data.hashtags.join(' ');
+                }
+                document.getElementById('socialContent').textContent = output;
+                document.getElementById('socialResult').style.display = 'block';
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                document.getElementById('socialLoading').classList.remove('active');
+            }
+        }
+
+        async function generateSEO() {
+            const keyword = document.getElementById('seoKeyword').value;
+            if (!keyword) { alert('Please enter a keyword'); return; }
+
+            const contentType = document.getElementById('seoType').value;
+
+            document.getElementById('seoLoading').classList.add('active');
+            document.getElementById('seoResult').style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_URL}/api/seo`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ keyword, contentType })
+                });
+                const data = await response.json();
+                
+                document.getElementById('seoContent').textContent = data.content;
+                document.getElementById('seoResult').style.display = 'block';
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                document.getElementById('seoLoading').classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
