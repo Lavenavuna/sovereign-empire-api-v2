@@ -9,10 +9,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// HEALTH CHECK - This is what Railway needs
+// HEALTH CHECK
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
+  res.json({
+    status: 'OK',
     message: 'Server is running',
     time: new Date().toISOString()
   });
@@ -42,7 +42,7 @@ app.get('/', (req, res) => {
         <p>Time: ${new Date().toLocaleString()}</p>
       </div>
       <p>✅ Your API is working!</p>
-      <p>Try: <code>/health</code> or <code>/api/status</code></p>
+      <p>Try: <code>/health</code></p>
     </body>
     </html>
   `);
@@ -60,10 +60,4 @@ app.get('/api/status', (req, res) => {
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✓ Server running on port ${PORT}`);
-  console.log(`✓ Health: /health`);
 });
-
-// Keep alive
-setInterval(() => {
-  console.log('Heartbeat');
-}, 30000);
