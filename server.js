@@ -7,6 +7,7 @@ const path = require('path');
 dotenv.config();
 
 const app = express();
+// Use Railway's port or default to 3000
 const PORT = process.env.PORT || 3000;
 
 // Middleware
@@ -15,19 +16,31 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // Initialize Claude
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+let anthropic;
+try {
+  anthropic = new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY,
+  });
+  console.log('Claude initialized successfully');
+} catch (error) {
+  console.error('Failed to initialize Claude:', error.message);
+}
 
-// Routes
+// Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date() });
+  res.json({ status: 'OK', timestamp: new Date(), port: PORT });
 });
 
+// Serve HTML page
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  try {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  } catch (error) {
+    res.json({ message: 'Sovereign Empire API is running', status: 'online' });
+  }
 });
 
+// API Status
 app.get('/api/status', (req, res) => {
   res.json({
     status: 'online',
@@ -48,6 +61,10 @@ app.post('/api/blog', async (req, res) => {
 
   if (!topic) {
     return res.status(400).json({ error: 'Topic is required' });
+  }
+
+  if (!anthropic) {
+    return res.status(500).json({ error: 'Claude API not configured. Please add ANTHROPIC_API_KEY to Railway variables.' });
   }
 
   try {
@@ -91,6 +108,10 @@ app.post('/api/social', async (req, res) => {
 
   if (!topic) {
     return res.status(400).json({ error: 'Topic is required' });
+  }
+
+  if (!anthropic) {
+    return res.status(500).json({ error: 'Claude API not configured. Please add ANTHROPIC_API_KEY to Railway variables.' });
   }
 
   const platformLimits = {
@@ -140,6 +161,10 @@ app.post('/api/seo', async (req, res) => {
     return res.status(400).json({ error: 'Keyword is required' });
   }
 
+  if (!anthropic) {
+    return res.status(500).json({ error: 'Claude API not configured. Please add ANTHROPIC_API_KEY to Railway variables.' });
+  }
+
   try {
     const prompts = {
       meta: `Generate SEO meta title (under 60 chars) and meta description (under 160 chars) for keyword: "${keyword}"`,
@@ -174,7 +199,7 @@ app.post('/api/seo', async (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`AI Model: Claude Sonnet 4.5 ready`);
 });
