@@ -1,7 +1,7 @@
 {
   "name": "sovereign-empire-api-v2",
   "version": "1.0.0",
-  "description": "AI Content Automation API with Claude Sonnet 4.5",
+  "description": "AI Content Automation API with Claude Sonnet 3",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
