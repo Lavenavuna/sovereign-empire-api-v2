@@ -22,7 +22,7 @@ try {
     anthropic = new Anthropic({
       apiKey: apiKey,
     });
-    console.log('✓ Claude Sonnet 4.5 ready');
+    console.log('✓ model: 'claude-3-sonnet-20240229', ready');
   } else {
     console.log('⚠ Invalid or missing ANTHROPIC_API_KEY');
   }
