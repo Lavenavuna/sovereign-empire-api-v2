@@ -213,6 +213,16 @@ app.post('/api/seo', async (req, res) => {
   }
 });
 
+// DEBUG ENDPOINT - Shows exactly what Railway sees
+app.get('/debug-env', (req, res) => {
+  res.json({
+    has_anthropic_key: !!process.env.ANTHROPIC_API_KEY,
+    key_prefix: process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.substring(0, 20) : 'none',
+    all_keys: Object.keys(process.env).filter(k => k.includes('ANTHROPIC') || k.includes('API')),
+    node_env: process.env.NODE_ENV,
+    railway_env: process.env.RAILWAY_ENVIRONMENT_NAME
+  });
+});
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✓ Server running on port ${PORT}`);
