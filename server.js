@@ -22,14 +22,13 @@ try {
     anthropic = new Anthropic({
       apiKey: apiKey,
     });
-    console.log('✓ model: 'claude-3-sonnet-20240229', ready');
+    console.log('✓ Claude Sonnet 3 ready');  // ← FIXED THIS LINE
   } else {
     console.log('⚠ Invalid or missing ANTHROPIC_API_KEY');
   }
 } catch (error) {
   console.log('⚠ Claude init error:', error.message);
 }
-
 // HEALTH CHECK
 app.get('/health', (req, res) => {
   res.json({
