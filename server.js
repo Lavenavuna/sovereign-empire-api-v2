@@ -21,7 +21,7 @@ try {
     anthropic = new Anthropic({
       apiKey: apiKey,
     });
-    console.log('✓ Claude Sonnet 3 ready');
+    console.log('✓ Claude Haiku ready');
   } else {
     console.log('⚠ Invalid or missing ANTHROPIC_API_KEY');
   }
@@ -67,7 +67,7 @@ app.get('/', (req, res) => {
       <h1>🏰 Sovereign Empire API</h1>
       <div class="status">
         <p>Status: <span class="green">✓ ONLINE</span></p>
-        <p>AI Model: <strong>Claude Sonnet 3</strong></p>
+        <p>AI Model: <strong>Claude Haiku</strong></p>
         <p>Server: Running on port ${PORT}</p>
         <p>Time: ${new Date().toLocaleString()}</p>
       </div>
@@ -87,7 +87,7 @@ app.post('/api/blog', async (req, res) => {
   }
 
   if (!anthropic) {
-    return res.status(500).json({ error: 'Claude API not configured. Please add ANTHROPIC_API_KEY to Railway variables.' });
+    return res.status(500).json({ error: 'Claude API not configured.' });
   }
 
   try {
@@ -98,7 +98,7 @@ app.post('/api/blog', async (req, res) => {
     };
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-sonnet-20240229',
+      model: 'claude-3-haiku-20240307',
       max_tokens: 2000,
       temperature: 0.7,
       system: `You are a professional blog writer. Write in a ${tone} tone.`,
@@ -112,7 +112,7 @@ app.post('/api/blog', async (req, res) => {
 
     res.json({
       success: true,
-      ai_model: 'Claude Sonnet 3',
+      ai_model: 'Claude Haiku',
       topic,
       tone,
       length,
@@ -146,7 +146,7 @@ app.post('/api/social', async (req, res) => {
 
   try {
     const message = await anthropic.messages.create({
-      model: 'claude-3-sonnet-20240229',
+      model: 'claude-3-haiku-20240307',
       max_tokens: 800,
       temperature: 0.8,
       system: `You are a social media expert. Create ${style} posts for ${platform}.`,
@@ -163,7 +163,7 @@ app.post('/api/social', async (req, res) => {
 
     res.json({
       success: true,
-      ai_model: 'Claude Sonnet 3',
+      ai_model: 'Claude Haiku',
       platform,
       topic,
       style,
@@ -196,7 +196,7 @@ app.post('/api/seo', async (req, res) => {
     };
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-sonnet-20240229',
+      model: 'claude-3-haiku-20240307',
       max_tokens: 1500,
       temperature: 0.6,
       system: 'You are an SEO expert. Follow SEO best practices.',
@@ -210,7 +210,7 @@ app.post('/api/seo', async (req, res) => {
 
     res.json({
       success: true,
-      ai_model: 'Claude Sonnet 3',
+      ai_model: 'Claude Haiku',
       keyword,
       contentType,
       content: message.content[0].text
@@ -224,5 +224,5 @@ app.post('/api/seo', async (req, res) => {
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✓ Server running on port ${PORT}`);
-  console.log(`✓ Claude: ${anthropic ? 'Ready' : 'Not configured'}`);
+  console.log(`✓ Claude: ${anthropic ? 'Haiku Ready' : 'Not configured'}`);
 });
