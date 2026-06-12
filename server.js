@@ -10,25 +10,25 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// Initialize Claude - FIXED VERSION
+// Initialize Claude
 let anthropic;
 const apiKey = process.env.ANTHROPIC_API_KEY;
 
 console.log(`API Key exists: ${!!apiKey}`);
-console.log(`API Key length: ${apiKey ? apiKey.length : 0}`);
 
 try {
   if (apiKey && apiKey.startsWith('sk-ant')) {
     anthropic = new Anthropic({
       apiKey: apiKey,
     });
-    console.log('✓ Claude Sonnet 3 ready');  // ← FIXED THIS LINE
+    console.log('✓ Claude Sonnet 3 ready');
   } else {
     console.log('⚠ Invalid or missing ANTHROPIC_API_KEY');
   }
 } catch (error) {
   console.log('⚠ Claude init error:', error.message);
 }
+
 // HEALTH CHECK
 app.get('/health', (req, res) => {
   res.json({
@@ -36,6 +36,15 @@ app.get('/health', (req, res) => {
     message: 'Server is running',
     anthropic: !!anthropic,
     time: new Date().toISOString()
+  });
+});
+
+// DEBUG ENDPOINT
+app.get('/debug-env', (req, res) => {
+  res.json({
+    has_anthropic_key: !!process.env.ANTHROPIC_API_KEY,
+    key_prefix: process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.substring(0, 20) : 'none',
+    anthropic_initialized: !!anthropic
   });
 });
 
@@ -58,7 +67,7 @@ app.get('/', (req, res) => {
       <h1>🏰 Sovereign Empire API</h1>
       <div class="status">
         <p>Status: <span class="green">✓ ONLINE</span></p>
-        <p>AI Model: <strong>Claude Sonnet 4.5</strong></p>
+        <p>AI Model: <strong>Claude Sonnet 3</strong></p>
         <p>Server: Running on port ${PORT}</p>
         <p>Time: ${new Date().toLocaleString()}</p>
       </div>
@@ -89,7 +98,7 @@ app.post('/api/blog', async (req, res) => {
     };
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-3-sonnet-20240229',
       max_tokens: 2000,
       temperature: 0.7,
       system: `You are a professional blog writer. Write in a ${tone} tone.`,
@@ -103,7 +112,7 @@ app.post('/api/blog', async (req, res) => {
 
     res.json({
       success: true,
-      ai_model: 'Claude Sonnet 4.5',
+      ai_model: 'Claude Sonnet 3',
       topic,
       tone,
       length,
@@ -137,7 +146,7 @@ app.post('/api/social', async (req, res) => {
 
   try {
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-3-sonnet-20240229',
       max_tokens: 800,
       temperature: 0.8,
       system: `You are a social media expert. Create ${style} posts for ${platform}.`,
@@ -154,7 +163,7 @@ app.post('/api/social', async (req, res) => {
 
     res.json({
       success: true,
-      ai_model: 'Claude Sonnet 4.5',
+      ai_model: 'Claude Sonnet 3',
       platform,
       topic,
       style,
@@ -187,7 +196,7 @@ app.post('/api/seo', async (req, res) => {
     };
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-3-sonnet-20240229',
       max_tokens: 1500,
       temperature: 0.6,
       system: 'You are an SEO expert. Follow SEO best practices.',
@@ -201,7 +210,7 @@ app.post('/api/seo', async (req, res) => {
 
     res.json({
       success: true,
-      ai_model: 'Claude Sonnet 4.5',
+      ai_model: 'Claude Sonnet 3',
       keyword,
       contentType,
       content: message.content[0].text
@@ -212,16 +221,6 @@ app.post('/api/seo', async (req, res) => {
   }
 });
 
-// DEBUG ENDPOINT - Shows exactly what Railway sees
-app.get('/debug-env', (req, res) => {
-  res.json({
-    has_anthropic_key: !!process.env.ANTHROPIC_API_KEY,
-    key_prefix: process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.substring(0, 20) : 'none',
-    all_keys: Object.keys(process.env).filter(k => k.includes('ANTHROPIC') || k.includes('API')),
-    node_env: process.env.NODE_ENV,
-    railway_env: process.env.RAILWAY_ENVIRONMENT_NAME
-  });
-});
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✓ Server running on port ${PORT}`);
