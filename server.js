@@ -15,9 +15,9 @@ app.get('/health', (req, res) => res.send('OK'));
 app.get('/v1/models', (req, res) => {
     res.json({
         data: [
-            { id: 'claude-3-haiku-20240307' },
-            { id: 'claude-3-sonnet-20240229' },
-            { id: 'claude-3-opus-20240229' }
+            { id: "claude-3-haiku-20240307" },
+            { id: "claude-3-sonnet-20240229" },
+            { id: "claude-3-opus-20240229" }
         ]
     });
 });
