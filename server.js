@@ -24,6 +24,7 @@ app.get('/v1/models', (req, res) => {
 app.post('/v1/messages', async (req, res) => {
     try {
         const body = req.body;
+        console.log(`📝 Request model: ${body.model}`);
         
         const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
             method: 'POST',
@@ -34,30 +35,38 @@ app.post('/v1/messages', async (req, res) => {
             body: JSON.stringify({
                 model: "deepseek-chat",
                 messages: body.messages,
-                max_tokens: body.max_tokens || 500
+                max_tokens: body.max_tokens || 500,
+                temperature: body.temperature || 0.7
             })
         });
         
         const data = await response.json();
+        console.log(`✅ DeepSeek response status: ${response.status}`);
         
-        // Convert to Anthropic format
         if (data.choices && data.choices[0]) {
-            res.status(200).json({
+            // Convert to Anthropic-compatible format
+            res.json({
+                id: data.id,
+                type: "message",
+                role: "assistant",
                 content: [{
                     type: "text",
                     text: data.choices[0].message.content
-                }]
+                }],
+                model: body.model,
+                usage: data.usage
             });
         } else {
+            console.error('DeepSeek error:', data);
             res.status(response.status).json(data);
         }
     } catch (error) {
-        console.error('Error:', error.message);
+        console.error('❌ Error:', error.message);
         res.status(502).json({ error: error.message });
     }
 });
 
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Proxy running on port ${PORT}`);
-    console.log(`✅ DeepSeek API key set: ${!!process.env.DEEPSEEK_API_KEY}`);
+    console.log(`✅ DeepSeek API: ${process.env.DEEPSEEK_API_KEY ? 'Configured' : 'MISSING!'}`);
 });
