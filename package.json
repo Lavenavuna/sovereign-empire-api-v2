@@ -1,14 +1,14 @@
 {
-  "name": "sovereign-empire-api-v2",
+  "name": "claude-code-proxy",
   "version": "1.0.0",
-  "description": "AI Content Automation API with Claude Sonnet 3",
+  "description": "A proxy for Claude Code to use OpenRouter",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "@anthropic-ai/sdk": "^0.24.0"
+    "http-proxy-middleware": "^2.0.6"
   }
 }
