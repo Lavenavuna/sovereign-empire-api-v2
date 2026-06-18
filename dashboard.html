@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sovereign Empire AI Platform</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; background: #f0f2f5; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #1a1a2e; }
+        textarea { width: 100%; height: 100px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+        button { background: #667eea; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        button:hover { background: #764ba2; }
+        #response { margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; white-space: pre-wrap; }
+        .select-agent { margin: 10px 0; padding: 8px; border-radius: 8px; border: 1px solid #ddd; width: 200px; }
+        .status { color: #10b981; font-weight: bold; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Sovereign Empire AI Platform</h1>
+        <div class="status" id="status">✅ Connected to 12 agents</div>
+        
+        <label>Select Agent (or leave blank for auto-select):</label><br>
+        <select class="select-agent" id="agentSelect">
+            <option value="">Auto-Select</option>
+            <option value="competitor-analyzer">Competitor Analyzer</option>
+            <option value="content-generator">Content Generator</option>
+            <option value="email-writer">Email Writer</option>
+            <option value="headline-generator">Headline Generator</option>
+            <option value="keyword-researcher">Keyword Researcher</option>
+            <option value="performance-optimizer">Performance Optimizer</option>
+            <option value="podcast-script">Podcast Script</option>
+            <option value="revenue-tracker">Revenue Tracker</option>
+            <option value="seo-optimizer">SEO Optimizer</option>
+            <option value="social-media">Social Media</option>
+            <option value="trend-analyzer">Trend Analyzer</option>
+            <option value="video-script">Video Script</option>
+        </select>
+
+        <br><br>
+        <label>Your request:</label>
+        <textarea id="queryInput" placeholder="Write a blog post about AI...">Write a blog post about AI</textarea>
+        <br>
+        <button onclick="sendRequest()">🚀 Send Request</button>
+
+        <div id="response"><strong>Response:</strong> Waiting for your request...</div>
+    </div>
+
+    <script>
+        async function sendRequest() {
+            const query = document.getElementById('queryInput').value;
+            const agent = document.getElementById('agentSelect').value;
+            const responseDiv = document.getElementById('response');
+            
+            responseDiv.innerHTML = '⏳ Processing...';
+            
+            try {
+                let url = '/api/chat';
+                let body = { message: query };
+                
+                if (agent) {
+                    url = '/api/agent/' + agent;
+                }
+                
+                const res = await fetch('http://localhost:8080' + url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                
+                const data = await res.json();
+                const agentName = data.agent || 'unknown';
+                responseDiv.innerHTML = `<strong>Agent: ${agentName}</strong>\n\n${data.result || data.error}`;
+            } catch (error) {
+                responseDiv.innerHTML = '❌ Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "name": "sovereign-empire-platform",
+  "version": "2.0.0",
+  "description": "Sovereign Empire AI Agent Platform - 24/7 Business Automation",
+  "type": "module",
+  "main": "api/server.js",
+  "scripts": {
+    "start": "node api/server.js",
+    "dev": "nodemon api/server.js"
+  },
+  "keywords": ["ai", "agents", "automation", "business"],
+  "author": "Sovereign Empire",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "winston": "^3.8.2",
+    "axios": "^1.4.0",
+    "node-cron": "^3.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}
