@@ -9,6 +9,45 @@ const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
 
 app.use(cors());
 app.use(express.json());
+import express from 'express';
+import cors from 'cors';
+
+const app = express();
+const PORT = process.env.PORT || 8080;
+
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
+
+app.use(cors());
+app.use(express.json());
+
+// ============================================
+// 🏠 WELCOME ROUTE - ADD THIS HERE
+// ============================================
+app.get('/', (req, res) => {
+    res.json({
+        message: '🚀 Sovereign Empire AI Platform',
+        version: '2.0.0',
+        status: 'online',
+        agents: Object.keys(AGENTS).length,
+        endpoints: {
+            health: '/health',
+            agents: '/api/agents',
+            chat: '/api/chat (POST)',
+            agent: '/api/agent/:name (POST)'
+        },
+        timestamp: new Date().toISOString()
+    });
+});
+
+// ============================================
+// AGENT CONFIGURATION - KEEP THIS AS IS
+// ============================================
+const AGENTS = {
+    'competitor-analyzer': {
+        triggers: ['competitor', 'market research', 'analyze competition'],
+        description: 'Analyzes competitors'
+    },
+    // ... rest of your agents
 
 // ============================================
 // AGENT CONFIGURATION - ADD NEW AGENTS HERE
@@ -268,9 +307,24 @@ app.post('/api/agent/:name', async (req, res) => {
         ...result,
         query: message,
         timestamp: new Date().toISOString()
+    });app.use(express.json
+});
+// Welcome route
+app.get('/', (req, res) => {
+    res.json({
+        message: '🚀 Sovereign Empire AI Platform',
+        version: '2.0.0',
+        status: 'online',
+        agents: Object.keys(AGENTS).length,
+        endpoints: {
+            health: '/health',
+            agents: '/api/agents',
+            chat: '/api/chat (POST)',
+            agent: '/api/agent/:name (POST)'
+        },
+        timestamp: new Date().toISOString()
     });
 });
-
 // ============================================
 // START SERVER
 // ============================================
