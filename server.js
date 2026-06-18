@@ -1,5 +1,10 @@
 ﻿import express from 'express';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -9,6 +14,9 @@ const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
 
 app.use(cors());
 app.use(express.json());
+
+// Serve static files (dashboard)
+app.use(express.static(path.join(__dirname)));
 
 // ============================================
 // HEALTH CHECK - MUST RESPOND QUICKLY
@@ -35,7 +43,14 @@ app.get('/', (req, res) => {
 });
 
 // ============================================
-// AGENT CONFIGURATION
+// SERVE DASHBOARD
+// ============================================
+app.get('/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dashboard.html'));
+});
+
+// ============================================
+// AGENT CONFIGURATION (YOUR 17 AGENTS)
 // ============================================
 const AGENTS = {
     'competitor-analyzer': {
@@ -270,85 +285,97 @@ app.post('/api/agent/:name', async (req, res) => {
 });
 
 // ============================================
-// START SERVER
+// PLANS API (Revenue)
 // ============================================
-app.listen(PORT, '0.0.0.0', () => {
-    console.log('🚀 Sovereign Empire Platform running on port ' + PORT);
-    console.log('📊 Agents loaded: ' + Object.keys(AGENTS).length);import { createOrder, captureOrder, handleWebhook, PLANS } from './payment.js';
+const PLANS = {
+    FREE: {
+        id: 'free',
+        name: 'Free',
+        price: 0,
+        features: ['1 agent', '10 requests/day', 'Basic support']
+    },
+    PRO: {
+        id: 'pro',
+        name: 'Pro',
+        price: 29.99,
+        features: ['All 17 agents', '500 requests/day', 'Email support', 'Daily reports']
+    },
+    BUSINESS: {
+        id: 'business',
+        name: 'Business',
+        price: 99.99,
+        features: ['All 17 agents', 'Unlimited requests', 'Priority support', 'Custom agents', 'Team sharing']
+    },
+    ENTERPRISE: {
+        id: 'enterprise',
+        name: 'Enterprise',
+        price: 499.99,
+        features: ['Everything in Business', 'Dedicated support', 'Custom training', 'SLA guarantee', 'White-label']
+    }
+};
 
-// Get available plans
 app.get('/api/plans', (req, res) => {
     res.json(Object.values(PLANS));
 });
 
-// Create order for a plan
-app.post('/api/payment/create', async (req, res) => {
-    const { planId, userId, userEmail } = req.body;
-    try {
-        const order = await createOrder(planId, userId, userEmail);
-        res.json(order);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+// ============================================
+// BUNDLES API (Revenue)
+// ============================================
+const BUNDLES = {
+    'ecommerce': {
+        name: 'E-Commerce Growth Suite',
+        description: 'Complete AI solution for online stores',
+        price: 49.99,
+        agents: ['content-generator', 'email-writer', 'headline-generator', 'social-media', 'seo-optimizer', 'customer-feedback'],
+        industry: 'Retail & E-Commerce'
+    },
+    'realestate': {
+        name: 'Real Estate AI Suite',
+        description: 'AI-powered tools for real estate professionals',
+        price: 59.99,
+        agents: ['content-generator', 'email-writer', 'trend-analyzer', 'competitor-analyzer', 'social-media', 'video-script'],
+        industry: 'Real Estate'
+    },
+    'saas': {
+        name: 'SaaS Growth Engine',
+        description: 'AI agents for software companies',
+        price: 79.99,
+        agents: ['content-generator', 'email-writer', 'business-strategist', 'market-researcher', 'competitor-analyzer', 'revenue-tracker', 'seo-optimizer'],
+        industry: 'SaaS & Technology'
+    },
+    'marketing': {
+        name: 'Digital Marketing AI Suite',
+        description: 'Complete marketing automation toolkit',
+        price: 69.99,
+        agents: ['content-generator', 'headline-generator', 'keyword-researcher', 'social-media', 'seo-optimizer', 'email-writer', 'trend-analyzer'],
+        industry: 'Digital Marketing'
     }
-});
+};
 
-// Capture order after user approves
-app.post('/api/payment/capture', async (req, res) => {
-    const { orderId } = req.body;
-    try {
-        const result = await captureOrder(orderId);
-        res.json(result);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Webhook endpoint
-app.post('/api/payment/webhook', handleWebhook);
-
-// Success/cancel redirects
-app.get('/payment/success', (req, res) => {
-    res.send('✅ Payment successful! Your subscription is active.');
-});
-
-app.get('/payment/cancel', (req, res) => {
-    res.send('❌ Payment cancelled. You can try again anytime.');
-});
-import { BUNDLES, getAllBundles, getBundle } from './bundles.js';
-
-// Get all bundles
 app.get('/api/bundles', (req, res) => {
-    res.json(getAllBundles());
+    const list = Object.entries(BUNDLES).map(([id, bundle]) => ({
+        id,
+        ...bundle,
+        agentCount: bundle.agents.length
+    }));
+    res.json(list);
 });
 
-// Get specific bundle
 app.get('/api/bundles/:id', (req, res) => {
-    const bundle = getBundle(req.params.id);
+    const bundle = BUNDLES[req.params.id];
     if (!bundle) {
         return res.status(404).json({ error: 'Bundle not found' });
     }
     res.json({ id: req.params.id, ...bundle });
 });
 
-// Purchase bundle
-app.post('/api/bundles/:id/purchase', async (req, res) => {
-    const bundle = getBundle(req.params.id);
-    if (!bundle) {
-        return res.status(404).json({ error: 'Bundle not found' });
-    }
-    
-    // Create PayPal order
-    const order = await createOrder(
-        'BUSINESS', // Use appropriate plan
-        req.body.userId,
-        req.body.userEmail
-    );
-    
-    res.json({
-        bundle: bundle,
-        order: order,
-        message: `Creating order for ${bundle.name}`
-    });
-});
+// ============================================
+// START SERVER
+// ============================================
+app.listen(PORT, '0.0.0.0', () => {
+    console.log('🚀 Sovereign Empire Platform running on port ' + PORT);
+    console.log('📊 Agents loaded: ' + Object.keys(AGENTS).length);
     console.log('🔑 OpenRouter API: ' + (OPENROUTER_API_KEY ? '✅ Configured' : '❌ Missing'));
+    console.log('💰 Plans: ' + Object.keys(PLANS).length + ' tiers');
+    console.log('📦 Bundles: ' + Object.keys(BUNDLES).length + ' industry bundles');
 });
