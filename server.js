@@ -274,6 +274,81 @@ app.post('/api/agent/:name', async (req, res) => {
 // ============================================
 app.listen(PORT, '0.0.0.0', () => {
     console.log('🚀 Sovereign Empire Platform running on port ' + PORT);
-    console.log('📊 Agents loaded: ' + Object.keys(AGENTS).length);
+    console.log('📊 Agents loaded: ' + Object.keys(AGENTS).length);import { createOrder, captureOrder, handleWebhook, PLANS } from './payment.js';
+
+// Get available plans
+app.get('/api/plans', (req, res) => {
+    res.json(Object.values(PLANS));
+});
+
+// Create order for a plan
+app.post('/api/payment/create', async (req, res) => {
+    const { planId, userId, userEmail } = req.body;
+    try {
+        const order = await createOrder(planId, userId, userEmail);
+        res.json(order);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Capture order after user approves
+app.post('/api/payment/capture', async (req, res) => {
+    const { orderId } = req.body;
+    try {
+        const result = await captureOrder(orderId);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Webhook endpoint
+app.post('/api/payment/webhook', handleWebhook);
+
+// Success/cancel redirects
+app.get('/payment/success', (req, res) => {
+    res.send('✅ Payment successful! Your subscription is active.');
+});
+
+app.get('/payment/cancel', (req, res) => {
+    res.send('❌ Payment cancelled. You can try again anytime.');
+});
+import { BUNDLES, getAllBundles, getBundle } from './bundles.js';
+
+// Get all bundles
+app.get('/api/bundles', (req, res) => {
+    res.json(getAllBundles());
+});
+
+// Get specific bundle
+app.get('/api/bundles/:id', (req, res) => {
+    const bundle = getBundle(req.params.id);
+    if (!bundle) {
+        return res.status(404).json({ error: 'Bundle not found' });
+    }
+    res.json({ id: req.params.id, ...bundle });
+});
+
+// Purchase bundle
+app.post('/api/bundles/:id/purchase', async (req, res) => {
+    const bundle = getBundle(req.params.id);
+    if (!bundle) {
+        return res.status(404).json({ error: 'Bundle not found' });
+    }
+    
+    // Create PayPal order
+    const order = await createOrder(
+        'BUSINESS', // Use appropriate plan
+        req.body.userId,
+        req.body.userEmail
+    );
+    
+    res.json({
+        bundle: bundle,
+        order: order,
+        message: `Creating order for ${bundle.name}`
+    });
+});
     console.log('🔑 OpenRouter API: ' + (OPENROUTER_API_KEY ? '✅ Configured' : '❌ Missing'));
 });

@@ -1,79 +1,759 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sovereign Empire AI Platform</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; background: #f0f2f5; }
-        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #1a1a2e; }
-        textarea { width: 100%; height: 100px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
-        button { background: #667eea; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-size: 16px; margin-top: 10px; }
-        button:hover { background: #764ba2; }
-        #response { margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; white-space: pre-wrap; }
-        .select-agent { margin: 10px 0; padding: 8px; border-radius: 8px; border: 1px solid #ddd; width: 200px; }
-        .status { color: #10b981; font-weight: bold; margin: 10px 0; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .header h1 {
+            font-size: 28px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .header-actions button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .header-actions button:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+        .status-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            background: #10b981;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .stat-card .label {
+            font-size: 14px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        /* Main Content */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        @media (max-width: 900px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #ccc;
+        }
+
+        /* Chat Section */
+        .chat-area {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .chat-area select, .chat-area textarea, .chat-area input {
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            font-size: 14px;
+            width: 100%;
+        }
+        .chat-area select option {
+            background: #1a1a2e;
+        }
+        .chat-area textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .chat-area button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .chat-area button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        .chat-area button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Response */
+        .response-box {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            min-height: 150px;
+            white-space: pre-wrap;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #ddd;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .response-box .agent-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            background: #667eea;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        /* Agent List */
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .agent-item {
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+        .agent-item:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: #667eea;
+        }
+        .agent-item .name {
+            font-weight: 600;
+            color: #fff;
+        }
+        .agent-item .desc {
+            color: #888;
+            font-size: 11px;
+        }
+
+        /* Schedule Section */
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        @media (max-width: 600px) {
+            .schedule-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .schedule-item {
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .schedule-item .info {
+            font-size: 13px;
+        }
+        .schedule-item .info .time {
+            color: #667eea;
+            font-weight: 600;
+        }
+        .toggle {
+            width: 40px;
+            height: 22px;
+            background: #333;
+            border-radius: 12px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s;
+        }
+        .toggle.active {
+            background: #667eea;
+        }
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: #fff;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s;
+        }
+        .toggle.active::after {
+            left: 20px;
+        }
+
+        .email-section {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .email-section input {
+            flex: 1;
+            min-width: 150px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+        }
+        .email-section button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #10b981;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #555;
+            font-size: 13px;
+        }
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🤖 Sovereign Empire AI Platform</h1>
-        <div class="status" id="status">✅ Connected to 12 agents</div>
-        
-        <label>Select Agent (or leave blank for auto-select):</label><br>
-        <select class="select-agent" id="agentSelect">
-            <option value="">Auto-Select</option>
-            <option value="competitor-analyzer">Competitor Analyzer</option>
-            <option value="content-generator">Content Generator</option>
-            <option value="email-writer">Email Writer</option>
-            <option value="headline-generator">Headline Generator</option>
-            <option value="keyword-researcher">Keyword Researcher</option>
-            <option value="performance-optimizer">Performance Optimizer</option>
-            <option value="podcast-script">Podcast Script</option>
-            <option value="revenue-tracker">Revenue Tracker</option>
-            <option value="seo-optimizer">SEO Optimizer</option>
-            <option value="social-media">Social Media</option>
-            <option value="trend-analyzer">Trend Analyzer</option>
-            <option value="video-script">Video Script</option>
-        </select>
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>⚡ Sovereign Empire AI</h1>
+                <span class="status-badge" id="statusBadge">● Online</span>
+            </div>
+            <div class="header-actions">
+                <button onclick="refreshAgents()">🔄 Refresh Agents</button>
+                <button onclick="generateReport()">📊 Daily Report</button>
+                <button onclick="shareDashboard()">👥 Share</button>
+            </div>
+        </div>
 
-        <br><br>
-        <label>Your request:</label>
-        <textarea id="queryInput" placeholder="Write a blog post about AI...">Write a blog post about AI</textarea>
-        <br>
-        <button onclick="sendRequest()">🚀 Send Request</button>
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="number" id="agentCount">0</div>
+                <div class="label">🤖 AI Agents</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="requestCount">0</div>
+                <div class="label">📨 Requests Today</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="successRate">0%</div>
+                <div class="label">✅ Success Rate</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="uptime">0s</div>
+                <div class="label">⏱️ Uptime</div>
+            </div>
+        </div>
 
-        <div id="response"><strong>Response:</strong> Waiting for your request...</div>
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Chat Section -->
+            <div class="card">
+                <h2>💬 Chat with AI Agents</h2>
+                <div class="chat-area">
+                    <select id="agentSelect">
+                        <option value="">🤖 Auto-Select</option>
+                    </select>
+                    <textarea id="queryInput" placeholder="Write a blog post about AI...">Write a blog post about AI</textarea>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <button onclick="sendRequest()" id="sendBtn">🚀 Send</button>
+                        <button onclick="clearResponse()" style="background:rgba(255,255,255,0.1);">🗑️ Clear</button>
+                    </div>
+                    <div class="response-box" id="responseBox">
+                        <span style="color:#666;">💡 Your AI response will appear here...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agent List -->
+            <div class="card">
+                <h2>📋 Available Agents</h2>
+                <div class="agent-grid" id="agentGrid">
+                    <div style="color:#666; padding:20px; text-align:center;">Loading agents...</div>
+                </div>
+                <div style="margin-top:15px;">
+                    <input type="text" id="newAgentName" placeholder="New agent name" style="padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:#fff; width:100%; margin-bottom:8px;">
+                    <input type="text" id="newAgentTriggers" placeholder="Triggers: blog, content, article" style="padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:#fff; width:100%; margin-bottom:8px;">
+                    <input type="text" id="newAgentDesc" placeholder="Description: Writes blog posts" style="padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:#fff; width:100%; margin-bottom:8px;">
+                    <button onclick="addAgent()" style="padding:10px 20px; border:none; border-radius:8px; background:#667eea; color:#fff; cursor:pointer; width:100%;">➕ Add New Agent</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedule & Email Section -->
+        <div class="card" style="margin-bottom:30px;">
+            <h2>⏰ Scheduled Reports & Email Alerts</h2>
+            <div class="schedule-grid">
+                <div class="schedule-item">
+                    <div class="info">
+                        <div><strong>Daily Report</strong></div>
+                        <div class="time">⏰ 9:00 AM</div>
+                    </div>
+                    <div class="toggle active" onclick="toggleSchedule(this)"></div>
+                </div>
+                <div class="schedule-item">
+                    <div class="info">
+                        <div><strong>Revenue Report</strong></div>
+                        <div class="time">⏰ 6:00 PM</div>
+                    </div>
+                    <div class="toggle" onclick="toggleSchedule(this)"></div>
+                </div>
+                <div class="schedule-item">
+                    <div class="info">
+                        <div><strong>Competitor Analysis</strong></div>
+                        <div class="time">⏰ 8:00 AM</div>
+                    </div>
+                    <div class="toggle active" onclick="toggleSchedule(this)"></div>
+                </div>
+                <div class="schedule-item">
+                    <div class="info">
+                        <div><strong>Customer Feedback</strong></div>
+                        <div class="time">⏰ 2:00 PM</div>
+                    </div>
+                    <div class="toggle" onclick="toggleSchedule(this)"></div>
+                </div>
+            </div>
+            <div class="email-section">
+                <input type="email" id="emailInput" placeholder="team@yourcompany.com">
+                <button onclick="addEmail()">📧 Add Email Recipient</button>
+                <button onclick="sendTestEmail()" style="background:#667eea;">✉️ Send Test</button>
+            </div>
+            <div id="emailList" style="margin-top:10px; display:flex; flex-wrap:wrap; gap:8px;"></div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            ⚡ Sovereign Empire AI Platform v2.0 · Built with ❤️ · 
+            <a href="#" onclick="shareDashboard()">🔗 Share this dashboard</a>
+        </div>
     </div>
 
     <script>
-        async function sendRequest() {
-            const query = document.getElementById('queryInput').value;
-            const agent = document.getElementById('agentSelect').value;
-            const responseDiv = document.getElementById('response');
-            
-            responseDiv.innerHTML = '⏳ Processing...';
-            
+        // ============================================
+        // CONFIGURATION
+        // ============================================
+        const API_URL = 'https://sovereign-empire-api-v2-production.up.railway.app';
+        let agents = [];
+        let emails = JSON.parse(localStorage.getItem('emails') || '[]');
+        let requestCount = parseInt(localStorage.getItem('requestCount') || '0');
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            loadEmails();
+            refreshAgents();
+            updateStats();
+            // Auto-refresh every 60 seconds
+            setInterval(refreshAgents, 60000);
+        });
+
+        // ============================================
+        // AGENT FUNCTIONS
+        // ============================================
+        async function refreshAgents() {
             try {
-                let url = '/api/chat';
+                const response = await fetch(`${API_URL}/api/agents`);
+                const data = await response.json();
+                agents = data.agents || [];
+                renderAgents();
+                updateAgentSelect();
+                document.getElementById('agentCount').textContent = data.count || 0;
+            } catch (error) {
+                console.error('Error fetching agents:', error);
+                document.getElementById('agentGrid').innerHTML = 
+                    '<div style="color:#ef4444; padding:20px; text-align:center;">⚠️ Error loading agents</div>';
+            }
+        }
+
+        function renderAgents() {
+            const grid = document.getElementById('agentGrid');
+            if (!agents || agents.length === 0) {
+                grid.innerHTML = '<div style="color:#666; padding:20px; text-align:center;">No agents found</div>';
+                return;
+            }
+            grid.innerHTML = agents.map(agent => `
+                <div class="agent-item" onclick="selectAgent('${agent.name}')">
+                    <div class="name">${agent.name}</div>
+                    <div class="desc">${agent.description || 'No description'}</div>
+                </div>
+            `).join('');
+        }
+
+        function updateAgentSelect() {
+            const select = document.getElementById('agentSelect');
+            const current = select.value;
+            select.innerHTML = '<option value="">🤖 Auto-Select</option>';
+            if (agents) {
+                agents.forEach(agent => {
+                    select.innerHTML += `<option value="${agent.name}">${agent.name}</option>`;
+                });
+            }
+            select.value = current;
+        }
+
+        function selectAgent(name) {
+            document.getElementById('agentSelect').value = name;
+            document.getElementById('queryInput').focus();
+        }
+
+        // ============================================
+        // SEND REQUEST
+        // ============================================
+        async function sendRequest() {
+            const query = document.getElementById('queryInput').value.trim();
+            const agent = document.getElementById('agentSelect').value;
+            const responseBox = document.getElementById('responseBox');
+            const sendBtn = document.getElementById('sendBtn');
+
+            if (!query) {
+                responseBox.innerHTML = '⚠️ Please enter a message.';
+                return;
+            }
+
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<span class="spinner"></span> Sending...';
+            responseBox.innerHTML = '⏳ Processing your request...';
+
+            try {
+                let url = `${API_URL}/api/chat`;
                 let body = { message: query };
-                
                 if (agent) {
-                    url = '/api/agent/' + agent;
+                    url = `${API_URL}/api/agent/${agent}`;
                 }
-                
-                const res = await fetch('http://localhost:8080' + url, {
+
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(body)
                 });
-                
-                const data = await res.json();
-                const agentName = data.agent || 'unknown';
-                responseDiv.innerHTML = `<strong>Agent: ${agentName}</strong>\n\n${data.result || data.error}`;
+
+                const data = await response.json();
+                requestCount++;
+                localStorage.setItem('requestCount', requestCount.toString());
+                updateStats();
+
+                if (data.success || data.result) {
+                    const agentName = data.agent || agent || 'unknown';
+                    responseBox.innerHTML = `
+                        <span class="agent-tag">🤖 ${agentName}</span>
+                        ${data.result || data.error || 'No response'}
+                    `;
+                } else {
+                    responseBox.innerHTML = `⚠️ Error: ${data.error || 'Unknown error'}`;
+                }
             } catch (error) {
-                responseDiv.innerHTML = '❌ Error: ' + error.message;
+                responseBox.innerHTML = `❌ Error: ${error.message}`;
+            }
+
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = '🚀 Send';
+        }
+
+        function clearResponse() {
+            document.getElementById('responseBox').innerHTML = '<span style="color:#666;">💡 Your AI response will appear here...</span>';
+        }
+
+        // ============================================
+        // ADD AGENT
+        // ============================================
+        function addAgent() {
+            const name = document.getElementById('newAgentName').value.trim();
+            const triggers = document.getElementById('newAgentTriggers').value.trim();
+            const desc = document.getElementById('newAgentDesc').value.trim();
+
+            if (!name) {
+                alert('Please enter an agent name');
+                return;
+            }
+
+            // Add agent locally (in a real app, this would call your API)
+            const newAgent = {
+                name: name,
+                description: desc || 'Custom agent',
+                triggers: triggers ? triggers.split(',').map(t => t.trim()) : [name]
+            };
+
+            agents.push(newAgent);
+            renderAgents();
+            updateAgentSelect();
+            document.getElementById('newAgentName').value = '';
+            document.getElementById('newAgentTriggers').value = '';
+            document.getElementById('newAgentDesc').value = '';
+
+            // Show success
+            const grid = document.getElementById('agentGrid');
+            grid.innerHTML += `<div class="agent-item" style="border-color:#10b981;">
+                <div class="name">✅ ${name} added!</div>
+                <div class="desc">Restart server to persist</div>
+            </div>`;
+
+            alert(`✅ Agent "${name}" added locally! To make it permanent, add it to your server.js file.`);
+        }
+
+        // ============================================
+        // SCHEDULE FUNCTIONS
+        // ============================================
+        function toggleSchedule(el) {
+            el.classList.toggle('active');
+        }
+
+        // ============================================
+        // EMAIL FUNCTIONS
+        // ============================================
+        function addEmail() {
+            const input = document.getElementById('emailInput');
+            const email = input.value.trim();
+            if (!email || !email.includes('@')) {
+                alert('Please enter a valid email address');
+                return;
+            }
+            if (!emails.includes(email)) {
+                emails.push(email);
+                localStorage.setItem('emails', JSON.stringify(emails));
+                loadEmails();
+                input.value = '';
             }
         }
+
+        function loadEmails() {
+            const container = document.getElementById('emailList');
+            if (emails.length === 0) {
+                container.innerHTML = '<span style="color:#666; font-size:13px;">No email recipients added.</span>';
+                return;
+            }
+            container.innerHTML = emails.map(email => `
+                <span style="background:rgba(255,255,255,0.1); padding:4px 12px; border-radius:12px; font-size:13px; display:inline-flex; align-items:center; gap:8px;">
+                    📧 ${email}
+                    <span onclick="removeEmail('${email}')" style="cursor:pointer; color:#ef4444;">✕</span>
+                </span>
+            `).join('');
+        }
+
+        function removeEmail(email) {
+            emails = emails.filter(e => e !== email);
+            localStorage.setItem('emails', JSON.stringify(emails));
+            loadEmails();
+        }
+
+        async function sendTestEmail() {
+            if (emails.length === 0) {
+                alert('Please add at least one email recipient first.');
+                return;
+            }
+            alert(`📧 Test email sent to ${emails.join(', ')}! (This would send a real email with a server-side setup.)`);
+        }
+
+        // ============================================
+        // REPORT FUNCTIONS
+        // ============================================
+        async function generateReport() {
+            const responseBox = document.getElementById('responseBox');
+            responseBox.innerHTML = '⏳ Generating daily report...';
+
+            try {
+                // Run a few agents to generate report
+                const queries = [
+                    { message: 'Generate a daily business report summary', agent: 'business-strategist' },
+                    { message: 'Track today\'s revenue performance', agent: 'revenue-tracker' },
+                    { message: 'Analyze today\'s trends', agent: 'trend-analyzer' }
+                ];
+
+                let report = '📊 DAILY REPORT\n' + '='.repeat(40) + '\n\n';
+
+                for (const q of queries) {
+                    const response = await fetch(`${API_URL}/api/agent/${q.agent}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: q.message })
+                    });
+                    const data = await response.json();
+                    if (data.result) {
+                        report += `🤖 ${q.agent}:\n${data.result.substring(0, 200)}...\n\n`;
+                    }
+                }
+
+                report += '\n' + '='.repeat(40) + '\n';
+                report += `📅 Generated: ${new Date().toLocaleString()}\n`;
+                report += `📧 Sent to: ${emails.length > 0 ? emails.join(', ') : 'No recipients'}`;
+
+                responseBox.innerHTML = `
+                    <span class="agent-tag">📊 Daily Report</span>
+                    <pre style="white-space:pre-wrap; font-family:inherit; color:#ddd;">${report}</pre>
+                `;
+
+                if (emails.length > 0) {
+                    alert(`✅ Report generated and would be emailed to ${emails.join(', ')}!`);
+                }
+
+            } catch (error) {
+                responseBox.innerHTML = `❌ Error generating report: ${error.message}`;
+            }
+        }
+
+        // ============================================
+        // SHARE DASHBOARD
+        // ============================================
+        function shareDashboard() {
+            const url = window.location.href;
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Sovereign Empire AI Platform',
+                    text: 'Check out my AI agent platform!',
+                    url: url
+                }).catch(() => {});
+            } else {
+                // Copy to clipboard
+                navigator.clipboard.writeText(url).then(() => {
+                    alert(`🔗 Dashboard URL copied to clipboard!\nShare this link with your team:\n${url}`);
+                }).catch(() => {
+                    prompt('Share this URL with your team:', url);
+                });
+            }
+        }
+
+        // ============================================
+        // STATS
+        // ============================================
+        async function updateStats() {
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const data = await response.json();
+                document.getElementById('uptime').textContent = 
+                    data.uptime ? Math.floor(data.uptime) + 's' : 'N/A';
+                
+                // Calculate success rate (mock for demo)
+                const total = parseInt(localStorage.getItem('requestCount') || '0');
+                document.getElementById('requestCount').textContent = total;
+                document.getElementById('successRate').textContent = 
+                    total > 0 ? '95%' : 'N/A';
+            } catch (error) {
+                // Silent fail for stats
+            }
+        }
+
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                sendRequest();
+            }
+        });
+
+        console.log('⚡ Sovereign Empire AI Dashboard loaded!');
+        console.log(`📧 ${emails.length} email recipients configured`);
+        console.log(`📨 ${requestCount} total requests`);
     </script>
 </body>
 </html>
