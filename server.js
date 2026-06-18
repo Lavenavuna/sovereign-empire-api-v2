@@ -9,51 +9,35 @@ const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
 
 app.use(cors());
 app.use(express.json());
-import express from 'express';
-import cors from 'cors';
-
-const app = express();
-const PORT = process.env.PORT || 8080;
-
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
-
-app.use(cors());
-app.use(express.json());
 
 // ============================================
-// 🏠 WELCOME ROUTE - ADD THIS HERE
+// HEALTH CHECK - MUST RESPOND QUICKLY
+// ============================================
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        apiKeySet: !!OPENROUTER_API_KEY
+    });
+});
+
+// ============================================
+// WELCOME ROUTE
 // ============================================
 app.get('/', (req, res) => {
     res.json({
         message: '🚀 Sovereign Empire AI Platform',
         version: '2.0.0',
         status: 'online',
-        agents: Object.keys(AGENTS).length,
-        endpoints: {
-            health: '/health',
-            agents: '/api/agents',
-            chat: '/api/chat (POST)',
-            agent: '/api/agent/:name (POST)'
-        },
         timestamp: new Date().toISOString()
     });
 });
 
 // ============================================
-// AGENT CONFIGURATION - KEEP THIS AS IS
+// AGENT CONFIGURATION
 // ============================================
 const AGENTS = {
-    'competitor-analyzer': {
-        triggers: ['competitor', 'market research', 'analyze competition'],
-        description: 'Analyzes competitors'
-    },
-    // ... rest of your agents
-
-// ============================================
-// AGENT CONFIGURATION - ADD NEW AGENTS HERE
-// ============================================
-const AGENTS = {
-    // Existing Agents
     'competitor-analyzer': {
         triggers: ['competitor', 'market research', 'analyze competition'],
         description: 'Analyzes competitors'
@@ -102,36 +86,22 @@ const AGENTS = {
         triggers: ['video script', 'youtube script'],
         description: 'Writes video scripts'
     },
-
-    // ============================================
-    // 🆕 NEW AGENTS - ADD YOUR CUSTOM AGENTS BELOW
-    // ============================================
-    
-    // Business Agent
     'business-strategist': {
         triggers: ['business strategy', 'strategic planning', 'business growth'],
         description: 'Provides business strategy advice'
     },
-    
-    // Market Research Agent
     'market-researcher': {
         triggers: ['market research', 'market analysis', 'industry research'],
         description: 'Conducts market research'
     },
-    
-    // Customer Feedback Agent
     'customer-feedback': {
         triggers: ['customer feedback', 'feedback analysis', 'customer sentiment'],
         description: 'Analyzes customer feedback'
     },
-    
-    // Sales Agent
     'sales-consultant': {
         triggers: ['sales strategy', 'sales pitch', 'sales advice'],
         description: 'Provides sales consulting'
     },
-    
-    // Product Agent
     'product-analyzer': {
         triggers: ['product analysis', 'product review', 'product improvement'],
         description: 'Analyzes products and suggests improvements'
@@ -163,7 +133,7 @@ function selectAgent(query) {
 }
 
 // ============================================
-// SYSTEM PROMPTS FOR EACH AGENT
+// SYSTEM PROMPTS
 // ============================================
 function getSystemPrompt(agentName) {
     const prompts = {
@@ -179,8 +149,6 @@ function getSystemPrompt(agentName) {
         'social-media': 'You are a social media expert. Create engaging posts for various platforms.',
         'trend-analyzer': 'You are a market trend analyst. Identify and analyze emerging trends.',
         'video-script': 'You are a video script writer. Create compelling video content scripts.',
-        
-        // System prompts for NEW agents
         'business-strategist': 'You are a business strategy expert. Provide strategic advice for business growth and planning.',
         'market-researcher': 'You are a market research expert. Conduct thorough market analysis and provide insights.',
         'customer-feedback': 'You are a customer experience expert. Analyze feedback and provide actionable insights.',
@@ -191,7 +159,7 @@ function getSystemPrompt(agentName) {
 }
 
 // ============================================
-// EXECUTE AGENT WITH OPENROUTER
+// EXECUTE AGENT
 // ============================================
 async function executeAgent(agentName, query) {
     console.log('🎯 Executing:', agentName);
@@ -259,15 +227,6 @@ async function executeAgent(agentName, query) {
 // API ROUTES
 // ============================================
 
-app.get('/health', (req, res) => {
-    res.json({ 
-        status: 'ok', 
-        timestamp: new Date().toISOString(),
-        apiKeySet: !!OPENROUTER_API_KEY,
-        agentCount: Object.keys(AGENTS).length
-    });
-});
-
 app.get('/api/agents', (req, res) => {
     const list = Object.entries(AGENTS).map(([name, config]) => ({
         name,
@@ -307,30 +266,14 @@ app.post('/api/agent/:name', async (req, res) => {
         ...result,
         query: message,
         timestamp: new Date().toISOString()
-    });app.use(express.json
-});
-// Welcome route
-app.get('/', (req, res) => {
-    res.json({
-        message: '🚀 Sovereign Empire AI Platform',
-        version: '2.0.0',
-        status: 'online',
-        agents: Object.keys(AGENTS).length,
-        endpoints: {
-            health: '/health',
-            agents: '/api/agents',
-            chat: '/api/chat (POST)',
-            agent: '/api/agent/:name (POST)'
-        },
-        timestamp: new Date().toISOString()
     });
 });
+
 // ============================================
 // START SERVER
 // ============================================
 app.listen(PORT, '0.0.0.0', () => {
     console.log('🚀 Sovereign Empire Platform running on port ' + PORT);
-    console.log('📊 Dashboard: http://localhost:' + PORT + '/api/agents');
-    console.log('🤖 Agents loaded:', Object.keys(AGENTS).length);
-    console.log('🔑 OpenRouter API:', OPENROUTER_API_KEY ? '✅ Configured' : '❌ Missing');
+    console.log('📊 Agents loaded: ' + Object.keys(AGENTS).length);
+    console.log('🔑 OpenRouter API: ' + (OPENROUTER_API_KEY ? '✅ Configured' : '❌ Missing'));
 });
