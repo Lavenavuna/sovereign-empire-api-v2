@@ -1,4 +1,4 @@
-﻿// server.js - Complete Sovereign Empire API Server
+﻿// server.js - Complete Sovereign Empire API Server with Deal-Closer Agent
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -52,7 +52,7 @@ app.get('/dashboard', (req, res) => {
 });
 
 // ============================================
-// AGENT CONFIGURATION - 17 AGENTS
+// AGENT CONFIGURATION - 18 AGENTS (Added Deal-Closer)
 // ============================================
 const AGENTS = {
     'competitor-analyzer': {
@@ -122,6 +122,13 @@ const AGENTS = {
     'product-analyzer': {
         triggers: ['product analysis', 'product review', 'product improvement'],
         description: 'Analyzes products and suggests improvements'
+    },
+    // ============================================
+    // 🆕 DEAL-CLOSER AGENT - Added for follow-ups and closing
+    // ============================================
+    'deal-closer': {
+        triggers: ['follow-up', 'schedule call', 'close deal', 'contract', 'closing', 'negotiate', 'proposal', 'deal', 'sign', 'agreement'],
+        description: 'Handles follow-ups, calls, and deal closing'
     }
 };
 
@@ -150,7 +157,7 @@ function selectAgent(query) {
 }
 
 // ============================================
-// SYSTEM PROMPTS
+// SYSTEM PROMPTS - Added Deal-Closer Prompt
 // ============================================
 function getSystemPrompt(agentName) {
     const prompts = {
@@ -170,7 +177,21 @@ function getSystemPrompt(agentName) {
         'market-researcher': 'You are a market research expert. Conduct thorough market analysis and provide insights.',
         'customer-feedback': 'You are a customer experience expert. Analyze feedback and provide actionable insights.',
         'sales-consultant': 'You are a sales expert. Provide sales strategies and advice to improve conversions.',
-        'product-analyzer': 'You are a product management expert. Analyze products and suggest improvements.'
+        'product-analyzer': 'You are a product management expert. Analyze products and suggest improvements.',
+        // ============================================
+        // 🆕 DEAL-CLOSER SYSTEM PROMPT
+        // ============================================
+        'deal-closer': `You are a senior sales closer with 15 years of experience in B2B sales. Your goal is to guide prospects through the final steps of the deal and close it.
+
+Your responsibilities:
+1. Draft personalized follow-up emails based on previous conversation history
+2. Generate call scripts with key talking points, objection handling, and closing techniques
+3. Create persuasive proposals that clearly articulate value proposition and ROI
+4. Craft contract summary emails that lead to signature
+
+Tone: Professional, confident, empathetic, solution-oriented, and persistent.
+Objective: Move every deal from "Interested" to "Closed-Won."
+Use persuasive language, handle objections gracefully, and always provide a clear call to action.`
     };
     return prompts[agentName] || 'You are a helpful AI assistant.';
 }
@@ -290,7 +311,7 @@ app.post('/api/agent/:name', async (req, res) => {
 });
 
 // ============================================
-// SALES AGENT STATE - FIXED (Handles no data)
+// SALES AGENT STATE - Handles no data gracefully
 // ============================================
 app.get('/api/sales/state', (req, res) => {
     try {
@@ -328,7 +349,7 @@ app.get('/api/sales/state', (req, res) => {
 });
 
 // ============================================
-// LATEST SALES REPORT - FIXED (Handles no data)
+// LATEST SALES REPORT - Handles no data gracefully
 // ============================================
 app.get('/api/sales/latest', (req, res) => {
     try {
@@ -397,13 +418,13 @@ const PLANS = {
         id: 'pro',
         name: 'Pro',
         price: 29.99,
-        features: ['All 17 agents', '500 requests/day', 'Email support', 'Daily reports']
+        features: ['All 18 agents', '500 requests/day', 'Email support', 'Daily reports']
     },
     BUSINESS: {
         id: 'business',
         name: 'Business',
         price: 99.99,
-        features: ['All 17 agents', 'Unlimited requests', 'Priority support', 'Custom agents', 'Team sharing']
+        features: ['All 18 agents', 'Unlimited requests', 'Priority support', 'Custom agents', 'Team sharing']
     },
     ENTERPRISE: {
         id: 'enterprise',
