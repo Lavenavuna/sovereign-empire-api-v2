@@ -1,6 +1,8 @@
-﻿import express from 'express';
+﻿// server.js - Complete Sovereign Empire API Server
+import express from 'express';
 import cors from 'cors';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -19,7 +21,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
 // ============================================
-// HEALTH CHECK - MUST RESPOND QUICKLY
+// HEALTH CHECK
 // ============================================
 app.get('/health', (req, res) => {
     res.status(200).json({
@@ -50,7 +52,7 @@ app.get('/dashboard', (req, res) => {
 });
 
 // ============================================
-// AGENT CONFIGURATION (YOUR 17 AGENTS)
+// AGENT CONFIGURATION - 17 AGENTS
 // ============================================
 const AGENTS = {
     'competitor-analyzer': {
@@ -242,6 +244,7 @@ async function executeAgent(agentName, query) {
 // API ROUTES
 // ============================================
 
+// Get all agents
 app.get('/api/agents', (req, res) => {
     const list = Object.entries(AGENTS).map(([name, config]) => ({
         name,
@@ -251,6 +254,7 @@ app.get('/api/agents', (req, res) => {
     res.json({ agents: list, count: list.length });
 });
 
+// Chat with auto-select
 app.post('/api/chat', async (req, res) => {
     const { message } = req.body;
     if (!message) {
@@ -268,6 +272,7 @@ app.post('/api/chat', async (req, res) => {
     });
 });
 
+// Chat with specific agent
 app.post('/api/agent/:name', async (req, res) => {
     const { name } = req.params;
     const { message } = req.body;
@@ -282,6 +287,100 @@ app.post('/api/agent/:name', async (req, res) => {
         query: message,
         timestamp: new Date().toISOString()
     });
+});
+
+// ============================================
+// SALES AGENT STATE - FIXED (Handles no data)
+// ============================================
+app.get('/api/sales/state', (req, res) => {
+    try {
+        const statePath = path.join(__dirname, '../slideshow-kit/agent-state.json');
+        if (!fs.existsSync(statePath)) {
+            return res.json({ 
+                performance: { 
+                    totalLeads: 0, 
+                    totalOutreach: 0, 
+                    totalResponses: 0,
+                    totalConversions: 0, 
+                    totalRevenue: 0 
+                },
+                clients: [],
+                status: 'No data yet - run sales agent first',
+                message: 'Run: node autonomous-sales-agent.js'
+            });
+        }
+        const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+        res.json({ ...state, status: 'ok' });
+    } catch (error) {
+        res.json({ 
+            performance: { 
+                totalLeads: 0, 
+                totalOutreach: 0, 
+                totalResponses: 0,
+                totalConversions: 0, 
+                totalRevenue: 0 
+            },
+            clients: [],
+            error: error.message,
+            status: 'degraded'
+        });
+    }
+});
+
+// ============================================
+// LATEST SALES REPORT - FIXED (Handles no data)
+// ============================================
+app.get('/api/sales/latest', (req, res) => {
+    try {
+        const reportPath = path.join(__dirname, '../slideshow-kit/reports');
+        if (!fs.existsSync(reportPath)) {
+            return res.json({ 
+                summary: { 
+                    leadsDiscovered: 0, 
+                    outreachSent: 0, 
+                    interested: 0, 
+                    conversions: 0, 
+                    revenue: 0,
+                    conversionRate: 'N/A'
+                },
+                date: new Date().toISOString().split('T')[0],
+                nextSteps: ['📊 Run sales agent to generate data'],
+                status: 'no_data'
+            });
+        }
+        
+        const files = fs.readdirSync(reportPath).filter(f => f.startsWith('report-')).sort();
+        if (files.length === 0) {
+            return res.json({ 
+                summary: { 
+                    leadsDiscovered: 0, 
+                    outreachSent: 0, 
+                    interested: 0, 
+                    conversions: 0, 
+                    revenue: 0,
+                    conversionRate: 'N/A'
+                },
+                date: new Date().toISOString().split('T')[0],
+                nextSteps: ['📊 Run sales agent to generate data'],
+                status: 'no_data'
+            });
+        }
+        const latestReport = JSON.parse(fs.readFileSync(path.join(reportPath, files[files.length - 1]), 'utf8'));
+        res.json({ ...latestReport, status: 'ok' });
+    } catch (error) {
+        res.json({ 
+            summary: { 
+                leadsDiscovered: 0, 
+                outreachSent: 0, 
+                interested: 0, 
+                conversions: 0, 
+                revenue: 0,
+                conversionRate: 'N/A'
+            },
+            error: error.message,
+            status: 'degraded'
+        });
+    }
 });
 
 // ============================================
@@ -370,6 +469,36 @@ app.get('/api/bundles/:id', (req, res) => {
 });
 
 // ============================================
+// DAILY REPORT
+// ============================================
+app.get('/api/report/daily', (req, res) => {
+    try {
+        const reportPath = path.join(__dirname, '../slideshow-kit/reports');
+        if (!fs.existsSync(reportPath)) {
+            return res.json({
+                date: new Date().toISOString().split('T')[0],
+                metrics: { summary: { totalRequests: 0, successRate: 'N/A', totalCost: 0 } },
+                recommendations: ['📊 Run sales agent to generate data'],
+                status: 'no_data'
+            });
+        }
+        const files = fs.readdirSync(reportPath).filter(f => f.startsWith('report-')).sort();
+        if (files.length === 0) {
+            return res.json({
+                date: new Date().toISOString().split('T')[0],
+                metrics: { summary: { totalRequests: 0, successRate: 'N/A', totalCost: 0 } },
+                recommendations: ['📊 Run sales agent to generate data'],
+                status: 'no_data'
+            });
+        }
+        const latestReport = JSON.parse(fs.readFileSync(path.join(reportPath, files[files.length - 1]), 'utf8'));
+        res.json(latestReport);
+    } catch (error) {
+        res.json({ error: error.message, status: 'degraded' });
+    }
+});
+
+// ============================================
 // START SERVER
 // ============================================
 app.listen(PORT, '0.0.0.0', () => {
@@ -378,32 +507,5 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log('🔑 OpenRouter API: ' + (OPENROUTER_API_KEY ? '✅ Configured' : '❌ Missing'));
     console.log('💰 Plans: ' + Object.keys(PLANS).length + ' tiers');
     console.log('📦 Bundles: ' + Object.keys(BUNDLES).length + ' industry bundles');
-});// Add this new endpoint to get the latest sales report
-app.get('/api/sales/latest', (req, res) => {
-    try {
-        // Path to your sales agent report (adjust if your path is different)
-        const reportPath = path.join(__dirname, '../slideshow-kit/reports');
-        const files = fs.readdirSync(reportPath).filter(f => f.startsWith('report-')).sort();
-        if (files.length === 0) {
-            return res.json({ error: 'No reports found' });
-        }
-        const latestReport = JSON.parse(fs.readFileSync(path.join(reportPath, files[files.length - 1]), 'utf8'));
-        res.json(latestReport);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Add this to get the sales agent state
-app.get('/api/sales/state', (req, res) => {
-    try {
-        const statePath = path.join(__dirname, '../slideshow-kit/agent-state.json');
-        if (!fs.existsSync(statePath)) {
-            return res.json({ performance: { totalLeads: 0, totalConversions: 0, totalRevenue: 0 } });
-        }
-        const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
-        res.json(state);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+    console.log('📊 Dashboard: http://localhost:' + PORT + '/dashboard');
 });
