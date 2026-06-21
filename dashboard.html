@@ -352,6 +352,41 @@
             <div class="stat-card">
                 <div class="number" id="uptime">0s</div>
                 <div class="label">⏱️ Uptime</div>
+<!-- ============================================ -->
+<!-- 🆕 SALES DASHBOARD SECTION - Add this section -->
+<!-- ============================================ -->
+<div class="card" style="margin-bottom:30px; background: rgba(255,255,255,0.05); border-radius: 16px; padding: 25px; border: 1px solid rgba(255,255,255,0.1);">
+    <h2 style="font-size: 18px; margin-bottom: 15px; color: #ccc;">💰 Sales & Revenue Dashboard</h2>
+    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+        <div class="stat-card" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3);">
+            <div class="label">👥 Total Leads</div>
+            <div class="number" id="totalLeads" style="color: #10b981;">0</div>
+        </div>
+        <div class="stat-card" style="background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3);">
+            <div class="label">📨 Outreach</div>
+            <div class="number" id="totalOutreach" style="color: #3b82f6;">0</div>
+        </div>
+        <div class="stat-card" style="background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3);">
+            <div class="label">🎯 Interested</div>
+            <div class="number" id="interestedLeads" style="color: #f59e0b;">0</div>
+        </div>
+        <div class="stat-card" style="background: rgba(139, 92, 246, 0.1); bo</script>rder-color: rgba(139, 92, 246, 0.3);">
+            <div class="label">✅ Conversions</div>
+            <div class="number" id="totalConversions" style="color: #8b5cf6;">0</div>
+        </div>
+        <div class="stat-card" style="background: rgba(236, 72, 153, 0.1); border-color: rgba(236, 72, 153, 0.3);">
+            <div class="label">💰 Revenue</div>
+            <div class="number" id="totalRevenue" style="color: #ec4899;">$0</div>
+        </div>
+    </div>
+    <div style="margin-top:15px; display:flex; gap:10px; flex-wrap:wrap;">
+        <button onclick="refreshSalesData()" style="padding:8px 20px; border:none; border-radius:8px; background:#667eea; color:#fff; cursor:pointer;">🔄 Refresh Sales Data</button>
+        <button onclick="viewSalesReport()" style="padding:8px 20px; border:none; border-radius:8px; background:rgba(255,255,255,0.1); color:#fff; cursor:pointer;">📊 View Full Report</button>
+    </div>
+    <div id="salesSummary" style="margin-top:15px; padding:15px; background:rgba(0,0,0,0.2); border-radius:8px; display:none;">
+        <!-- Sales summary will appear here -->
+    </div>
+</div>
             </div>
         </div>
 
@@ -755,5 +790,85 @@
         console.log(`📧 ${emails.length} email recipients configured`);
         console.log(`📨 ${requestCount} total requests`);
     </script>
+// ============================================
+// 🆕 SALES DATA FUNCTIONS - Add this to the script section
+// ============================================
+
+async function refreshSalesData() {
+    console.log('🔄 Refreshing sales data...');
+    try {
+        // Fetch both state and latest report
+        const [stateRes, reportRes] = await Promise.all([
+            fetch('/api/sales/state'),
+            fetch('/api/sales/latest')
+        ]);
+
+        const stateData = await stateRes.json();
+        const reportData = await reportRes.json();
+
+        // Update stats cards with numbers
+        document.getElementById('totalLeads').textContent = stateData.performance?.totalLeads || 0;
+        document.getElementById('totalOutreach').textContent = stateData.performance?.totalOutreach || 0;
+        document.getElementById('totalConversions').textContent = stateData.performance?.totalConversions || 0;
+        document.getElementById('totalRevenue').textContent = '$' + (stateData.performance?.totalRevenue || 0).toLocaleString();
+        document.getElementById('interestedLeads').textContent = reportData.summary?.interested || 0;
+
+        // Update the response box with full summary
+        const responseBox = document.getElementById('responseBox');
+        if (reportData.summary && reportData.summary.leadsDiscovered > 0) {
+            responseBox.innerHTML = `
+                <span class="agent-tag">📊 Sales Report (${reportData.date || 'Today'})</span>
+                <div style="margin-top:10px;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:10px;">
+                        <div>🟢 Leads: <strong>${reportData.summary.leadsDiscovered}</strong></div>
+                        <div>📨 Outreach: <strong>${reportData.summary.outreachSent}</strong></div>
+                        <div>🎯 Interested: <strong>${reportData.summary.interested}</strong></div>
+                        <div>✅ Conversions: <strong>${reportData.summary.conversions}</strong></div>
+                        <div>💰 Revenue: <strong>$${reportData.summary.revenue}</strong></div>
+                        <div>📈 Rate: <strong>${reportData.summary.conversionRate}</strong></div>
+                    </div>
+                    ${reportData.nextSteps ? `
+                        <div style="margin-top:10px; padding:10px; background:rgba(0,0,0,0.2); border-radius:8px;">
+                            <strong>Next Steps:</strong>
+                            <ul style="margin:5px 0 0 20px; color:#ddd;">
+                                ${reportData.nextSteps.map(step => `<li>${step}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        } else {
+            responseBox.innerHTML = `
+                <span style="color:#888;">💡 No sales data yet. Run your Autonomous Sales Agent to start generating leads!</span>
+                <br><br>
+                <span style="color:#555; font-size:13px;">💡 Run: <code style="background:#222; padding:2px 8px; border-radius:4px;">node autonomous-sales-agent.js</code> in the slideshow-kit folder</span>
+            `;
+        }
+
+        // Show sales summary section
+        const salesSummary = document.getElementById('salesSummary');
+        salesSummary.style.display = 'block';
+        salesSummary.innerHTML = `
+            <strong>📈 Daily Performance:</strong>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:8px;">
+                <div>📊 Conversion Rate: <strong>${reportData.summary?.conversionRate || 'N/A'}</strong></div>
+                <div>💰 Revenue per Lead: <strong>$${reportData.summary?.leadsDiscovered > 0 ? Math.round(reportData.summary.revenue / reportData.summary.leadsDiscovered) : 0}</strong></div>
+                <div>🎯 Interest Rate: <strong>${reportData.summary?.outreachSent > 0 ? Math.round(reportData.summary.interested / reportData.summary.outreachSent * 100) : 0}%</strong></div>
+            </div>
+        `;
+
+    } catch (error) {
+        console.error('❌ Error fetching sales data:', error);
+        document.getElementById('responseBox').innerHTML = '❌ Error loading sales data: ' + error.message;
+    }
+}
+
+function viewSalesReport() {
+    window.open('/api/sales/latest', '_blank');
+}
+
+// Automatically refresh sales data when page loads
+// Call this after the existing DOMContentLoaded event
+setTimeout(refreshSalesData, 1500);
 </body>
 </html>

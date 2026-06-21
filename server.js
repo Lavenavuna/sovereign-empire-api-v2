@@ -378,4 +378,32 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log('🔑 OpenRouter API: ' + (OPENROUTER_API_KEY ? '✅ Configured' : '❌ Missing'));
     console.log('💰 Plans: ' + Object.keys(PLANS).length + ' tiers');
     console.log('📦 Bundles: ' + Object.keys(BUNDLES).length + ' industry bundles');
+});// Add this new endpoint to get the latest sales report
+app.get('/api/sales/latest', (req, res) => {
+    try {
+        // Path to your sales agent report (adjust if your path is different)
+        const reportPath = path.join(__dirname, '../slideshow-kit/reports');
+        const files = fs.readdirSync(reportPath).filter(f => f.startsWith('report-')).sort();
+        if (files.length === 0) {
+            return res.json({ error: 'No reports found' });
+        }
+        const latestReport = JSON.parse(fs.readFileSync(path.join(reportPath, files[files.length - 1]), 'utf8'));
+        res.json(latestReport);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Add this to get the sales agent state
+app.get('/api/sales/state', (req, res) => {
+    try {
+        const statePath = path.join(__dirname, '../slideshow-kit/agent-state.json');
+        if (!fs.existsSync(statePath)) {
+            return res.json({ performance: { totalLeads: 0, totalConversions: 0, totalRevenue: 0 } });
+        }
+        const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+        res.json(state);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
