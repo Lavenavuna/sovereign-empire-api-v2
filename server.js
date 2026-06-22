@@ -1,4 +1,4 @@
-﻿// server.js - Complete Sovereign Empire API Server with Deal-Closer Agent
+﻿// server.js - Complete Sovereign Empire API Server
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -52,7 +52,7 @@ app.get('/dashboard', (req, res) => {
 });
 
 // ============================================
-// AGENT CONFIGURATION - 18 AGENTS (Added Deal-Closer)
+// AGENT CONFIGURATION - 18 AGENTS
 // ============================================
 const AGENTS = {
     'competitor-analyzer': {
@@ -123,11 +123,8 @@ const AGENTS = {
         triggers: ['product analysis', 'product review', 'product improvement'],
         description: 'Analyzes products and suggests improvements'
     },
-    // ============================================
-    // 🆕 DEAL-CLOSER AGENT - Added for follow-ups and closing
-    // ============================================
     'deal-closer': {
-        triggers: ['follow-up', 'schedule call', 'close deal', 'contract', 'closing', 'negotiate', 'proposal', 'deal', 'sign', 'agreement'],
+        triggers: ['follow-up', 'schedule call', 'close deal', 'contract', 'closing', 'negotiate', 'proposal', 'deal'],
         description: 'Handles follow-ups, calls, and deal closing'
     }
 };
@@ -157,7 +154,7 @@ function selectAgent(query) {
 }
 
 // ============================================
-// SYSTEM PROMPTS - Added Deal-Closer Prompt
+// SYSTEM PROMPTS
 // ============================================
 function getSystemPrompt(agentName) {
     const prompts = {
@@ -178,20 +175,7 @@ function getSystemPrompt(agentName) {
         'customer-feedback': 'You are a customer experience expert. Analyze feedback and provide actionable insights.',
         'sales-consultant': 'You are a sales expert. Provide sales strategies and advice to improve conversions.',
         'product-analyzer': 'You are a product management expert. Analyze products and suggest improvements.',
-        // ============================================
-        // 🆕 DEAL-CLOSER SYSTEM PROMPT
-        // ============================================
-        'deal-closer': `You are a senior sales closer with 15 years of experience in B2B sales. Your goal is to guide prospects through the final steps of the deal and close it.
-
-Your responsibilities:
-1. Draft personalized follow-up emails based on previous conversation history
-2. Generate call scripts with key talking points, objection handling, and closing techniques
-3. Create persuasive proposals that clearly articulate value proposition and ROI
-4. Craft contract summary emails that lead to signature
-
-Tone: Professional, confident, empathetic, solution-oriented, and persistent.
-Objective: Move every deal from "Interested" to "Closed-Won."
-Use persuasive language, handle objections gracefully, and always provide a clear call to action.`
+        'deal-closer': 'You are a senior sales closer with 15 years of experience in B2B sales. Your goal is to guide prospects through the final steps of the deal and close it. Draft personalized follow-up emails, generate call scripts, create persuasive proposals, and craft contract summary emails. Move every deal from "Interested" to "Closed-Won."'
     };
     return prompts[agentName] || 'You are a helpful AI assistant.';
 }
@@ -311,7 +295,7 @@ app.post('/api/agent/:name', async (req, res) => {
 });
 
 // ============================================
-// SALES AGENT STATE - Handles no data gracefully
+// SALES AGENT STATE
 // ============================================
 app.get('/api/sales/state', (req, res) => {
     try {
@@ -326,8 +310,7 @@ app.get('/api/sales/state', (req, res) => {
                     totalRevenue: 0 
                 },
                 clients: [],
-                status: 'No data yet - run sales agent first',
-                message: 'Run: node autonomous-sales-agent.js'
+                status: 'No data yet - run sales agent first'
             });
         }
         const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
@@ -347,8 +330,9 @@ app.get('/api/sales/state', (req, res) => {
         });
     }
 });
+
 // ============================================
-// LATEST SALES REPORT - Handles no data gracefully
+// LATEST SALES REPORT
 // ============================================
 app.get('/api/sales/latest', (req, res) => {
     try {
@@ -404,13 +388,12 @@ app.get('/api/sales/latest', (req, res) => {
 });
 
 // ============================================
-// 🆕 UNIFIED LEADS API - Combines all lead sources
+// UNIFIED LEADS API
 // ============================================
 app.get('/api/leads', (req, res) => {
     try {
         const leads = [];
         
-        // 1. Get leads from pipeline state
         const pipelinePath = path.join(__dirname, './pipeline-state.json');
         if (fs.existsSync(pipelinePath)) {
             const pipeline = JSON.parse(fs.readFileSync(pipelinePath, 'utf8'));
@@ -435,7 +418,6 @@ app.get('/api/leads', (req, res) => {
             }
         }
         
-        // 2. Get leads from sales agent state
         const agentPath = path.join(__dirname, '../slideshow-kit/agent-state.json');
         if (fs.existsSync(agentPath)) {
             const agentState = JSON.parse(fs.readFileSync(agentPath, 'utf8'));
@@ -463,14 +445,13 @@ app.get('/api/leads', (req, res) => {
             }
         }
         
-        // 3. If no leads, generate sample data
         if (leads.length === 0) {
             const sampleLeads = [
-                { id: 'sample_1', name: 'Sarah Johnson', company: 'TechFlow Solutions', email: 'sarah@techflow.com', status: 'interested', source: 'Sample' },
-                { id: 'sample_2', name: 'Michael Chen', company: 'DataSphere Inc', email: 'michael@datasphere.com', status: 'new', source: 'Sample' },
-                { id: 'sample_3', name: 'Emily Rodriguez', company: 'CloudPioneer', email: 'emily@cloudpioneer.com', status: 'interested', source: 'Sample' },
-                { id: 'sample_4', name: 'James Wilson', company: 'AI Innovations', email: 'james@aiinnovations.com', status: 'new', source: 'Sample' },
-                { id: 'sample_5', name: 'Lisa Park', company: 'Digital Transform', email: 'lisa@digitaltransform.com', status: 'interested', source: 'Sample' }
+                { id: 'sample_1', name: 'Sarah Johnson', company: 'TechFlow Solutions', email: 'sarah@techflow.com', status: 'interested' },
+                { id: 'sample_2', name: 'Michael Chen', company: 'DataSphere Inc', email: 'michael@datasphere.com', status: 'new' },
+                { id: 'sample_3', name: 'Emily Rodriguez', company: 'CloudPioneer', email: 'emily@cloudpioneer.com', status: 'interested' },
+                { id: 'sample_4', name: 'James Wilson', company: 'AI Innovations', email: 'james@aiinnovations.com', status: 'new' },
+                { id: 'sample_5', name: 'Lisa Park', company: 'Digital Transform', email: 'lisa@digitaltransform.com', status: 'interested' }
             ];
             sampleLeads.forEach(lead => {
                 leads.push({
@@ -481,7 +462,7 @@ app.get('/api/leads', (req, res) => {
                     phone: '',
                     industry: '',
                     status: lead.status,
-                    source: lead.source,
+                    source: 'Sample',
                     created: new Date().toISOString(),
                     lastContact: null,
                     revenue: 0,
@@ -498,7 +479,6 @@ app.get('/api/leads', (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (error) {
-        console.error('Error fetching leads:', error);
         res.json({
             success: false,
             error: error.message,
@@ -509,7 +489,7 @@ app.get('/api/leads', (req, res) => {
 });
 
 // ============================================
-// 🆕 LEAD STATS - Summary for dashboard
+// LEAD STATS
 // ============================================
 app.get('/api/leads/stats', (req, res) => {
     try {
@@ -531,7 +511,6 @@ app.get('/api/leads/stats', (req, res) => {
             }
         }
         
-        // If no data, return sample stats
         if (totalLeads === 0) {
             return res.json({
                 success: true,
@@ -567,33 +546,13 @@ app.get('/api/leads/stats', (req, res) => {
 });
 
 // ============================================
-// PLANS API (Revenue)
+// PLANS API
 // ============================================
 const PLANS = {
-    FREE: {
-        id: 'free',
-        name: 'Free',
-        price: 0,
-        features: ['1 agent', '10 requests/day', 'Basic support']
-    },
-    PRO: {
-        id: 'pro',
-        name: 'Pro',
-        price: 29.99,
-        features: ['All 18 agents', '500 requests/day', 'Email support', 'Daily reports']
-    },
-    BUSINESS: {
-        id: 'business',
-        name: 'Business',
-        price: 99.99,
-        features: ['All 18 agents', 'Unlimited requests', 'Priority support', 'Custom agents', 'Team sharing']
-    },
-    ENTERPRISE: {
-        id: 'enterprise',
-        name: 'Enterprise',
-        price: 499.99,
-        features: ['Everything in Business', 'Dedicated support', 'Custom training', 'SLA guarantee', 'White-label']
-    }
+    FREE: { id: 'free', name: 'Free', price: 0, features: ['1 agent', '10 requests/day', 'Basic support'] },
+    PRO: { id: 'pro', name: 'Pro', price: 29.99, features: ['All 18 agents', '500 requests/day', 'Email support', 'Daily reports'] },
+    BUSINESS: { id: 'business', name: 'Business', price: 99.99, features: ['All 18 agents', 'Unlimited requests', 'Priority support', 'Custom agents', 'Team sharing'] },
+    ENTERPRISE: { id: 'enterprise', name: 'Enterprise', price: 499.99, features: ['Everything in Business', 'Dedicated support', 'Custom training', 'SLA guarantee', 'White-label'] }
 };
 
 app.get('/api/plans', (req, res) => {
@@ -601,97 +560,7 @@ app.get('/api/plans', (req, res) => {
 });
 
 // ============================================
-// LATEST SALES REPORT - Handles no data gracefully
-// ============================================
-app.get('/api/sales/latest', (req, res) => {
-    try {
-        const reportPath = path.join(__dirname, '../slideshow-kit/reports');
-        if (!fs.existsSync(reportPath)) {
-            return res.json({ 
-                summary: { 
-                    leadsDiscovered: 0, 
-                    outreachSent: 0, 
-                    interested: 0, 
-                    conversions: 0, 
-                    revenue: 0,
-                    conversionRate: 'N/A'
-                },
-                date: new Date().toISOString().split('T')[0],
-                nextSteps: ['📊 Run sales agent to generate data'],
-                status: 'no_data'
-            });
-        }
-        
-        const files = fs.readdirSync(reportPath).filter(f => f.startsWith('report-')).sort();
-        if (files.length === 0) {
-            return res.json({ 
-                summary: { 
-                    leadsDiscovered: 0, 
-                    outreachSent: 0, 
-                    interested: 0, 
-                    conversions: 0, 
-                    revenue: 0,
-                    conversionRate: 'N/A'
-                },
-                date: new Date().toISOString().split('T')[0],
-                nextSteps: ['📊 Run sales agent to generate data'],
-                status: 'no_data'
-            });
-        }
-        const latestReport = JSON.parse(fs.readFileSync(path.join(reportPath, files[files.length - 1]), 'utf8'));
-        res.json({ ...latestReport, status: 'ok' });
-    } catch (error) {
-        res.json({ 
-            summary: { 
-                leadsDiscovered: 0, 
-                outreachSent: 0, 
-                interested: 0, 
-                conversions: 0, 
-                revenue: 0,
-                conversionRate: 'N/A'
-            },
-            error: error.message,
-            status: 'degraded'
-        });
-    }
-});
-
-// ============================================
-// PLANS API (Revenue)
-// ============================================
-const PLANS = {
-    FREE: {
-        id: 'free',
-        name: 'Free',
-        price: 0,
-        features: ['1 agent', '10 requests/day', 'Basic support']
-    },
-    PRO: {
-        id: 'pro',
-        name: 'Pro',
-        price: 29.99,
-        features: ['All 18 agents', '500 requests/day', 'Email support', 'Daily reports']
-    },
-    BUSINESS: {
-        id: 'business',
-        name: 'Business',
-        price: 99.99,
-        features: ['All 18 agents', 'Unlimited requests', 'Priority support', 'Custom agents', 'Team sharing']
-    },
-    ENTERPRISE: {
-        id: 'enterprise',
-        name: 'Enterprise',
-        price: 499.99,
-        features: ['Everything in Business', 'Dedicated support', 'Custom training', 'SLA guarantee', 'White-label']
-    }
-};
-
-app.get('/api/plans', (req, res) => {
-    res.json(Object.values(PLANS));
-});
-
-// ============================================
-// BUNDLES API (Revenue)
+// BUNDLES API
 // ============================================
 const BUNDLES = {
     'ecommerce': {
