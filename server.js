@@ -1,4 +1,4 @@
-﻿// server.js - Complete Sovereign Empire API Server
+﻿// server.js - Complete Sovereign Empire API Server with Revenue Dashboard
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -49,6 +49,13 @@ app.get('/', (req, res) => {
 // ============================================
 app.get('/dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'dashboard.html'));
+});
+
+// ============================================
+// SERVE REVENUE DASHBOARD
+// ============================================
+app.get('/revenue-dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'revenue-dashboard.html'));
 });
 
 // ============================================
@@ -650,4 +657,5 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log('💰 Plans: ' + Object.keys(PLANS).length + ' tiers');
     console.log('📦 Bundles: ' + Object.keys(BUNDLES).length + ' industry bundles');
     console.log('📊 Dashboard: http://localhost:' + PORT + '/dashboard');
+    console.log('💰 Revenue Dashboard: http://localhost:' + PORT + '/revenue-dashboard');
 });
