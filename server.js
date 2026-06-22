@@ -347,6 +347,258 @@ app.get('/api/sales/state', (req, res) => {
         });
     }
 });
+// ============================================
+// LATEST SALES REPORT - Handles no data gracefully
+// ============================================
+app.get('/api/sales/latest', (req, res) => {
+    try {
+        const reportPath = path.join(__dirname, '../slideshow-kit/reports');
+        if (!fs.existsSync(reportPath)) {
+            return res.json({ 
+                summary: { 
+                    leadsDiscovered: 0, 
+                    outreachSent: 0, 
+                    interested: 0, 
+                    conversions: 0, 
+                    revenue: 0,
+                    conversionRate: 'N/A'
+                },
+                date: new Date().toISOString().split('T')[0],
+                nextSteps: ['📊 Run sales agent to generate data'],
+                status: 'no_data'
+            });
+        }
+        
+        const files = fs.readdirSync(reportPath).filter(f => f.startsWith('report-')).sort();
+        if (files.length === 0) {
+            return res.json({ 
+                summary: { 
+                    leadsDiscovered: 0, 
+                    outreachSent: 0, 
+                    interested: 0, 
+                    conversions: 0, 
+                    revenue: 0,
+                    conversionRate: 'N/A'
+                },
+                date: new Date().toISOString().split('T')[0],
+                nextSteps: ['📊 Run sales agent to generate data'],
+                status: 'no_data'
+            });
+        }
+        const latestReport = JSON.parse(fs.readFileSync(path.join(reportPath, files[files.length - 1]), 'utf8'));
+        res.json({ ...latestReport, status: 'ok' });
+    } catch (error) {
+        res.json({ 
+            summary: { 
+                leadsDiscovered: 0, 
+                outreachSent: 0, 
+                interested: 0, 
+                conversions: 0, 
+                revenue: 0,
+                conversionRate: 'N/A'
+            },
+            error: error.message,
+            status: 'degraded'
+        });
+    }
+});
+
+// ============================================
+// 🆕 UNIFIED LEADS API - Combines all lead sources
+// ============================================
+app.get('/api/leads', (req, res) => {
+    try {
+        const leads = [];
+        
+        // 1. Get leads from pipeline state
+        const pipelinePath = path.join(__dirname, './pipeline-state.json');
+        if (fs.existsSync(pipelinePath)) {
+            const pipeline = JSON.parse(fs.readFileSync(pipelinePath, 'utf8'));
+            if (pipeline.deals) {
+                pipeline.deals.forEach(deal => {
+                    leads.push({
+                        id: deal.leadId || deal.id,
+                        name: deal.leadName,
+                        company: deal.company,
+                        email: deal.email,
+                        phone: deal.phone,
+                        industry: deal.industry,
+                        status: deal.stage || 'new',
+                        source: deal.source || 'Pipeline',
+                        created: deal.created,
+                        lastContact: deal.lastContact,
+                        revenue: deal.revenue || 0,
+                        stage: deal.stage || 'new',
+                        activities: deal.activities || []
+                    });
+                });
+            }
+        }
+        
+        // 2. Get leads from sales agent state
+        const agentPath = path.join(__dirname, '../slideshow-kit/agent-state.json');
+        if (fs.existsSync(agentPath)) {
+            const agentState = JSON.parse(fs.readFileSync(agentPath, 'utf8'));
+            if (agentState.leads) {
+                agentState.leads.forEach(lead => {
+                    const exists = leads.some(l => l.id === lead.id);
+                    if (!exists) {
+                        leads.push({
+                            id: lead.id,
+                            name: lead.contactName || lead.name,
+                            company: lead.company,
+                            email: lead.contactEmail || lead.email,
+                            phone: lead.phone || '',
+                            industry: lead.industry || '',
+                            status: lead.status || 'new',
+                            source: lead.source || 'Sales Agent',
+                            created: lead.discoveredAt || lead.created,
+                            lastContact: null,
+                            revenue: 0,
+                            stage: lead.status || 'new',
+                            activities: []
+                        });
+                    }
+                });
+            }
+        }
+        
+        // 3. If no leads, generate sample data
+        if (leads.length === 0) {
+            const sampleLeads = [
+                { id: 'sample_1', name: 'Sarah Johnson', company: 'TechFlow Solutions', email: 'sarah@techflow.com', status: 'interested', source: 'Sample' },
+                { id: 'sample_2', name: 'Michael Chen', company: 'DataSphere Inc', email: 'michael@datasphere.com', status: 'new', source: 'Sample' },
+                { id: 'sample_3', name: 'Emily Rodriguez', company: 'CloudPioneer', email: 'emily@cloudpioneer.com', status: 'interested', source: 'Sample' },
+                { id: 'sample_4', name: 'James Wilson', company: 'AI Innovations', email: 'james@aiinnovations.com', status: 'new', source: 'Sample' },
+                { id: 'sample_5', name: 'Lisa Park', company: 'Digital Transform', email: 'lisa@digitaltransform.com', status: 'interested', source: 'Sample' }
+            ];
+            sampleLeads.forEach(lead => {
+                leads.push({
+                    id: lead.id,
+                    name: lead.name,
+                    company: lead.company,
+                    email: lead.email,
+                    phone: '',
+                    industry: '',
+                    status: lead.status,
+                    source: lead.source,
+                    created: new Date().toISOString(),
+                    lastContact: null,
+                    revenue: 0,
+                    stage: lead.status,
+                    activities: []
+                });
+            });
+        }
+        
+        res.json({
+            success: true,
+            count: leads.length,
+            leads: leads,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Error fetching leads:', error);
+        res.json({
+            success: false,
+            error: error.message,
+            leads: [],
+            count: 0
+        });
+    }
+});
+
+// ============================================
+// 🆕 LEAD STATS - Summary for dashboard
+// ============================================
+app.get('/api/leads/stats', (req, res) => {
+    try {
+        const pipelinePath = path.join(__dirname, './pipeline-state.json');
+        let totalLeads = 0;
+        let interested = 0;
+        let contacted = 0;
+        let converted = 0;
+        let revenue = 0;
+        
+        if (fs.existsSync(pipelinePath)) {
+            const pipeline = JSON.parse(fs.readFileSync(pipelinePath, 'utf8'));
+            if (pipeline.deals) {
+                totalLeads = pipeline.deals.length;
+                interested = pipeline.deals.filter(d => d.stage === 'proposal_ready' || d.stage === 'interested').length;
+                contacted = pipeline.deals.filter(d => d.stage === 'contacted' || d.stage === 'new').length;
+                converted = pipeline.deals.filter(d => d.stage === 'closed_won').length;
+                revenue = pipeline.deals.reduce((sum, d) => sum + (d.revenue || 0), 0);
+            }
+        }
+        
+        // If no data, return sample stats
+        if (totalLeads === 0) {
+            return res.json({
+                success: true,
+                stats: {
+                    total: 5,
+                    interested: 2,
+                    contacted: 3,
+                    converted: 0,
+                    revenue: 0
+                },
+                timestamp: new Date().toISOString()
+            });
+        }
+        
+        res.json({
+            success: true,
+            stats: {
+                total: totalLeads,
+                interested: interested,
+                contacted: contacted,
+                converted: converted,
+                revenue: revenue
+            },
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        res.json({
+            success: false,
+            error: error.message,
+            stats: { total: 5, interested: 2, contacted: 3, converted: 0, revenue: 0 }
+        });
+    }
+});
+
+// ============================================
+// PLANS API (Revenue)
+// ============================================
+const PLANS = {
+    FREE: {
+        id: 'free',
+        name: 'Free',
+        price: 0,
+        features: ['1 agent', '10 requests/day', 'Basic support']
+    },
+    PRO: {
+        id: 'pro',
+        name: 'Pro',
+        price: 29.99,
+        features: ['All 18 agents', '500 requests/day', 'Email support', 'Daily reports']
+    },
+    BUSINESS: {
+        id: 'business',
+        name: 'Business',
+        price: 99.99,
+        features: ['All 18 agents', 'Unlimited requests', 'Priority support', 'Custom agents', 'Team sharing']
+    },
+    ENTERPRISE: {
+        id: 'enterprise',
+        name: 'Enterprise',
+        price: 499.99,
+        features: ['Everything in Business', 'Dedicated support', 'Custom training', 'SLA guarantee', 'White-label']
+    }
+};
+
+app.get('/api/plans', (req, res) => {
+    res.json(Object.values(PLANS));
+});
 
 // ============================================
 // LATEST SALES REPORT - Handles no data gracefully
