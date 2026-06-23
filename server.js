@@ -525,167 +525,144 @@ app.get('/api/leads', (req, res) => {
     }
 });
 
-// ============================================
-// LEAD STATS
-// ============================================
-app.get('/api/leads/stats', (req, res) => {
+// Apify Lead Integration - Receive leads from Apify
+app.post('/api/agent/high-velocity-sales', async (req, res) => {
     try {
-        const pipelinePath = path.join(__dirname, './pipeline-state.json');
-        let totalLeads = 0;
-        let interested = 0;
-        let contacted = 0;
-        let converted = 0;
-        let revenue = 0;
+        const { action, lead } = req.body;
         
-        if (fs.existsSync(pipelinePath)) {
-            const pipeline = JSON.parse(fs.readFileSync(pipelinePath, 'utf8'));
-            if (pipeline.deals) {
-                totalLeads = pipeline.deals.length;
-                interested = pipeline.deals.filter(d => d.stage === 'proposal_ready' || d.stage === 'interested').length;
-                contacted = pipeline.deals.filter(d => d.stage === 'contacted' || d.stage === 'new').length;
-                converted = pipeline.deals.filter(d => d.stage === 'closed_won').length;
-                revenue = pipeline.deals.reduce((sum, d) => sum + (d.revenue || 0), 0);
-            }
-        }
-        
-        if (totalLeads === 0) {
-            return res.json({
-                success: true,
-                stats: {
-                    total: 5,
-                    interested: 2,
-                    contacted: 3,
-                    converted: 0,
-                    revenue: 0
+        if (action === 'intake_lead') {
+            // Process lead into high-velocity sales pipeline
+            const deal = {
+                id: `deal_${Date.now()}`,
+                lead: {
+                    name: lead.name || 'Unknown',
+                    company: lead.company || 'Unknown',
+                    email: lead.email || '',
+                    phone: lead.phone || '',
+                    industry: lead.industry || 'Technology'
                 },
-                timestamp: new Date().toISOString()
+                stage: 'new',
+                created: new Date().toISOString(),
+                lastAction: 'lead_intake',
+                source: lead.source || 'Apify Integration',
+                score: lead.interestLevel || 50,
+                revenue: 0,
+                closed: false
+            };
+            
+            // Save to high-velocity state
+            const statePath = path.join(__dirname, './high-velocity-state.json');
+            let state = { activeDeals: [], closedDeals: [], revenue: 0 };
+            
+            if (fs.existsSync(statePath)) {
+                state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+            }
+            
+            state.activeDeals.push(deal);
+            fs.writeFileSync(statePath, JSON.stringify(state, null, 2));
+            
+            res.json({ success: true, dealId: deal.id, message: 'Deal created from Apify lead' });
+        } else {
+            res.status(400).json({ error: 'Unknown action' });
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+// ============================================
+// TIMESFM FORECASTING ROUTES
+// ============================================
+
+// Get full forecast data
+app.get('/api/forecast', (req, res) => {
+    try {
+        const forecastPath = path.join(__dirname, './timesfm-forecasts.json');
+        if (!fs.existsSync(forecastPath)) {
+            return res.json({ 
+                success: false, 
+                message: 'No forecast data yet. Run timesfm-forecast.js first.'
             });
+        }
+        const forecast = JSON.parse(fs.readFileSync(forecastPath, 'utf8'));
+        res.json({ success: true, data: forecast });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get forecast summary
+app.get('/api/forecast/summary', (req, res) => {
+    try {
+        const forecastPath = path.join(__dirname, './timesfm-forecasts.json');
+        if (!fs.existsSync(forecastPath)) {
+            return res.json({ 
+                success: false, 
+                message: 'No forecast data yet'
+            });
+        }
+        const forecast = JSON.parse(fs.readFileSync(forecastPath, 'utf8'));
+        
+        // Build summary
+        const summary = {
+            timestamp: new Date().toISOString(),
+            horizon: 30,
+            sales: null,
+            leads: null,
+            revenue: null
+        };
+        
+        if (forecast.sales && forecast.sales.prediction) {
+            const f = forecast.sales;
+            const values = f.prediction.map(d => d.value);
+            const total = values.reduce((a, b) => a + b, 0);
+            summary.sales = {
+                trend: values[values.length - 1] > values[0] ? 'increasing' : 'decreasing',
+                avg: Math.round(total / values.length),
+                peak: Math.max(...values),
+                final: values[values.length - 1]
+            };
         }
         
-        res.json({
-            success: true,
-            stats: {
-                total: totalLeads,
-                interested: interested,
-                contacted: contacted,
-                converted: converted,
-                revenue: revenue
-            },
-            timestamp: new Date().toISOString()
-        });
+        if (forecast.leads && forecast.leads.prediction) {
+            const f = forecast.leads;
+            const values = f.prediction.map(d => d.value);
+            const total = values.reduce((a, b) => a + b, 0);
+            summary.leads = {
+                trend: values[values.length - 1] > values[0] ? 'increasing' : 'decreasing',
+                avg: Math.round(total / values.length),
+                peak: Math.max(...values),
+                final: values[values.length - 1]
+            };
+        }
+        
+        if (forecast.revenue && forecast.revenue.prediction) {
+            const f = forecast.revenue;
+            const values = f.prediction.map(d => d.value);
+            const total = values.reduce((a, b) => a + b, 0);
+            summary.revenue = {
+                trend: values[values.length - 1] > values[0] ? 'increasing' : 'decreasing',
+                avg: Math.round(total / values.length),
+                peak: Math.max(...values),
+                final: values[values.length - 1]
+            };
+        }
+        
+        res.json({ success: true, data: summary });
     } catch (error) {
-        res.json({
-            success: false,
-            error: error.message,
-            stats: { total: 5, interested: 2, contacted: 3, converted: 0, revenue: 0 }
-        });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// ============================================
-// PLANS API
-// ============================================
-const PLANS = {
-    FREE: { id: 'free', name: 'Free', price: 0, features: ['1 agent', '10 requests/day', 'Basic support'] },
-    PRO: { id: 'pro', name: 'Pro', price: 29.99, features: ['All 18 agents', '500 requests/day', 'Email support', 'Daily reports'] },
-    BUSINESS: { id: 'business', name: 'Business', price: 99.99, features: ['All 18 agents', 'Unlimited requests', 'Priority support', 'Custom agents', 'Team sharing'] },
-    ENTERPRISE: { id: 'enterprise', name: 'Enterprise', price: 499.99, features: ['Everything in Business', 'Dedicated support', 'Custom training', 'SLA guarantee', 'White-label'] }
-};
-
-app.get('/api/plans', (req, res) => {
-    res.json(Object.values(PLANS));
-});
-
-// ============================================
-// BUNDLES API
-// ============================================
-const BUNDLES = {
-    'ecommerce': {
-        name: 'E-Commerce Growth Suite',
-        description: 'Complete AI solution for online stores',
-        price: 49.99,
-        agents: ['content-generator', 'email-writer', 'headline-generator', 'social-media', 'seo-optimizer', 'customer-feedback'],
-        industry: 'Retail & E-Commerce'
-    },
-    'realestate': {
-        name: 'Real Estate AI Suite',
-        description: 'AI-powered tools for real estate professionals',
-        price: 59.99,
-        agents: ['content-generator', 'email-writer', 'trend-analyzer', 'competitor-analyzer', 'social-media', 'video-script'],
-        industry: 'Real Estate'
-    },
-    'saas': {
-        name: 'SaaS Growth Engine',
-        description: 'AI agents for software companies',
-        price: 79.99,
-        agents: ['content-generator', 'email-writer', 'business-strategist', 'market-researcher', 'competitor-analyzer', 'revenue-tracker', 'seo-optimizer'],
-        industry: 'SaaS & Technology'
-    },
-    'marketing': {
-        name: 'Digital Marketing AI Suite',
-        description: 'Complete marketing automation toolkit',
-        price: 69.99,
-        agents: ['content-generator', 'headline-generator', 'keyword-researcher', 'social-media', 'seo-optimizer', 'email-writer', 'trend-analyzer'],
-        industry: 'Digital Marketing'
-    }
-};
-
-app.get('/api/bundles', (req, res) => {
-    const list = Object.entries(BUNDLES).map(([id, bundle]) => ({
-        id,
-        ...bundle,
-        agentCount: bundle.agents.length
-    }));
-    res.json(list);
-});
-
-app.get('/api/bundles/:id', (req, res) => {
-    const bundle = BUNDLES[req.params.id];
-    if (!bundle) {
-        return res.status(404).json({ error: 'Bundle not found' });
-    }
-    res.json({ id: req.params.id, ...bundle });
-});
-
-// ============================================
-// DAILY REPORT
-// ============================================
-app.get('/api/report/daily', (req, res) => {
+// Run forecast manually
+app.post('/api/forecast/run', async (req, res) => {
     try {
-        const reportPath = path.join(__dirname, '../slideshow-kit/reports');
-        if (!fs.existsSync(reportPath)) {
-            return res.json({
-                date: new Date().toISOString().split('T')[0],
-                metrics: { summary: { totalRequests: 0, successRate: 'N/A', totalCost: 0 } },
-                recommendations: ['📊 Run sales agent to generate data'],
-                status: 'no_data'
-            });
-        }
-        const files = fs.readdirSync(reportPath).filter(f => f.startsWith('report-')).sort();
-        if (files.length === 0) {
-            return res.json({
-                date: new Date().toISOString().split('T')[0],
-                metrics: { summary: { totalRequests: 0, successRate: 'N/A', totalCost: 0 } },
-                recommendations: ['📊 Run sales agent to generate data'],
-                status: 'no_data'
-            });
-        }
-        const latestReport = JSON.parse(fs.readFileSync(path.join(reportPath, files[files.length - 1]), 'utf8'));
-        res.json(latestReport);
+        // Dynamically import the forecast engine
+        const module = await import('./timesfm-forecast.js');
+        const engine = new module.TimesFMEngine();
+        await engine.generateFullForecast();
+        res.json({ success: true, message: 'Forecast generated successfully' });
     } catch (error) {
-        res.json({ error: error.message, status: 'degraded' });
+        res.status(500).json({ success: false, error: error.message });
     }
-});
-
-// ============================================
-// START SERVER
-// ============================================
-app.listen(PORT, '0.0.0.0', () => {
-    console.log('🚀 Sovereign Empire Platform running on port ' + PORT);
-    console.log('📊 Agents loaded: ' + Object.keys(AGENTS).length);
-    console.log('🔑 OpenRouter API: ' + (OPENROUTER_API_KEY ? '✅ Configured' : '❌ Missing'));
-    console.log('💰 Plans: ' + Object.keys(PLANS).length + ' tiers');
-    console.log('📦 Bundles: ' + Object.keys(BUNDLES).length + ' industry bundles');
-    console.log('📊 Dashboard: http://localhost:' + PORT + '/dashboard');
-    console.log('💰 Revenue Dashboard: http://localhost:' + PORT + '/revenue-dashboard');
 });
