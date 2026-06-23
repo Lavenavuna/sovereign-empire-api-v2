@@ -181,21 +181,6 @@
 
 <script>
     // ============================================
-    // SAMPLE DATA (Demo)
-    // ============================================
-    function getSampleData() {
-        return [
-            { id: '1', name: 'Sarah Johnson', company: 'TechFlow Solutions', stage: 'proposal_sent', timeInStage: '3h ago', revenue: 0 },
-            { id: '2', name: 'Michael Chen', company: 'DataSphere Inc', stage: 'qualification', timeInStage: '1h ago', revenue: 0 },
-            { id: '3', name: 'Emily Rodriguez', company: 'CloudPioneer', stage: 'proposal_ready', timeInStage: '2h ago', revenue: 0 },
-            { id: '4', name: 'James Wilson', company: 'AI Innovations', stage: 'negotiation', timeInStage: '6h ago', revenue: 0 },
-            { id: '5', name: 'Lisa Park', company: 'Digital Transform', stage: 'final_followup', timeInStage: '12h ago', revenue: 0 },
-            { id: '6', name: 'David Patel', company: 'Quantum AI', stage: 'closed_won', timeInStage: '2d ago', revenue: 12000 },
-            { id: '7', name: 'Maria Garcia', company: 'EcoSphere', stage: 'closed_won', timeInStage: '1d ago', revenue: 8000 }
-        ];
-    }
-
-    // ============================================
     // PIPELINE DATA
     // ============================================
     const pipelineData = {
@@ -213,18 +198,74 @@
     };
 
     // ============================================
+    // SAMPLE DATA (Fallback when no real data)
+    // ============================================
+    function getSampleData() {
+        return [
+            { id: '1', name: 'Sarah Johnson', company: 'TechFlow Solutions', stage: 'proposal_sent', timeInStage: '3h ago', revenue: 0 },
+            { id: '2', name: 'Michael Chen', company: 'DataSphere Inc', stage: 'qualification', timeInStage: '1h ago', revenue: 0 },
+            { id: '3', name: 'Emily Rodriguez', company: 'CloudPioneer', stage: 'proposal_ready', timeInStage: '2h ago', revenue: 0 },
+            { id: '4', name: 'James Wilson', company: 'AI Innovations', stage: 'negotiation', timeInStage: '6h ago', revenue: 0 },
+            { id: '5', name: 'Lisa Park', company: 'Digital Transform', stage: 'final_followup', timeInStage: '12h ago', revenue: 0 },
+            { id: '6', name: 'David Patel', company: 'Quantum AI', stage: 'closed_won', timeInStage: '2d ago', revenue: 12000 },
+            { id: '7', name: 'Maria Garcia', company: 'EcoSphere', stage: 'closed_won', timeInStage: '1d ago', revenue: 8000 }
+        ];
+    }
+
+    // ============================================
+    // FETCH REAL DATA FROM AGENT
+    // ============================================
+    async function fetchRealPipelineData() {
+        try {
+            const response = await fetch('/api/sales/high-velocity');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.deals && data.deals.length > 0) {
+                    console.log('✅ Using REAL data from agent');
+                    return data.deals;
+                }
+            }
+            return [];
+        } catch (e) {
+            console.log('⚠️ Error fetching real data:', e.message);
+            return [];
+        }
+    }
+
+    // ============================================
     // RENDER PIPELINE
     // ============================================
-    function renderPipeline() {
+    async function renderPipeline() {
         const stages = ['new', 'qualification', 'proposal_ready', 'proposal_sent', 'negotiation', 'final_followup', 'closed_won'];
+        
+        // Clear all stages
         for (const stage of stages) {
             pipelineData.stages[stage].leads = [];
         }
         pipelineData.totalRevenue = 0;
         pipelineData.closedCount = 0;
 
-        const leads = getSampleData();
+        // Fetch real data
+        let realDeals = await fetchRealPipelineData();
+        let leads = [];
 
+        if (realDeals.length > 0) {
+            // Map real deals to pipeline format
+            leads = realDeals.map(d => ({
+                name: d.lead?.name || 'Unknown Lead',
+                company: d.lead?.company || 'Unknown Company',
+                stage: d.stage || 'new',
+                timeInStage: d.lastAction || 'Just started',
+                revenue: d.revenue || 0
+            }));
+            console.log('📊 Loaded', leads.length, 'real deals');
+        } else {
+            // Fallback to sample data
+            console.log('📋 No real data found, using sample data');
+            leads = getSampleData();
+        }
+
+        // Process leads into pipeline
         for (const lead of leads) {
             const stage = lead.stage || 'new';
             if (pipelineData.stages[stage]) {
@@ -241,6 +282,7 @@
             }
         }
 
+        // Render each stage
         for (const stage of stages) {
             const stageData = pipelineData.stages[stage];
             const countEl = document.getElementById(`stage-${stage}-count`);
@@ -264,6 +306,7 @@
             }
         }
 
+        // Update stats
         const totalDeals = leads.length;
         const activeDeals = leads.filter(l => l.stage !== 'closed_won').length;
         const closedDeals = leads.filter(l => l.stage === 'closed_won').length;
@@ -277,16 +320,24 @@
         document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
     }
 
+    // ============================================
+    // REFRESH
+    // ============================================
     function refreshPipeline() {
+        console.log('🔄 Refreshing pipeline...');
         renderPipeline();
     }
 
+    // ============================================
+    // INIT
+    // ============================================
     document.addEventListener('DOMContentLoaded', function() {
         renderPipeline();
         setInterval(refreshPipeline, 60000);
     });
 
     console.log('🚀 Closing Pipeline Dashboard loaded');
+    console.log('🎯 48-Hour High-Velocity Sales');
 </script>
 </body>
 </html>
