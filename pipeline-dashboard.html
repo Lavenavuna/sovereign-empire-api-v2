@@ -351,24 +351,83 @@
     </div>
 </div>
 
-<script>
-    // ============================================
-    // PIPELINE DATA
-    // ============================================
-    const pipelineData = {
-        stages: {
-            'new': { label: 'New', time: '0 hrs', leads: [] },
-            'qualification': { label: 'Qualification', time: '1-2 hrs', leads: [] },
-            'proposal_ready': { label: 'Proposal Ready', time: '2-4 hrs', leads: [] },
-            'proposal_sent': { label: 'Proposal Sent', time: '4-8 hrs', leads: [] },
-            'negotiation': { label: 'Negotiation', time: '8-24 hrs', leads: [] },
-            'final_followup': { label: 'Final Follow-up', time: '24-48 hrs', leads: [] },
-            'closed_won': { label: 'Closed Won', time: 'Done!', leads: [] }
-        },
-        totalRevenue: 0,
-        closedCount: 0
-    };
+// ============================================
+// FETCH REAL DATA FROM AGENT
+// ============================================
+async function fetchRealPipelineData() {
+    try {
+        // Try to get real data from the high-velocity sales agent
+        const response = await fetch('/api/sales/high-velocity');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.deals) {
+                return data.deals;
+            }
+        }
+        
+        // If no real data, return empty array
+        return [];
+    } catch (e) {
+        console.log('No real data yet, showing empty pipeline');
+        return [];
+    }
+}
 
+async function renderRealPipeline() {
+    // Try to fetch real data
+    let deals = await fetchRealPipelineData();
+    
+    // If no real data, use sample data
+    if (deals.length === 0) {
+        console.log('📋 No real data found, using sample data');
+        deals = getSampleData();
+    }
+    
+    // Clear all stages
+    const stages = ['new', 'qualification', 'proposal_ready', 'proposal_sent', 'negotiation', 'final_followup', 'closed_won'];
+    for (const stage of stages) {
+        pipelineData.stages[stage].leads = [];
+    }
+
+    // Assign deals to stages
+    pipelineData.totalRevenue = 0;
+    pipelineData.closedCount = 0;
+    
+    for (const deal of deals) {
+        const stage = deal.stage || 'new';
+        if (pipelineData.stages[stage]) {
+            pipelineData.stages[stage].leads.push({
+                name: deal.lead?.name || deal.name || 'Unknown',
+                company: deal.lead?.company || deal.company || 'Unknown',
+                time: deal.timeInStage || 'Just started',
+                revenue: deal.revenue || 0,
+                id: deal.id
+            });
+            if (stage === 'closed_won') {
+                pipelineData.closedCount++;
+                pipelineData.totalRevenue += deal.revenue || 0;
+            }
+        }
+    }
+
+    // Render the pipeline with real data
+    renderPipeline();
+}
+
+// ============================================
+// SAMPLE DATA (Fallback)
+// ============================================
+function getSampleData() {
+    return [
+        { id: '1', name: 'Sarah Johnson', company: 'TechFlow Solutions', stage: 'proposal_sent', timeInStage: '3h ago', revenue: 0 },
+        { id: '2', name: 'Michael Chen', company: 'DataSphere Inc', stage: 'qualification', timeInStage: '1h ago', revenue: 0 },
+        { id: '3', name: 'Emily Rodriguez', company: 'CloudPioneer', stage: 'proposal_ready', timeInStage: '2h ago', revenue: 0 },
+        { id: '4', name: 'James Wilson', company: 'AI Innovations', stage: 'negotiation', timeInStage: '6h ago', revenue: 0 },
+        { id: '5', name: 'Lisa Park', company: 'Digital Transform', stage: 'final_followup', timeInStage: '12h ago', revenue: 0 },
+        { id: '6', name: 'David Patel', company: 'Quantum AI', stage: 'closed_won', timeInStage: '2d ago', revenue: 12000 },
+        { id: '7', name: 'Maria Garcia', company: 'EcoSphere', stage: 'closed_won', timeInStage: '1d ago', revenue: 8000 }
+    ];
+}
     // Sample leads in pipeline
     const sampleLeads = [
         { name: 'Sarah Johnson', company: 'TechFlow Solutions', stage: 'proposal_sent', time: '3h ago' },

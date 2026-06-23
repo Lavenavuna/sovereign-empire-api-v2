@@ -55,6 +55,28 @@ app.get('/dashboard', (req, res) => {
 app.get('/pipeline', (req, res) => {
     res.sendFile(path.join(__dirname, 'pipeline-dashboard.html'));
 });
+// Get high-velocity sales pipeline data
+app.get('/api/sales/high-velocity', (req, res) => {
+    try {
+        const statePath = path.join(__dirname, './high-velocity-state.json');
+        if (!fs.existsSync(statePath)) {
+            return res.json({ 
+                success: true, 
+                deals: [],
+                message: 'No pipeline data yet'
+            });
+        }
+        const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+        res.json({
+            success: true,
+            deals: state.activeDeals || [],
+            closedDeals: state.closedDeals || [],
+            revenue: state.revenue || 0
+        });
+    } catch (error) {
+        res.json({ success: false, error: error.message });
+    }
+});
 // ============================================
 // SERVE REVENUE DASHBOARD
 // ============================================
