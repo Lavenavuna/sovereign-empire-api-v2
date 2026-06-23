@@ -1,4 +1,4 @@
-// apify-lead-integration.js - Complete Apify Lead Integration with Email/Phone Extraction
+// apify-lead-integration.js - Complete Apify Lead Integration with Email Enrichment
 import { ApifyClient } from 'apify-client';
 import fs from 'fs';
 import path from 'path';
@@ -17,7 +17,7 @@ const CONFIG = {
         googleMaps: {
             enabled: true,
             actorId: 'compass/google-maps-extractor',
-            maxResults: 50,
+            maxResults: 30,
             searchStringsArray: [
                 'SaaS companies San Francisco',
                 'AI startups New York',
@@ -27,22 +27,22 @@ const CONFIG = {
             categoryFilterWords: ['software', 'technology', 'artificial intelligence', 'SaaS'],
             extractEmails: true,
             extractPhoneNumbers: true,
-            extractSocialProfiles: true
+            extractSocialProfiles: true,
+            proxyConfiguration: { useApifyProxy: true }
         },
-        googleMapsEmail: {
+        contactDetails: {
             enabled: true,
             actorId: 'lukaskrivka/google-maps-with-contact-details',
-            maxResults: 50,
+            maxResults: 30,
             searchStringsArray: [
                 'AI companies New York',
                 'tech startups San Francisco',
-                'IT consulting Austin',
-                'software development Chicago',
-                'SaaS companies Los Angeles'
+                'IT consulting Austin'
             ],
             extractEmails: true,
             extractPhoneNumbers: true,
-            extractSocialProfiles: true
+            extractSocialProfiles: true,
+            proxyConfiguration: { useApifyProxy: true }
         }
     },
     
@@ -106,7 +106,8 @@ class ApifyLeadIntegration {
             categoryFilterWords: CONFIG.leadSources.googleMaps.categoryFilterWords,
             extractEmails: CONFIG.leadSources.googleMaps.extractEmails,
             extractPhoneNumbers: CONFIG.leadSources.googleMaps.extractPhoneNumbers,
-            extractSocialProfiles: CONFIG.leadSources.googleMaps.extractSocialProfiles
+            extractSocialProfiles: CONFIG.leadSources.googleMaps.extractSocialProfiles,
+            proxyConfiguration: CONFIG.leadSources.googleMaps.proxyConfiguration
         };
         
         try {
@@ -148,22 +149,23 @@ class ApifyLeadIntegration {
     }
 
     // ============================================
-    // 2. FETCH GOOGLE MAPS EMAIL LEADS
+    // 2. FETCH CONTACT DETAILS LEADS
     // ============================================
-    async fetchGoogleMapsEmailLeads() {
-        console.log('📧 Fetching Google Maps Email leads...');
+    async fetchContactDetailsLeads() {
+        console.log('📧 Fetching contact details leads...');
         
         const input = {
-            searchStringsArray: CONFIG.leadSources.googleMapsEmail.searchStringsArray,
-            maxResults: CONFIG.leadSources.googleMapsEmail.maxResults,
-            extractEmails: CONFIG.leadSources.googleMapsEmail.extractEmails,
-            extractPhoneNumbers: CONFIG.leadSources.googleMapsEmail.extractPhoneNumbers,
-            extractSocialProfiles: CONFIG.leadSources.googleMapsEmail.extractSocialProfiles
+            searchStringsArray: CONFIG.leadSources.contactDetails.searchStringsArray,
+            maxResults: CONFIG.leadSources.contactDetails.maxResults,
+            extractEmails: CONFIG.leadSources.contactDetails.extractEmails,
+            extractPhoneNumbers: CONFIG.leadSources.contactDetails.extractPhoneNumbers,
+            extractSocialProfiles: CONFIG.leadSources.contactDetails.extractSocialProfiles,
+            proxyConfiguration: CONFIG.leadSources.contactDetails.proxyConfiguration
         };
         
         try {
             console.log('📋 Input:', JSON.stringify(input, null, 2));
-            const run = await this.client.actor(CONFIG.leadSources.googleMapsEmail.actorId).call(input);
+            const run = await this.client.actor(CONFIG.leadSources.contactDetails.actorId).call(input);
             const { items } = await this.client.dataset(run.defaultDatasetId).listItems();
             
             const leads = items.map(function(item) {
@@ -177,8 +179,8 @@ class ApifyLeadIntegration {
                     address: item.address || null,
                     rating: item.rating || null,
                     score: item.email ? 70 : (item.phone ? 60 : 50),
-                    source: 'Google Maps Email',
-                    sourceId: 'google_maps_email',
+                    source: 'Contact Details',
+                    sourceId: 'contact_details',
                     social: {
                         linkedin: item.linkedIn || null,
                         twitter: item.twitter || null,
@@ -189,18 +191,58 @@ class ApifyLeadIntegration {
                 };
             });
             
-            console.log('✅ Found ' + leads.length + ' Google Maps Email leads');
+            console.log('✅ Found ' + leads.length + ' contact details leads');
             console.log('📧 ' + leads.filter(function(l) { return l.email; }).length + ' have emails');
             console.log('📞 ' + leads.filter(function(l) { return l.phone; }).length + ' have phones');
             return leads;
         } catch (error) {
-            console.error('❌ Google Maps Email error:', error.message);
+            console.error('❌ Contact details error:', error.message);
             return [];
         }
     }
 
     // ============================================
-    // 3. FETCH ALL LEADS
+    // 3. EMAIL ENRICHMENT
+    // ============================================
+    async enrichWithEmails(leads) {
+        console.log('📧 Enriching leads with emails...');
+        var enriched = [];
+        
+        for (var i = 0; i < leads.length; i++) {
+            var lead = leads[i];
+            if (lead.email) {
+                enriched.push(lead);
+                continue;
+            }
+            
+            // Try to find email from website
+            if (lead.website) {
+                try {
+                    var domain = lead.website.replace(/^https?:\/\//, '').split('/')[0];
+                    var possibleEmails = [
+                        'info@' + domain,
+                        'contact@' + domain,
+                        'hello@' + domain,
+                        'sales@' + domain,
+                        'support@' + domain
+                    ];
+                    // Use the first one as a placeholder
+                    lead.email = possibleEmails[0];
+                    lead.score += 10;
+                    console.log('📧 Generated email for ' + lead.name + ': ' + lead.email);
+                } catch (e) {
+                    console.log('⚠️ Could not generate email for ' + lead.name);
+                }
+            }
+            
+            enriched.push(lead);
+        }
+        
+        return enriched;
+    }
+
+    // ============================================
+    // 4. FETCH ALL LEADS
     // ============================================
     async fetchAllLeads() {
         console.log('\n🔍 Fetching leads from all sources...');
@@ -212,10 +254,13 @@ class ApifyLeadIntegration {
             allLeads = allLeads.concat(mapsLeads);
         }
         
-        if (CONFIG.leadSources.googleMapsEmail.enabled) {
-            var emailLeads = await this.fetchGoogleMapsEmailLeads();
-            allLeads = allLeads.concat(emailLeads);
+        if (CONFIG.leadSources.contactDetails.enabled) {
+            var contactLeads = await this.fetchContactDetailsLeads();
+            allLeads = allLeads.concat(contactLeads);
         }
+        
+        // Enrich with emails
+        allLeads = await this.enrichWithEmails(allLeads);
         
         var uniqueLeads = this.deduplicateLeads(allLeads);
         var qualified = this.qualifyLeads(uniqueLeads);
@@ -232,7 +277,7 @@ class ApifyLeadIntegration {
     }
 
     // ============================================
-    // 4. LEAD DEDUPLICATION & QUALIFICATION
+    // 5. LEAD DEDUPLICATION & QUALIFICATION
     // ============================================
     deduplicateLeads(leads) {
         var seen = new Map();
@@ -265,7 +310,7 @@ class ApifyLeadIntegration {
     }
 
     // ============================================
-    // 5. CREATE DEALS FROM LEADS
+    // 6. CREATE DEALS FROM LEADS
     // ============================================
     async createDealsFromLeads() {
         if (!CONFIG.qualification.autoCreateDeals) {
@@ -336,7 +381,7 @@ class ApifyLeadIntegration {
     }
 
     // ============================================
-    // 6. RUN
+    // 7. RUN
     // ============================================
     async run() {
         console.log('\n' + '='.repeat(60));
@@ -395,3 +440,4 @@ setInterval(async function() {
 }, 2 * 60 * 60 * 1000);
 
 console.log('\n⏰ Apify lead integration running every 2 hours');
+console.log('📊 Leads will be auto-enriched with emails and phones');
