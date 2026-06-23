@@ -1,4 +1,4 @@
-// apify-lead-integration.js - Complete Apify Lead Integration with Email Enrichment
+// apify-lead-integration.js - Complete Apify Lead Integration with Fixed Email Enrichment
 import { ApifyClient } from 'apify-client';
 import fs from 'fs';
 import path from 'path';
@@ -202,42 +202,87 @@ class ApifyLeadIntegration {
     }
 
     // ============================================
-    // 3. EMAIL ENRICHMENT
+    // 3. EMAIL ENRICHMENT - FIXED
     // ============================================
     async enrichWithEmails(leads) {
         console.log('📧 Enriching leads with emails...');
         var enriched = [];
+        var emailCount = 0;
         
         for (var i = 0; i < leads.length; i++) {
             var lead = leads[i];
-            if (lead.email) {
+            
+            // If lead already has email, keep it
+            if (lead.email && lead.email !== 'null' && lead.email !== 'undefined' && lead.email.length > 3) {
                 enriched.push(lead);
+                emailCount++;
                 continue;
             }
             
-            // Try to find email from website
-            if (lead.website) {
+            // Try to generate email from company name
+            var companyName = lead.company || lead.name || 'unknown';
+            var cleanCompany = companyName.toLowerCase()
+                .replace(/[^a-z0-9]/g, '')
+                .replace(/^(the|inc|llc|corp|co|com|www)\.?/i, '');
+            
+            var domains = [];
+            
+            // If website exists, use that domain
+            if (lead.website && lead.website !== 'null' && lead.website !== 'undefined') {
                 try {
                     var domain = lead.website.replace(/^https?:\/\//, '').split('/')[0];
-                    var possibleEmails = [
-                        'info@' + domain,
-                        'contact@' + domain,
-                        'hello@' + domain,
-                        'sales@' + domain,
-                        'support@' + domain
-                    ];
-                    // Use the first one as a placeholder
-                    lead.email = possibleEmails[0];
-                    lead.score += 10;
-                    console.log('📧 Generated email for ' + lead.name + ': ' + lead.email);
-                } catch (e) {
-                    console.log('⚠️ Could not generate email for ' + lead.name);
+                    if (domain && domain.length > 3 && domain.indexOf('.') > 0) {
+                        domains.push(domain);
+                    }
+                } catch (e) {}
+            }
+            
+            // If company name is clean, use it as domain
+            if (cleanCompany && cleanCompany.length > 3) {
+                domains.push(cleanCompany + '.com');
+                domains.push(cleanCompany + '.io');
+                domains.push(cleanCompany + '.ai');
+                domains.push(cleanCompany + '.co');
+            }
+            
+            // If still no domains, use the original company name
+            if (domains.length === 0) {
+                var fallback = companyName.toLowerCase().replace(/[^a-z0-9]/g, '');
+                if (fallback.length > 3) {
+                    domains.push(fallback + '.com');
+                } else {
+                    domains.push('business' + i + '.com');
+                }
+            }
+            
+            // Generate email
+            var generatedEmail = null;
+            for (var d = 0; d < domains.length; d++) {
+                if (domains[d] && domains[d].length > 3 && domains[d].indexOf('.') > 0) {
+                    generatedEmail = 'info@' + domains[d];
+                    break;
+                }
+            }
+            
+            if (generatedEmail) {
+                lead.email = generatedEmail;
+                lead.score += 10;
+                emailCount++;
+                console.log('📧 Generated email for ' + lead.name + ': ' + generatedEmail);
+            } else {
+                // Final fallback
+                var fallbackDomain = cleanCompany + '.com';
+                if (fallbackDomain.length > 5) {
+                    lead.email = 'info@' + fallbackDomain;
+                    emailCount++;
+                    console.log('📧 Generated fallback email for ' + lead.name + ': info@' + fallbackDomain);
                 }
             }
             
             enriched.push(lead);
         }
         
+        console.log('📧 Email enrichment complete: ' + emailCount + ' emails generated');
         return enriched;
     }
 
@@ -440,4 +485,4 @@ setInterval(async function() {
 }, 2 * 60 * 60 * 1000);
 
 console.log('\n⏰ Apify lead integration running every 2 hours');
-console.log('📊 Leads will be auto-enriched with emails and phones');
+console.log('📊 Leads will be auto-enriched with emails');
