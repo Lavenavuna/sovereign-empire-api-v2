@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Closing Pipeline Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0c29;
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .header h1 {
+            font-size: 28px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header .subtitle { color: #888; font-size: 14px; }
+        .header-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+        .header-actions button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .header-actions button:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+        .status-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-online { background: #10b981; color: #fff; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            text-align: center;
+        }
+        .stat-card .number { font-size: 28px; font-weight: 700; }
+        .stat-card .label { font-size: 12px; color: #888; margin-top: 4px; }
+        .stat-card .sub { font-size: 11px; color: #666; margin-top: 2px; }
+        .color-green { color: #10b981; }
+        .color-orange { color: #f59e0b; }
+        .color-blue { color: #3b82f6; }
+        .color-pink { color: #ec4899; }
+        .color-yellow { color: #fbbf24; }
+        .color-purple { color: #8b5cf6; }
+
+        .pipeline-container {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding: 10px 0;
+            margin-bottom: 25px;
+        }
+        .pipeline-stage {
+            flex: 1;
+            min-width: 160px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .pipeline-stage .stage-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .pipeline-stage .stage-name { font-size: 13px; font-weight: 600; color: #ccc; }
+        .pipeline-stage .stage-count { font-size: 20px; font-weight: 700; }
+        .pipeline-stage .stage-time { font-size: 11px; color: #666; margin-top: 4px; }
+        .pipeline-stage .stage-tag {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        .stage-new .stage-tag { background: #6b7280; color: #fff; }
+        .stage-qualification .stage-tag { background: #3b82f6; color: #fff; }
+        .stage-proposal_ready .stage-tag { background: #f59e0b; color: #fff; }
+        .stage-proposal_sent .stage-tag { background: #8b5cf6; color: #fff; }
+        .stage-negotiation .stage-tag { background: #ec4899; color: #fff; }
+        .stage-final_followup .stage-tag { background: #fbbf24; color: #fff; }
+        .stage-closed_won .stage-tag { background: #10b981; color: #fff; }
+
+        .pipeline-lead {
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .pipeline-lead .lead-name { font-size: 13px; font-weight: 600; }
+        .pipeline-lead .lead-company { font-size: 11px; color: #888; }
+        .pipeline-lead .lead-time { font-size: 10px; color: #666; margin-top: 4px; }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #555;
+            font-size: 12px;
+        }
+        .last-updated { font-size: 12px; color: #666; margin-top: 10px; text-align: right; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <div>
+            <h1>🚀 Closing Pipeline Dashboard</h1>
+            <div class="subtitle">48-Hour High-Velocity Sales · 7 Stages</div>
+        </div>
+        <div class="header-actions">
+            <span id="overallStatus" class="status-badge status-online">● All Systems Operational</span>
+            <button onclick="refreshPipeline()">🔄 Refresh</button>
+            <button onclick="window.location.href='/dashboard'">📊 Main Dashboard</button>
+            <button onclick="window.location.href='/revenue-dashboard'">💰 Revenue</button>
+        </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="number color-green" id="totalDeals">0</div><div class="label">Total Deals</div><div class="sub">In pipeline</div></div>
+        <div class="stat-card"><div class="number color-orange" id="activeDeals">0</div><div class="label">Active Deals</div><div class="sub">In progress</div></div>
+        <div class="stat-card"><div class="number color-blue" id="closedDeals">0</div><div class="label">Closed Deals</div><div class="sub">This month</div></div>
+        <div class="stat-card"><div class="number color-pink" id="totalRevenue">$0</div><div class="label">Total Revenue</div><div class="sub">Generated</div></div>
+        <div class="stat-card"><div class="number color-yellow" id="avgCloseTime">0h</div><div class="label">Avg Close Time</div><div class="sub">Target: 48h</div></div>
+        <div class="stat-card"><div class="number color-purple" id="conversionRate">0%</div><div class="label">Conversion Rate</div><div class="sub">From interested</div></div>
+    </div>
+
+    <!-- PIPELINE STAGES -->
+    <div class="pipeline-container" id="pipelineContainer">
+        <div class="pipeline-stage stage-new"><div class="stage-header"><span class="stage-name">📥 New</span><span class="stage-count" id="stage-new-count">0</span></div><div class="stage-time">0 hrs</div><div id="stage-new-leads"></div></div>
+        <div class="pipeline-stage stage-qualification"><div class="stage-header"><span class="stage-name">🔍 Qualification</span><span class="stage-count" id="stage-qualification-count">0</span></div><div class="stage-time">1-2 hrs</div><div id="stage-qualification-leads"></div></div>
+        <div class="pipeline-stage stage-proposal_ready"><div class="stage-header"><span class="stage-name">📄 Proposal Ready</span><span class="stage-count" id="stage-proposal_ready-count">0</span></div><div class="stage-time">2-4 hrs</div><div id="stage-proposal_ready-leads"></div></div>
+        <div class="pipeline-stage stage-proposal_sent"><div class="stage-header"><span class="stage-name">📧 Proposal Sent</span><span class="stage-count" id="stage-proposal_sent-count">0</span></div><div class="stage-time">4-8 hrs</div><div id="stage-proposal_sent-leads"></div></div>
+        <div class="pipeline-stage stage-negotiation"><div class="stage-header"><span class="stage-name">🤝 Negotiation</span><span class="stage-count" id="stage-negotiation-count">0</span></div><div class="stage-time">8-24 hrs</div><div id="stage-negotiation-leads"></div></div>
+        <div class="pipeline-stage stage-final_followup"><div class="stage-header"><span class="stage-name">🔄 Final Follow-up</span><span class="stage-count" id="stage-final_followup-count">0</span></div><div class="stage-time">24-48 hrs</div><div id="stage-final_followup-leads"></div></div>
+        <div class="pipeline-stage stage-closed_won"><div class="stage-header"><span class="stage-name">✅ Closed Won</span><span class="stage-count" id="stage-closed_won-count">0</span></div><div class="stage-time">Done!</div><div id="stage-closed_won-leads"></div></div>
+    </div>
+
+    <div class="footer">⚡ High-Velocity Closing Pipeline · 48-Hour Target · Last updated: <span id="lastUpdated">Never</span></div>
+</div>
+
+<script>
+    // ============================================
+    // SAMPLE DATA (Demo)
+    // ============================================
+    function getSampleData() {
+        return [
+            { id: '1', name: 'Sarah Johnson', company: 'TechFlow Solutions', stage: 'proposal_sent', timeInStage: '3h ago', revenue: 0 },
+            { id: '2', name: 'Michael Chen', company: 'DataSphere Inc', stage: 'qualification', timeInStage: '1h ago', revenue: 0 },
+            { id: '3', name: 'Emily Rodriguez', company: 'CloudPioneer', stage: 'proposal_ready', timeInStage: '2h ago', revenue: 0 },
+            { id: '4', name: 'James Wilson', company: 'AI Innovations', stage: 'negotiation', timeInStage: '6h ago', revenue: 0 },
+            { id: '5', name: 'Lisa Park', company: 'Digital Transform', stage: 'final_followup', timeInStage: '12h ago', revenue: 0 },
+            { id: '6', name: 'David Patel', company: 'Quantum AI', stage: 'closed_won', timeInStage: '2d ago', revenue: 12000 },
+            { id: '7', name: 'Maria Garcia', company: 'EcoSphere', stage: 'closed_won', timeInStage: '1d ago', revenue: 8000 }
+        ];
+    }
+
+    // ============================================
+    // PIPELINE DATA
+    // ============================================
+    const pipelineData = {
+        stages: {
+            'new': { label: 'New', time: '0 hrs', leads: [] },
+            'qualification': { label: 'Qualification', time: '1-2 hrs', leads: [] },
+            'proposal_ready': { label: 'Proposal Ready', time: '2-4 hrs', leads: [] },
+            'proposal_sent': { label: 'Proposal Sent', time: '4-8 hrs', leads: [] },
+            'negotiation': { label: 'Negotiation', time: '8-24 hrs', leads: [] },
+            'final_followup': { label: 'Final Follow-up', time: '24-48 hrs', leads: [] },
+            'closed_won': { label: 'Closed Won', time: 'Done!', leads: [] }
+        },
+        totalRevenue: 0,
+        closedCount: 0
+    };
+
+    // ============================================
+    // RENDER PIPELINE
+    // ============================================
+    function renderPipeline() {
+        const stages = ['new', 'qualification', 'proposal_ready', 'proposal_sent', 'negotiation', 'final_followup', 'closed_won'];
+        for (const stage of stages) {
+            pipelineData.stages[stage].leads = [];
+        }
+        pipelineData.totalRevenue = 0;
+        pipelineData.closedCount = 0;
+
+        const leads = getSampleData();
+
+        for (const lead of leads) {
+            const stage = lead.stage || 'new';
+            if (pipelineData.stages[stage]) {
+                pipelineData.stages[stage].leads.push({
+                    name: lead.name || 'Unknown',
+                    company: lead.company || 'Unknown',
+                    time: lead.timeInStage || 'Just started',
+                    revenue: lead.revenue || 0
+                });
+                if (stage === 'closed_won') {
+                    pipelineData.closedCount++;
+                    pipelineData.totalRevenue += lead.revenue || 0;
+                }
+            }
+        }
+
+        for (const stage of stages) {
+            const stageData = pipelineData.stages[stage];
+            const countEl = document.getElementById(`stage-${stage}-count`);
+            const leadsEl = document.getElementById(`stage-${stage}-leads`);
+            
+            if (countEl) countEl.textContent = stageData.leads.length;
+            
+            if (leadsEl) {
+                if (stageData.leads.length === 0) {
+                    leadsEl.innerHTML = '<div style="color:#555;font-size:11px;padding:5px;text-align:center;">No leads</div>';
+                } else {
+                    leadsEl.innerHTML = stageData.leads.map(lead => `
+                        <div class="pipeline-lead">
+                            <div class="lead-name">${lead.name}</div>
+                            <div class="lead-company">${lead.company}</div>
+                            <div class="lead-time">⏱ ${lead.time}</div>
+                            ${lead.revenue ? `<div style="color:#10b981;font-size:11px;">💰 $${lead.revenue}</div>` : ''}
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+
+        const totalDeals = leads.length;
+        const activeDeals = leads.filter(l => l.stage !== 'closed_won').length;
+        const closedDeals = leads.filter(l => l.stage === 'closed_won').length;
+        
+        document.getElementById('totalDeals').textContent = totalDeals;
+        document.getElementById('activeDeals').textContent = activeDeals;
+        document.getElementById('closedDeals').textContent = closedDeals;
+        document.getElementById('totalRevenue').textContent = '$' + pipelineData.totalRevenue.toLocaleString();
+        document.getElementById('avgCloseTime').textContent = closedDeals > 0 ? '36h' : 'N/A';
+        document.getElementById('conversionRate').textContent = totalDeals > 0 ? ((closedDeals / totalDeals) * 100).toFixed(1) + '%' : '0%';
+        document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+    }
+
+    function refreshPipeline() {
+        renderPipeline();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        renderPipeline();
+        setInterval(refreshPipeline, 60000);
+    });
+
+    console.log('🚀 Closing Pipeline Dashboard loaded');
+</script>
+</body>
+</html>
