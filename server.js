@@ -51,6 +51,10 @@ app.get('/dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'dashboard.html'));
 });
 
+// Serve Pipeline Dashboard
+app.get('/pipeline', (req, res) => {
+    res.sendFile(path.join(__dirname, 'pipeline-dashboard.html'));
+});
 // ============================================
 // SERVE REVENUE DASHBOARD
 // ============================================
