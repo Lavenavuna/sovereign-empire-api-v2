@@ -1,0 +1,564 @@
+{
+  "sales": {
+    "data": [],
+    "prediction": [
+      {
+        "date": "2026-06-24",
+        "value": 99,
+        "lowerBound": 84,
+        "upperBound": 114
+      },
+      {
+        "date": "2026-06-25",
+        "value": 102,
+        "lowerBound": 86,
+        "upperBound": 117
+      },
+      {
+        "date": "2026-06-26",
+        "value": 105,
+        "lowerBound": 90,
+        "upperBound": 121
+      },
+      {
+        "date": "2026-06-27",
+        "value": 112,
+        "lowerBound": 95,
+        "upperBound": 129
+      },
+      {
+        "date": "2026-06-28",
+        "value": 117,
+        "lowerBound": 100,
+        "upperBound": 135
+      },
+      {
+        "date": "2026-06-29",
+        "value": 122,
+        "lowerBound": 104,
+        "upperBound": 140
+      },
+      {
+        "date": "2026-06-30",
+        "value": 125,
+        "lowerBound": 106,
+        "upperBound": 143
+      },
+      {
+        "date": "2026-07-01",
+        "value": 124,
+        "lowerBound": 106,
+        "upperBound": 143
+      },
+      {
+        "date": "2026-07-02",
+        "value": 121,
+        "lowerBound": 103,
+        "upperBound": 139
+      },
+      {
+        "date": "2026-07-03",
+        "value": 116,
+        "lowerBound": 99,
+        "upperBound": 134
+      },
+      {
+        "date": "2026-07-04",
+        "value": 111,
+        "lowerBound": 94,
+        "upperBound": 127
+      },
+      {
+        "date": "2026-07-05",
+        "value": 105,
+        "lowerBound": 89,
+        "upperBound": 121
+      },
+      {
+        "date": "2026-07-06",
+        "value": 101,
+        "lowerBound": 86,
+        "upperBound": 116
+      },
+      {
+        "date": "2026-07-07",
+        "value": 99,
+        "lowerBound": 84,
+        "upperBound": 113
+      },
+      {
+        "date": "2026-07-08",
+        "value": 99,
+        "lowerBound": 84,
+        "upperBound": 114
+      },
+      {
+        "date": "2026-07-09",
+        "value": 103,
+        "lowerBound": 87,
+        "upperBound": 118
+      },
+      {
+        "date": "2026-07-10",
+        "value": 107,
+        "lowerBound": 91,
+        "upperBound": 124
+      },
+      {
+        "date": "2026-07-11",
+        "value": 114,
+        "lowerBound": 97,
+        "upperBound": 131
+      },
+      {
+        "date": "2026-07-12",
+        "value": 119,
+        "lowerBound": 102,
+        "upperBound": 137
+      },
+      {
+        "date": "2026-07-13",
+        "value": 125,
+        "lowerBound": 106,
+        "upperBound": 144
+      },
+      {
+        "date": "2026-07-14",
+        "value": 128,
+        "lowerBound": 108,
+        "upperBound": 147
+      },
+      {
+        "date": "2026-07-15",
+        "value": 127,
+        "lowerBound": 108,
+        "upperBound": 146
+      },
+      {
+        "date": "2026-07-16",
+        "value": 125,
+        "lowerBound": 106,
+        "upperBound": 144
+      },
+      {
+        "date": "2026-07-17",
+        "value": 121,
+        "lowerBound": 103,
+        "upperBound": 139
+      },
+      {
+        "date": "2026-07-18",
+        "value": 116,
+        "lowerBound": 98,
+        "upperBound": 133
+      },
+      {
+        "date": "2026-07-19",
+        "value": 111,
+        "lowerBound": 94,
+        "upperBound": 127
+      },
+      {
+        "date": "2026-07-20",
+        "value": 105,
+        "lowerBound": 90,
+        "upperBound": 121
+      },
+      {
+        "date": "2026-07-21",
+        "value": 103,
+        "lowerBound": 87,
+        "upperBound": 118
+      },
+      {
+        "date": "2026-07-22",
+        "value": 102,
+        "lowerBound": 87,
+        "upperBound": 117
+      },
+      {
+        "date": "2026-07-23",
+        "value": 105,
+        "lowerBound": 89,
+        "upperBound": 120
+      }
+    ],
+    "horizon": 30,
+    "generated": "2026-06-23T13:20:53.317Z"
+  },
+  "leads": {
+    "data": [],
+    "prediction": [
+      {
+        "date": "2026-06-24",
+        "value": 100,
+        "lowerBound": 85,
+        "upperBound": 114
+      },
+      {
+        "date": "2026-06-25",
+        "value": 102,
+        "lowerBound": 86,
+        "upperBound": 117
+      },
+      {
+        "date": "2026-06-26",
+        "value": 106,
+        "lowerBound": 90,
+        "upperBound": 122
+      },
+      {
+        "date": "2026-06-27",
+        "value": 111,
+        "lowerBound": 95,
+        "upperBound": 128
+      },
+      {
+        "date": "2026-06-28",
+        "value": 117,
+        "lowerBound": 100,
+        "upperBound": 135
+      },
+      {
+        "date": "2026-06-29",
+        "value": 121,
+        "lowerBound": 103,
+        "upperBound": 139
+      },
+      {
+        "date": "2026-06-30",
+        "value": 124,
+        "lowerBound": 105,
+        "upperBound": 143
+      },
+      {
+        "date": "2026-07-01",
+        "value": 123,
+        "lowerBound": 105,
+        "upperBound": 142
+      },
+      {
+        "date": "2026-07-02",
+        "value": 121,
+        "lowerBound": 102,
+        "upperBound": 139
+      },
+      {
+        "date": "2026-07-03",
+        "value": 115,
+        "lowerBound": 98,
+        "upperBound": 132
+      },
+      {
+        "date": "2026-07-04",
+        "value": 109,
+        "lowerBound": 93,
+        "upperBound": 126
+      },
+      {
+        "date": "2026-07-05",
+        "value": 103,
+        "lowerBound": 87,
+        "upperBound": 118
+      },
+      {
+        "date": "2026-07-06",
+        "value": 99,
+        "lowerBound": 84,
+        "upperBound": 114
+      },
+      {
+        "date": "2026-07-07",
+        "value": 97,
+        "lowerBound": 82,
+        "upperBound": 111
+      },
+      {
+        "date": "2026-07-08",
+        "value": 96,
+        "lowerBound": 82,
+        "upperBound": 110
+      },
+      {
+        "date": "2026-07-09",
+        "value": 99,
+        "lowerBound": 84,
+        "upperBound": 114
+      },
+      {
+        "date": "2026-07-10",
+        "value": 104,
+        "lowerBound": 88,
+        "upperBound": 119
+      },
+      {
+        "date": "2026-07-11",
+        "value": 111,
+        "lowerBound": 94,
+        "upperBound": 127
+      },
+      {
+        "date": "2026-07-12",
+        "value": 117,
+        "lowerBound": 99,
+        "upperBound": 134
+      },
+      {
+        "date": "2026-07-13",
+        "value": 122,
+        "lowerBound": 104,
+        "upperBound": 141
+      },
+      {
+        "date": "2026-07-14",
+        "value": 124,
+        "lowerBound": 105,
+        "upperBound": 143
+      },
+      {
+        "date": "2026-07-15",
+        "value": 124,
+        "lowerBound": 106,
+        "upperBound": 143
+      },
+      {
+        "date": "2026-07-16",
+        "value": 122,
+        "lowerBound": 103,
+        "upperBound": 140
+      },
+      {
+        "date": "2026-07-17",
+        "value": 117,
+        "lowerBound": 99,
+        "upperBound": 134
+      },
+      {
+        "date": "2026-07-18",
+        "value": 112,
+        "lowerBound": 95,
+        "upperBound": 128
+      },
+      {
+        "date": "2026-07-19",
+        "value": 107,
+        "lowerBound": 91,
+        "upperBound": 123
+      },
+      {
+        "date": "2026-07-20",
+        "value": 102,
+        "lowerBound": 87,
+        "upperBound": 118
+      },
+      {
+        "date": "2026-07-21",
+        "value": 100,
+        "lowerBound": 85,
+        "upperBound": 115
+      },
+      {
+        "date": "2026-07-22",
+        "value": 100,
+        "lowerBound": 85,
+        "upperBound": 115
+      },
+      {
+        "date": "2026-07-23",
+        "value": 104,
+        "lowerBound": 88,
+        "upperBound": 119
+      }
+    ],
+    "horizon": 30,
+    "generated": "2026-06-23T13:20:53.317Z"
+  },
+  "revenue": {
+    "data": [],
+    "prediction": [
+      {
+        "date": "2026-06-24",
+        "value": 100,
+        "lowerBound": 85,
+        "upperBound": 115
+      },
+      {
+        "date": "2026-06-25",
+        "value": 102,
+        "lowerBound": 87,
+        "upperBound": 117
+      },
+      {
+        "date": "2026-06-26",
+        "value": 106,
+        "lowerBound": 90,
+        "upperBound": 122
+      },
+      {
+        "date": "2026-06-27",
+        "value": 113,
+        "lowerBound": 96,
+        "upperBound": 130
+      },
+      {
+        "date": "2026-06-28",
+        "value": 119,
+        "lowerBound": 101,
+        "upperBound": 137
+      },
+      {
+        "date": "2026-06-29",
+        "value": 124,
+        "lowerBound": 106,
+        "upperBound": 143
+      },
+      {
+        "date": "2026-06-30",
+        "value": 127,
+        "lowerBound": 108,
+        "upperBound": 146
+      },
+      {
+        "date": "2026-07-01",
+        "value": 127,
+        "lowerBound": 108,
+        "upperBound": 146
+      },
+      {
+        "date": "2026-07-02",
+        "value": 124,
+        "lowerBound": 105,
+        "upperBound": 142
+      },
+      {
+        "date": "2026-07-03",
+        "value": 119,
+        "lowerBound": 101,
+        "upperBound": 136
+      },
+      {
+        "date": "2026-07-04",
+        "value": 113,
+        "lowerBound": 96,
+        "upperBound": 130
+      },
+      {
+        "date": "2026-07-05",
+        "value": 107,
+        "lowerBound": 91,
+        "upperBound": 123
+      },
+      {
+        "date": "2026-07-06",
+        "value": 102,
+        "lowerBound": 87,
+        "upperBound": 118
+      },
+      {
+        "date": "2026-07-07",
+        "value": 99,
+        "lowerBound": 85,
+        "upperBound": 114
+      },
+      {
+        "date": "2026-07-08",
+        "value": 100,
+        "lowerBound": 85,
+        "upperBound": 115
+      },
+      {
+        "date": "2026-07-09",
+        "value": 102,
+        "lowerBound": 86,
+        "upperBound": 117
+      },
+      {
+        "date": "2026-07-10",
+        "value": 107,
+        "lowerBound": 91,
+        "upperBound": 123
+      },
+      {
+        "date": "2026-07-11",
+        "value": 113,
+        "lowerBound": 96,
+        "upperBound": 129
+      },
+      {
+        "date": "2026-07-12",
+        "value": 118,
+        "lowerBound": 100,
+        "upperBound": 136
+      },
+      {
+        "date": "2026-07-13",
+        "value": 124,
+        "lowerBound": 105,
+        "upperBound": 142
+      },
+      {
+        "date": "2026-07-14",
+        "value": 125,
+        "lowerBound": 107,
+        "upperBound": 144
+      },
+      {
+        "date": "2026-07-15",
+        "value": 125,
+        "lowerBound": 107,
+        "upperBound": 144
+      },
+      {
+        "date": "2026-07-16",
+        "value": 123,
+        "lowerBound": 105,
+        "upperBound": 141
+      },
+      {
+        "date": "2026-07-17",
+        "value": 118,
+        "lowerBound": 100,
+        "upperBound": 136
+      },
+      {
+        "date": "2026-07-18",
+        "value": 113,
+        "lowerBound": 96,
+        "upperBound": 130
+      },
+      {
+        "date": "2026-07-19",
+        "value": 108,
+        "lowerBound": 91,
+        "upperBound": 124
+      },
+      {
+        "date": "2026-07-20",
+        "value": 102,
+        "lowerBound": 87,
+        "upperBound": 117
+      },
+      {
+        "date": "2026-07-21",
+        "value": 100,
+        "lowerBound": 85,
+        "upperBound": 115
+      },
+      {
+        "date": "2026-07-22",
+        "value": 101,
+        "lowerBound": 85,
+        "upperBound": 116
+      },
+      {
+        "date": "2026-07-23",
+        "value": 103,
+        "lowerBound": 88,
+        "upperBound": 119
+      }
+    ],
+    "horizon": 30,
+    "generated": "2026-06-23T13:20:53.317Z"
+  },
+  "customerGrowth": null
+}
