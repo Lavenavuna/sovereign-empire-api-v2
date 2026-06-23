@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Closing Pipeline Dashboard</title>
+    <title>Real Pipeline Dashboard</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -54,6 +54,7 @@
             font-weight: 600;
         }
         .status-online { background: #10b981; color: #fff; }
+        .status-degraded { background: #f59e0b; color: #fff; }
 
         .stats-grid {
             display: grid;
@@ -104,20 +105,6 @@
         .pipeline-stage .stage-name { font-size: 13px; font-weight: 600; color: #ccc; }
         .pipeline-stage .stage-count { font-size: 20px; font-weight: 700; }
         .pipeline-stage .stage-time { font-size: 11px; color: #666; margin-top: 4px; }
-        .pipeline-stage .stage-tag {
-            display: inline-block;
-            padding: 2px 10px;
-            border-radius: 12px;
-            font-size: 10px;
-            font-weight: 600;
-        }
-        .stage-new .stage-tag { background: #6b7280; color: #fff; }
-        .stage-qualification .stage-tag { background: #3b82f6; color: #fff; }
-        .stage-proposal_ready .stage-tag { background: #f59e0b; color: #fff; }
-        .stage-proposal_sent .stage-tag { background: #8b5cf6; color: #fff; }
-        .stage-negotiation .stage-tag { background: #ec4899; color: #fff; }
-        .stage-final_followup .stage-tag { background: #fbbf24; color: #fff; }
-        .stage-closed_won .stage-tag { background: #10b981; color: #fff; }
 
         .pipeline-lead {
             background: rgba(255,255,255,0.05);
@@ -136,6 +123,17 @@
             font-size: 12px;
         }
         .last-updated { font-size: 12px; color: #666; margin-top: 10px; text-align: right; }
+        .empty-state { color: #555; font-size: 11px; padding: 5px; text-align: center; }
+        .real-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            background: #10b981;
+            color: #fff;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -144,14 +142,13 @@
     <!-- HEADER -->
     <div class="header">
         <div>
-            <h1>🚀 Closing Pipeline Dashboard</h1>
-            <div class="subtitle">48-Hour High-Velocity Sales · 7 Stages</div>
+            <h1>📊 REAL Pipeline Dashboard</h1>
+            <div class="subtitle">Live from High-Velocity Sales Agent · 48-Hour Close Target <span class="real-badge">REAL DATA</span></div>
         </div>
         <div class="header-actions">
-            <span id="overallStatus" class="status-badge status-online">● All Systems Operational</span>
+            <span id="overallStatus" class="status-badge status-online">● Connected</span>
             <button onclick="refreshPipeline()">🔄 Refresh</button>
-            <button onclick="window.location.href='/dashboard'">📊 Main Dashboard</button>
-            <button onclick="window.location.href='/revenue-dashboard'">💰 Revenue</button>
+            <button onclick="window.location.href='/dashboard'">📊 Main</button>
         </div>
     </div>
 
@@ -167,134 +164,132 @@
 
     <!-- PIPELINE STAGES -->
     <div class="pipeline-container" id="pipelineContainer">
-        <div class="pipeline-stage stage-new"><div class="stage-header"><span class="stage-name">📥 New</span><span class="stage-count" id="stage-new-count">0</span></div><div class="stage-time">0 hrs</div><div id="stage-new-leads"></div></div>
-        <div class="pipeline-stage stage-qualification"><div class="stage-header"><span class="stage-name">🔍 Qualification</span><span class="stage-count" id="stage-qualification-count">0</span></div><div class="stage-time">1-2 hrs</div><div id="stage-qualification-leads"></div></div>
-        <div class="pipeline-stage stage-proposal_ready"><div class="stage-header"><span class="stage-name">📄 Proposal Ready</span><span class="stage-count" id="stage-proposal_ready-count">0</span></div><div class="stage-time">2-4 hrs</div><div id="stage-proposal_ready-leads"></div></div>
-        <div class="pipeline-stage stage-proposal_sent"><div class="stage-header"><span class="stage-name">📧 Proposal Sent</span><span class="stage-count" id="stage-proposal_sent-count">0</span></div><div class="stage-time">4-8 hrs</div><div id="stage-proposal_sent-leads"></div></div>
-        <div class="pipeline-stage stage-negotiation"><div class="stage-header"><span class="stage-name">🤝 Negotiation</span><span class="stage-count" id="stage-negotiation-count">0</span></div><div class="stage-time">8-24 hrs</div><div id="stage-negotiation-leads"></div></div>
-        <div class="pipeline-stage stage-final_followup"><div class="stage-header"><span class="stage-name">🔄 Final Follow-up</span><span class="stage-count" id="stage-final_followup-count">0</span></div><div class="stage-time">24-48 hrs</div><div id="stage-final_followup-leads"></div></div>
-        <div class="pipeline-stage stage-closed_won"><div class="stage-header"><span class="stage-name">✅ Closed Won</span><span class="stage-count" id="stage-closed_won-count">0</span></div><div class="stage-time">Done!</div><div id="stage-closed_won-leads"></div></div>
+        <div class="pipeline-stage stage-new"><div class="stage-header"><span class="stage-name">📥 New</span><span class="stage-count" id="stage-new-count">0</span></div><div class="stage-time">0 hrs</div><div id="stage-new-leads"><div class="empty-state">No leads</div></div></div>
+        <div class="pipeline-stage stage-qualification"><div class="stage-header"><span class="stage-name">🔍 Qualification</span><span class="stage-count" id="stage-qualification-count">0</span></div><div class="stage-time">1-2 hrs</div><div id="stage-qualification-leads"><div class="empty-state">No leads</div></div></div>
+        <div class="pipeline-stage stage-proposal_ready"><div class="stage-header"><span class="stage-name">📄 Proposal Ready</span><span class="stage-count" id="stage-proposal_ready-count">0</span></div><div class="stage-time">2-4 hrs</div><div id="stage-proposal_ready-leads"><div class="empty-state">No leads</div></div></div>
+        <div class="pipeline-stage stage-proposal_sent"><div class="stage-header"><span class="stage-name">📧 Proposal Sent</span><span class="stage-count" id="stage-proposal_sent-count">0</span></div><div class="stage-time">4-8 hrs</div><div id="stage-proposal_sent-leads"><div class="empty-state">No leads</div></div></div>
+        <div class="pipeline-stage stage-negotiation"><div class="stage-header"><span class="stage-name">🤝 Negotiation</span><span class="stage-count" id="stage-negotiation-count">0</span></div><div class="stage-time">8-24 hrs</div><div id="stage-negotiation-leads"><div class="empty-state">No leads</div></div></div>
+        <div class="pipeline-stage stage-final_followup"><div class="stage-header"><span class="stage-name">🔄 Final Follow-up</span><span class="stage-count" id="stage-final_followup-count">0</span></div><div class="stage-time">24-48 hrs</div><div id="stage-final_followup-leads"><div class="empty-state">No leads</div></div></div>
+        <div class="pipeline-stage stage-closed_won"><div class="stage-header"><span class="stage-name">✅ Closed Won</span><span class="stage-count" id="stage-closed_won-count">0</span></div><div class="stage-time">Done!</div><div id="stage-closed_won-leads"><div class="empty-state">No leads</div></div></div>
     </div>
 
-    <div class="footer">⚡ High-Velocity Closing Pipeline · 48-Hour Target · Last updated: <span id="lastUpdated">Never</span></div>
+    <div class="footer">⚡ Live from Agent · 48-Hour Target · Last updated: <span id="lastUpdated">Never</span></div>
 </div>
 
 <script>
     // ============================================
-    // PIPELINE DATA
-    // ============================================
-    const pipelineData = {
-        stages: {
-            'new': { label: 'New', time: '0 hrs', leads: [] },
-            'qualification': { label: 'Qualification', time: '1-2 hrs', leads: [] },
-            'proposal_ready': { label: 'Proposal Ready', time: '2-4 hrs', leads: [] },
-            'proposal_sent': { label: 'Proposal Sent', time: '4-8 hrs', leads: [] },
-            'negotiation': { label: 'Negotiation', time: '8-24 hrs', leads: [] },
-            'final_followup': { label: 'Final Follow-up', time: '24-48 hrs', leads: [] },
-            'closed_won': { label: 'Closed Won', time: 'Done!', leads: [] }
-        },
-        totalRevenue: 0,
-        closedCount: 0
-    };
-
-    // ============================================
-    // SAMPLE DATA (Fallback when no real data)
-    // ============================================
-    function getSampleData() {
-        return [
-            { id: '1', name: 'Sarah Johnson', company: 'TechFlow Solutions', stage: 'proposal_sent', timeInStage: '3h ago', revenue: 0 },
-            { id: '2', name: 'Michael Chen', company: 'DataSphere Inc', stage: 'qualification', timeInStage: '1h ago', revenue: 0 },
-            { id: '3', name: 'Emily Rodriguez', company: 'CloudPioneer', stage: 'proposal_ready', timeInStage: '2h ago', revenue: 0 },
-            { id: '4', name: 'James Wilson', company: 'AI Innovations', stage: 'negotiation', timeInStage: '6h ago', revenue: 0 },
-            { id: '5', name: 'Lisa Park', company: 'Digital Transform', stage: 'final_followup', timeInStage: '12h ago', revenue: 0 },
-            { id: '6', name: 'David Patel', company: 'Quantum AI', stage: 'closed_won', timeInStage: '2d ago', revenue: 12000 },
-            { id: '7', name: 'Maria Garcia', company: 'EcoSphere', stage: 'closed_won', timeInStage: '1d ago', revenue: 8000 }
-        ];
-    }
-
-    // ============================================
-    // FETCH REAL DATA FROM AGENT
+    // FETCH REAL DATA FROM AGENT STATE
     // ============================================
     async function fetchRealPipelineData() {
         try {
             const response = await fetch('/api/sales/high-velocity');
             if (response.ok) {
                 const data = await response.json();
-                if (data.success && data.deals && data.deals.length > 0) {
-                    console.log('✅ Using REAL data from agent');
-                    return data.deals;
+                if (data.success) {
+                    // Combine active and closed deals
+                    let allDeals = [];
+                    if (data.deals) {
+                        allDeals = data.deals;
+                    }
+                    if (data.closedDeals) {
+                        allDeals = allDeals.concat(data.closedDeals);
+                    }
+                    console.log('✅ Fetched', allDeals.length, 'real deals');
+                    return allDeals;
                 }
             }
             return [];
         } catch (e) {
-            console.log('⚠️ Error fetching real data:', e.message);
+            console.log('⚠️ Error:', e.message);
             return [];
         }
     }
 
     // ============================================
-    // RENDER PIPELINE
+    // RENDER PIPELINE - REAL DATA ONLY
     // ============================================
     async function renderPipeline() {
         const stages = ['new', 'qualification', 'proposal_ready', 'proposal_sent', 'negotiation', 'final_followup', 'closed_won'];
         
-        // Clear all stages
-        for (const stage of stages) {
-            pipelineData.stages[stage].leads = [];
-        }
-        pipelineData.totalRevenue = 0;
-        pipelineData.closedCount = 0;
-
         // Fetch real data
-        let realDeals = await fetchRealPipelineData();
-        let leads = [];
+        const realDeals = await fetchRealPipelineData();
 
-        if (realDeals.length > 0) {
-            // Map real deals to pipeline format
-            leads = realDeals.map(d => ({
-                name: d.lead?.name || 'Unknown Lead',
-                company: d.lead?.company || 'Unknown Company',
-                stage: d.stage || 'new',
-                timeInStage: d.lastAction || 'Just started',
-                revenue: d.revenue || 0
-            }));
-            console.log('📊 Loaded', leads.length, 'real deals');
-        } else {
-            // Fallback to sample data
-            console.log('📋 No real data found, using sample data');
-            leads = getSampleData();
+        // Build stage data
+        const stageData = {};
+        for (const stage of stages) {
+            stageData[stage] = { leads: [] };
+        }
+        let totalRevenue = 0;
+        let closedCount = 0;
+
+        // If no real data, show empty state
+        if (realDeals.length === 0) {
+            console.log('📭 No real deals found');
+            for (const stage of stages) {
+                const leadsEl = document.getElementById(`stage-${stage}-leads`);
+                if (leadsEl) {
+                    leadsEl.innerHTML = '<div class="empty-state">No real leads</div>';
+                }
+                const countEl = document.getElementById(`stage-${stage}-count`);
+                if (countEl) countEl.textContent = '0';
+            }
+            document.getElementById('totalDeals').textContent = '0';
+            document.getElementById('activeDeals').textContent = '0';
+            document.getElementById('closedDeals').textContent = '0';
+            document.getElementById('totalRevenue').textContent = '$0';
+            document.getElementById('avgCloseTime').textContent = 'N/A';
+            document.getElementById('conversionRate').textContent = '0%';
+            document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+            document.getElementById('overallStatus').textContent = '⚠️ No Data';
+            document.getElementById('overallStatus').className = 'status-badge status-degraded';
+            return;
         }
 
-        // Process leads into pipeline
-        for (const lead of leads) {
-            const stage = lead.stage || 'new';
-            if (pipelineData.stages[stage]) {
-                pipelineData.stages[stage].leads.push({
-                    name: lead.name || 'Unknown',
-                    company: lead.company || 'Unknown',
-                    time: lead.timeInStage || 'Just started',
-                    revenue: lead.revenue || 0
+        // Process real deals into stages
+        for (const deal of realDeals) {
+            const stage = deal.stage || 'new';
+            if (stageData[stage]) {
+                // Get name from various possible fields
+                const name = deal.lead?.name || deal.name || 'Unknown Lead';
+                const company = deal.lead?.company || deal.company || 'Unknown Company';
+                const time = deal.lastAction || deal.timeInStage || 'Processing';
+                const revenue = deal.revenue || 0;
+                
+                stageData[stage].leads.push({
+                    name: name,
+                    company: company,
+                    time: time,
+                    revenue: revenue
                 });
+                
                 if (stage === 'closed_won') {
-                    pipelineData.closedCount++;
-                    pipelineData.totalRevenue += lead.revenue || 0;
+                    closedCount++;
+                    totalRevenue += revenue;
                 }
             }
         }
 
         // Render each stage
+        let totalDeals = 0;
+        let activeDeals = 0;
+
         for (const stage of stages) {
-            const stageData = pipelineData.stages[stage];
+            const data = stageData[stage];
             const countEl = document.getElementById(`stage-${stage}-count`);
             const leadsEl = document.getElementById(`stage-${stage}-leads`);
             
-            if (countEl) countEl.textContent = stageData.leads.length;
+            totalDeals += data.leads.length;
+            if (stage !== 'closed_won') {
+                activeDeals += data.leads.length;
+            }
+            
+            if (countEl) countEl.textContent = data.leads.length;
             
             if (leadsEl) {
-                if (stageData.leads.length === 0) {
-                    leadsEl.innerHTML = '<div style="color:#555;font-size:11px;padding:5px;text-align:center;">No leads</div>';
+                if (data.leads.length === 0) {
+                    leadsEl.innerHTML = '<div class="empty-state">No leads</div>';
                 } else {
-                    leadsEl.innerHTML = stageData.leads.map(lead => `
+                    leadsEl.innerHTML = data.leads.map(lead => `
                         <div class="pipeline-lead">
                             <div class="lead-name">${lead.name}</div>
                             <div class="lead-company">${lead.company}</div>
@@ -307,24 +302,27 @@
         }
 
         // Update stats
-        const totalDeals = leads.length;
-        const activeDeals = leads.filter(l => l.stage !== 'closed_won').length;
-        const closedDeals = leads.filter(l => l.stage === 'closed_won').length;
-        
         document.getElementById('totalDeals').textContent = totalDeals;
         document.getElementById('activeDeals').textContent = activeDeals;
-        document.getElementById('closedDeals').textContent = closedDeals;
-        document.getElementById('totalRevenue').textContent = '$' + pipelineData.totalRevenue.toLocaleString();
-        document.getElementById('avgCloseTime').textContent = closedDeals > 0 ? '36h' : 'N/A';
-        document.getElementById('conversionRate').textContent = totalDeals > 0 ? ((closedDeals / totalDeals) * 100).toFixed(1) + '%' : '0%';
+        document.getElementById('closedDeals').textContent = closedCount;
+        document.getElementById('totalRevenue').textContent = '$' + totalRevenue.toLocaleString();
+        document.getElementById('avgCloseTime').textContent = closedCount > 0 ? '36h' : 'N/A';
+        document.getElementById('conversionRate').textContent = totalDeals > 0 ? ((closedCount / totalDeals) * 100).toFixed(1) + '%' : '0%';
         document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+        document.getElementById('overallStatus').textContent = '● ' + totalDeals + ' Real Deals';
+        document.getElementById('overallStatus').className = 'status-badge status-online';
+        
+        console.log('📊 Pipeline updated with', totalDeals, 'real deals');
+        console.log('📋 Stage breakdown:', Object.fromEntries(
+            Object.entries(stageData).map(([k, v]) => [k, v.leads.length])
+        ));
     }
 
     // ============================================
     // REFRESH
     // ============================================
     function refreshPipeline() {
-        console.log('🔄 Refreshing pipeline...');
+        console.log('🔄 Refreshing...');
         renderPipeline();
     }
 
@@ -333,10 +331,10 @@
     // ============================================
     document.addEventListener('DOMContentLoaded', function() {
         renderPipeline();
-        setInterval(refreshPipeline, 60000);
+        setInterval(refreshPipeline, 30000);
     });
 
-    console.log('🚀 Closing Pipeline Dashboard loaded');
+    console.log('📊 Real Pipeline Dashboard loaded');
     console.log('🎯 48-Hour High-Velocity Sales');
 </script>
 </body>
