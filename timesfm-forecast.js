@@ -63,31 +63,36 @@ class TimesFMEngine {
     }
 
     generateSampleHistory() {
-        const now = Date.now();
-        const dayMs = 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    const dayMs = 24 * 60 * 60 * 1000;
+    
+    for (let i = 90; i >= 0; i--) {
+        const date = new Date(now - i * dayMs).toISOString().split('T')[0];
         
-        for (let i = 90; i >= 0; i--) {
-            const date = new Date(now - i * dayMs).toISOString().split('T')[0];
-            
-            const baseSales = 500 + (90 - i) * 2;
-            const seasonalSales = 100 * Math.sin(i / 7 * Math.PI);
-            const noiseSales = (Math.random() - 0.5) * 50;
-            const salesValue = Math.max(0, Math.round(baseSales + seasonalSales + noiseSales));
-            this.history.sales.push({ date, value: salesValue });
-            
-            const baseLeads = 20 + (90 - i) * 0.5;
-            const noiseLeads = (Math.random() - 0.5) * 8;
-            const leadsValue = Math.max(0, Math.round(baseLeads + noiseLeads));
-            this.history.leads.push({ date, value: leadsValue });
-            
-            const avgDealSize = 5000 + (90 - i) * 20;
-            const revenueValue = Math.max(0, Math.round((salesValue * avgDealSize) / 100));
-            this.history.revenue.push({ date, value: revenueValue });
-        }
+        // Sales (small numbers)
+        const baseSales = 500 + (90 - i) * 2;
+        const seasonalSales = 100 * Math.sin(i / 7 * Math.PI);
+        const noiseSales = (Math.random() - 0.5) * 50;
+        const salesValue = Math.max(0, Math.round(baseSales + seasonalSales + noiseSales));
+        this.history.sales.push({ date, value: salesValue });
         
-        this.saveHistory();
-        console.log('✅ Sample history generated');
+        // Leads (small numbers)
+        const baseLeads = 20 + (90 - i) * 0.5;
+        const noiseLeads = (Math.random() - 0.5) * 8;
+        const leadsValue = Math.max(0, Math.round(baseLeads + noiseLeads));
+        this.history.leads.push({ date, value: leadsValue });
+        
+        // Revenue (LARGE NUMBERS - store as small values with multiplier)
+        const baseRevenue = 80 + (90 - i) * 2;
+        const seasonalRevenue = 20 * Math.sin(i / 7 * Math.PI);
+        const noiseRevenue = (Math.random() - 0.5) * 10;
+        const revenueValue = Math.max(0, Math.round(baseRevenue + seasonalRevenue + noiseRevenue));
+        this.history.revenue.push({ date, value: revenueValue });
     }
+    
+    this.saveHistory();
+    console.log('✅ Sample history generated');
+}
 
     saveHistory() {
         const dir = './data';
@@ -148,16 +153,29 @@ class TimesFMEngine {
     }
 
     async forecastRevenue() {
-        console.log('💰 Forecasting revenue...');
-        const data = this.history.revenue.slice(-90);
-        const prediction = await this.runTimesFM(data, CONFIG.forecastHorizon);
-        
-        this.forecasts.revenue = {
-            data: data.slice(-30),
-            prediction: prediction,
-            horizon: CONFIG.forecastHorizon,
-            generated: new Date().toISOString()
-        };
+    console.log('💰 Forecasting revenue...');
+    const data = this.history.revenue.slice(-90);
+    const prediction = await this.runTimesFM(data, CONFIG.forecastHorizon);
+    
+    // Multiply the forecast values to get realistic revenue
+    const revenueMultiplier = 450; // Adjust this based on your business
+    const revenuePrediction = prediction.map(p => ({
+        ...p,
+        value: Math.round(p.value * revenueMultiplier),
+        lowerBound: Math.round(p.lowerBound * revenueMultiplier),
+        upperBound: Math.round(p.upperBound * revenueMultiplier)
+    }));
+    
+    this.forecasts.revenue = {
+        data: data.slice(-30),
+        prediction: revenuePrediction,
+        horizon: CONFIG.forecastHorizon,
+        generated: new Date().toISOString()
+    };
+    
+    console.log('✅ Revenue forecast generated: ' + revenuePrediction.length + ' days');
+    return this.forecasts.revenue;
+}
         
         console.log('✅ Revenue forecast generated: ' + prediction.length + ' days');
         return this.forecasts.revenue;
