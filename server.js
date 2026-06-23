@@ -1,4 +1,4 @@
-﻿// server.js - Complete Sovereign Empire API Server with Revenue Dashboard
+﻿// server.js - Complete Sovereign Empire API Server
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -21,7 +21,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
 // ============================================
-// HEALTH CHECK
+// HEALTH CHECK - Must respond quickly for Railway
 // ============================================
 app.get('/health', (req, res) => {
     res.status(200).json({
@@ -45,47 +45,22 @@ app.get('/', (req, res) => {
 });
 
 // ============================================
-// SERVE DASHBOARD
+// SERVE DASHBOARDS
 // ============================================
 app.get('/dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'dashboard.html'));
 });
 
-// Serve Pipeline Dashboard
-app.get('/pipeline', (req, res) => {
-    res.sendFile(path.join(__dirname, 'pipeline-dashboard.html'));
-});
-// Get high-velocity sales pipeline data
-app.get('/api/sales/high-velocity', (req, res) => {
-    try {
-        const statePath = path.join(__dirname, './high-velocity-state.json');
-        if (!fs.existsSync(statePath)) {
-            return res.json({ 
-                success: true, 
-                deals: [],
-                message: 'No pipeline data yet'
-            });
-        }
-        const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
-        res.json({
-            success: true,
-            deals: state.activeDeals || [],
-            closedDeals: state.closedDeals || [],
-            revenue: state.revenue || 0
-        });
-    } catch (error) {
-        res.json({ success: false, error: error.message });
-    }
-});
-// ============================================
-// SERVE REVENUE DASHBOARD
-// ============================================
 app.get('/revenue-dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'revenue-dashboard.html'));
 });
-// Serve Multilingual Dashboard
+
 app.get('/multilingual-dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'multilingual-dashboard.html'));
+});
+
+app.get('/pipeline', (req, res) => {
+    res.sendFile(path.join(__dirname, 'pipeline-dashboard.html'));
 });
 
 // ============================================
@@ -369,62 +344,6 @@ app.get('/api/sales/state', (req, res) => {
 });
 
 // ============================================
-// LATEST SALES REPORT
-// ============================================
-app.get('/api/sales/latest', (req, res) => {
-    try {
-        const reportPath = path.join(__dirname, '../slideshow-kit/reports');
-        if (!fs.existsSync(reportPath)) {
-            return res.json({ 
-                summary: { 
-                    leadsDiscovered: 0, 
-                    outreachSent: 0, 
-                    interested: 0, 
-                    conversions: 0, 
-                    revenue: 0,
-                    conversionRate: 'N/A'
-                },
-                date: new Date().toISOString().split('T')[0],
-                nextSteps: ['📊 Run sales agent to generate data'],
-                status: 'no_data'
-            });
-        }
-        
-        const files = fs.readdirSync(reportPath).filter(f => f.startsWith('report-')).sort();
-        if (files.length === 0) {
-            return res.json({ 
-                summary: { 
-                    leadsDiscovered: 0, 
-                    outreachSent: 0, 
-                    interested: 0, 
-                    conversions: 0, 
-                    revenue: 0,
-                    conversionRate: 'N/A'
-                },
-                date: new Date().toISOString().split('T')[0],
-                nextSteps: ['📊 Run sales agent to generate data'],
-                status: 'no_data'
-            });
-        }
-        const latestReport = JSON.parse(fs.readFileSync(path.join(reportPath, files[files.length - 1]), 'utf8'));
-        res.json({ ...latestReport, status: 'ok' });
-    } catch (error) {
-        res.json({ 
-            summary: { 
-                leadsDiscovered: 0, 
-                outreachSent: 0, 
-                interested: 0, 
-                conversions: 0, 
-                revenue: 0,
-                conversionRate: 'N/A'
-            },
-            error: error.message,
-            status: 'degraded'
-        });
-    }
-});
-
-// ============================================
 // UNIFIED LEADS API
 // ============================================
 app.get('/api/leads', (req, res) => {
@@ -525,51 +444,33 @@ app.get('/api/leads', (req, res) => {
     }
 });
 
-// Apify Lead Integration - Receive leads from Apify
-app.post('/api/agent/high-velocity-sales', async (req, res) => {
+// ============================================
+// HIGH VELOCITY SALES API
+// ============================================
+app.get('/api/sales/high-velocity', (req, res) => {
     try {
-        const { action, lead } = req.body;
-        
-        if (action === 'intake_lead') {
-            // Process lead into high-velocity sales pipeline
-            const deal = {
-                id: `deal_${Date.now()}`,
-                lead: {
-                    name: lead.name || 'Unknown',
-                    company: lead.company || 'Unknown',
-                    email: lead.email || '',
-                    phone: lead.phone || '',
-                    industry: lead.industry || 'Technology'
-                },
-                stage: 'new',
-                created: new Date().toISOString(),
-                lastAction: 'lead_intake',
-                source: lead.source || 'Apify Integration',
-                score: lead.interestLevel || 50,
+        const statePath = path.join(__dirname, './high-velocity-state.json');
+        if (!fs.existsSync(statePath)) {
+            return res.json({ 
+                success: true, 
+                deals: [],
+                closedDeals: [],
                 revenue: 0,
-                closed: false
-            };
-            
-            // Save to high-velocity state
-            const statePath = path.join(__dirname, './high-velocity-state.json');
-            let state = { activeDeals: [], closedDeals: [], revenue: 0 };
-            
-            if (fs.existsSync(statePath)) {
-                state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
-            }
-            
-            state.activeDeals.push(deal);
-            fs.writeFileSync(statePath, JSON.stringify(state, null, 2));
-            
-            res.json({ success: true, dealId: deal.id, message: 'Deal created from Apify lead' });
-        } else {
-            res.status(400).json({ error: 'Unknown action' });
+                message: 'No pipeline data yet'
+            });
         }
+        const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+        res.json({
+            success: true,
+            deals: state.activeDeals || [],
+            closedDeals: state.closedDeals || [],
+            revenue: state.revenue || 0
+        });
     } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ error: error.message });
+        res.json({ success: false, error: error.message });
     }
 });
+
 // ============================================
 // TIMESFM FORECASTING ROUTES
 // ============================================
@@ -603,7 +504,6 @@ app.get('/api/forecast/summary', (req, res) => {
         }
         const forecast = JSON.parse(fs.readFileSync(forecastPath, 'utf8'));
         
-        // Build summary
         const summary = {
             timestamp: new Date().toISOString(),
             horizon: 30,
@@ -657,7 +557,6 @@ app.get('/api/forecast/summary', (req, res) => {
 // Run forecast manually
 app.post('/api/forecast/run', async (req, res) => {
     try {
-        // Dynamically import the forecast engine
         const module = await import('./timesfm-forecast.js');
         const engine = new module.TimesFMEngine();
         await engine.generateFullForecast();
@@ -665,4 +564,18 @@ app.post('/api/forecast/run', async (req, res) => {
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
+});
+
+// ============================================
+// START SERVER
+// ============================================
+app.listen(PORT, '0.0.0.0', () => {
+    console.log('🚀 Sovereign Empire Platform running on port ' + PORT);
+    console.log('📊 Agents loaded: ' + Object.keys(AGENTS).length);
+    console.log('🔑 OpenRouter API: ' + (OPENROUTER_API_KEY ? '✅ Configured' : '❌ Missing'));
+    console.log('📊 Dashboard: http://localhost:' + PORT + '/dashboard');
+    console.log('💰 Revenue Dashboard: http://localhost:' + PORT + '/revenue-dashboard');
+    console.log('🌍 Multilingual Dashboard: http://localhost:' + PORT + '/multilingual-dashboard');
+    console.log('📊 Pipeline: http://localhost:' + PORT + '/pipeline');
+    console.log('📈 Forecast: http://localhost:' + PORT + '/api/forecast');
 });
