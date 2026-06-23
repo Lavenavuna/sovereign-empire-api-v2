@@ -57,6 +57,10 @@ app.get('/dashboard', (req, res) => {
 app.get('/revenue-dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'revenue-dashboard.html'));
 });
+// Serve Multilingual Dashboard
+app.get('/multilingual-dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'multilingual-dashboard.html'));
+});
 
 // ============================================
 // AGENT CONFIGURATION - 18 AGENTS
