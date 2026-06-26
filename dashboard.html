@@ -523,56 +523,57 @@
     }
 
     // ============================================
-    // STATS - Reads from High-Velocity Sales
+    // STATS - READS FROM APIFY REAL DATA
     // ============================================
     async function refreshStats() {
+        console.log('🔄 Refreshing stats from REAL Apify data...');
         try {
-            const hvResponse = await fetch('/api/sales/high-velocity');
-            if (hvResponse.ok) {
-                const hvData = await hvResponse.json();
-                if (hvData.success && hvData.deals) {
-                    const totalDeals = hvData.deals ? hvData.deals.length : 0;
-                    const revenue = hvData.revenue || 0;
-                    const closedDeals = hvData.closedDeals ? hvData.closedDeals.length : 0;
-                    const interested = hvData.deals ? hvData.deals.filter(d => d.stage === 'interested' || d.stage === 'negotiation' || d.stage === 'proposal_sent').length : 0;
+            const response = await fetch('/api/apify/leads');
+            if (response.ok) {
+                const data = await response.json();
+                console.log('📊 Apify response:', data);
+                
+                if (data.success && data.leads) {
+                    const total = data.leads.length || 0;
+                    const qualified = data.qualifiedLeads ? data.qualifiedLeads.length : 0;
                     
-                    document.getElementById('leadsCount').textContent = totalDeals;
-                    document.getElementById('interestedCount').textContent = interested;
-                    document.getElementById('revenueCount').textContent = '$' + revenue.toLocaleString();
-                    document.getElementById('outreachCount').textContent = totalDeals;
-                    
-                    console.log('📊 Dashboard updated with High-Velocity Sales data:', totalDeals, 'deals');
-                    return;
-                }
-            }
-            
-            // Fallback to Apify leads
-            const apifyResponse = await fetch('/api/apify/leads');
-            if (apifyResponse.ok) {
-                const apifyData = await apifyResponse.json();
-                if (apifyData.success && apifyData.leads) {
-                    const totalLeads = apifyData.leads ? apifyData.leads.length : 0;
-                    const qualified = apifyData.qualifiedLeads ? apifyData.qualifiedLeads.length : 0;
-                    
-                    document.getElementById('leadsCount').textContent = totalLeads;
+                    document.getElementById('leadsCount').textContent = total;
                     document.getElementById('interestedCount').textContent = qualified;
-                    console.log('📊 Dashboard updated with Apify data:', totalLeads, 'leads');
+                    document.getElementById('outreachCount').textContent = total;
+                    
+                    console.log('✅ Dashboard updated with ' + total + ' REAL leads from Apify');
                     return;
                 }
             }
             
-            // Final fallback: old sales agent
-            const stateRes = await fetch('/api/sales/state');
-            if (stateRes.ok) {
-                const stateData = await stateRes.json();
-                if (stateData.performance) {
-                    document.getElementById('leadsCount').textContent = stateData.performance.totalLeads || 0;
-                    document.getElementById('outreachCount').textContent = stateData.performance.totalOutreach || 0;
-                    document.getElementById('interestedCount').textContent = stateData.performance.totalResponses || 0;
-                    document.getElementById('revenueCount').textContent = '$' + (stateData.performance.totalRevenue || 0).toLocaleString();
+            // Fallback: try high-velocity
+            console.log('⚠️ No Apify data, trying high-velocity...');
+            const hvRes = await fetch('/api/sales/high-velocity');
+            if (hvRes.ok) {
+                const hvData = await hvRes.json();
+                if (hvData.success && hvData.deals) {
+                    const total = hvData.deals.length || 0;
+                    document.getElementById('leadsCount').textContent = total;
+                    document.getElementById('outreachCount').textContent = total;
+                    console.log('✅ Using high-velocity data: ' + total + ' deals');
+                    return;
                 }
             }
             
+            console.log('⚠️ No real data found');
+            document.getElementById('leadsCount').textContent = '0';
+            document.getElementById('interestedCount').textContent = '0';
+            document.getElementById('outreachCount').textContent = '0';
+            
+        } catch (e) {
+            console.error('Stats error:', e);
+            document.getElementById('leadsCount').textContent = '0';
+            document.getElementById('interestedCount').textContent = '0';
+            document.getElementById('outreachCount').textContent = '0';
+        }
+        
+        // Get health for uptime
+        try {
             const healthRes = await fetch('/health');
             if (healthRes.ok) {
                 const healthData = await healthRes.json();
@@ -580,7 +581,7 @@
                 document.getElementById('uptimeDisplay').textContent = formatUptime(uptime);
             }
         } catch (e) {
-            console.error('Stats error:', e);
+            console.error('Health error:', e);
         }
     }
 
