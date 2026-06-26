@@ -350,7 +350,7 @@
             <div class="status-grid" id="statusGrid">
                 <div class="status-item"><span class="name">Railway</span><span class="badge status-online" id="statusRailway">Checking...</span></div>
                 <div class="status-item"><span class="name">API Server</span><span class="badge status-online" id="statusApi">Checking...</span></div>
-                <div class="status-item"><span class="name">Sales Agent</span><span class="badge status-online" id="statusSales">Checking...</span></div>
+                <div class="status-item"><span class="name">High-Velocity Sales</span><span class="badge status-online" id="statusSales">Checking...</span></div>
                 <div class="status-item"><span class="name">Agents</span><span class="badge status-online" id="statusAgents">Checking...</span></div>
                 <div class="status-item"><span class="name">Bloom AI</span><span class="badge status-online" id="statusBloom">Checking...</span></div>
                 <div class="status-item"><span class="name">Scheduler</span><span class="badge status-online" id="statusScheduler">Checking...</span></div>
@@ -434,7 +434,7 @@
         const checks = [
             { id: 'statusRailway', url: '/health', label: 'Railway' },
             { id: 'statusApi', url: '/health', label: 'API' },
-            { id: 'statusSales', url: '/api/leads/stats', label: 'Sales' },
+            { id: 'statusSales', url: '/api/sales/high-velocity', label: 'High-Velocity Sales' },
             { id: 'statusAgents', url: '/api/agents', label: 'Agents' }
         ];
 
@@ -448,8 +448,8 @@
                 if (res.ok) {
                     if (check.id === 'statusSales') {
                         const data = await res.json();
-                        const count = data.stats?.total || 0;
-                        el.textContent = 'Online (' + count + ' leads)';
+                        const count = data.deals ? data.deals.length : 0;
+                        el.textContent = 'Online (' + count + ' deals)';
                         el.className = 'badge status-online';
                     } else if (check.id === 'statusAgents') {
                         const data = await res.json();
@@ -472,7 +472,6 @@
             }
         }
 
-        // Bloom AI
         const bloomEl = document.getElementById('statusBloom');
         if (bloomEl) {
             try {
@@ -492,7 +491,6 @@
             }
         }
 
-        // Scheduler
         const schedEl = document.getElementById('statusScheduler');
         if (schedEl) {
             try {
@@ -512,7 +510,6 @@
             }
         }
 
-        // Overall status
         const overall = document.getElementById('overallStatus');
         if (overall) {
             if (allOnline) {
@@ -526,29 +523,53 @@
     }
 
     // ============================================
-    // STATS
+    // STATS - Reads from High-Velocity Sales
     // ============================================
     async function refreshStats() {
         try {
-            const response = await fetch('/api/leads/stats');
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success && data.stats) {
-                    document.getElementById('leadsCount').textContent = data.stats.total || 0;
-                    document.getElementById('interestedCount').textContent = data.stats.interested || 0;
-                    document.getElementById('revenueCount').textContent = '$' + (data.stats.revenue || 0).toLocaleString();
-                    document.getElementById('outreachCount').textContent = data.stats.contacted || 0;
+            const hvResponse = await fetch('/api/sales/high-velocity');
+            if (hvResponse.ok) {
+                const hvData = await hvResponse.json();
+                if (hvData.success && hvData.deals) {
+                    const totalDeals = hvData.deals ? hvData.deals.length : 0;
+                    const revenue = hvData.revenue || 0;
+                    const closedDeals = hvData.closedDeals ? hvData.closedDeals.length : 0;
+                    const interested = hvData.deals ? hvData.deals.filter(d => d.stage === 'interested' || d.stage === 'negotiation' || d.stage === 'proposal_sent').length : 0;
+                    
+                    document.getElementById('leadsCount').textContent = totalDeals;
+                    document.getElementById('interestedCount').textContent = interested;
+                    document.getElementById('revenueCount').textContent = '$' + revenue.toLocaleString();
+                    document.getElementById('outreachCount').textContent = totalDeals;
+                    
+                    console.log('📊 Dashboard updated with High-Velocity Sales data:', totalDeals, 'deals');
+                    return;
                 }
-            } else {
-                const stateRes = await fetch('/api/sales/state');
-                if (stateRes.ok) {
-                    const stateData = await stateRes.json();
-                    if (stateData.performance) {
-                        document.getElementById('leadsCount').textContent = stateData.performance.totalLeads || 0;
-                        document.getElementById('outreachCount').textContent = stateData.performance.totalOutreach || 0;
-                        document.getElementById('interestedCount').textContent = stateData.performance.totalResponses || 0;
-                        document.getElementById('revenueCount').textContent = '$' + (stateData.performance.totalRevenue || 0).toLocaleString();
-                    }
+            }
+            
+            // Fallback to Apify leads
+            const apifyResponse = await fetch('/api/apify/leads');
+            if (apifyResponse.ok) {
+                const apifyData = await apifyResponse.json();
+                if (apifyData.success && apifyData.leads) {
+                    const totalLeads = apifyData.leads ? apifyData.leads.length : 0;
+                    const qualified = apifyData.qualifiedLeads ? apifyData.qualifiedLeads.length : 0;
+                    
+                    document.getElementById('leadsCount').textContent = totalLeads;
+                    document.getElementById('interestedCount').textContent = qualified;
+                    console.log('📊 Dashboard updated with Apify data:', totalLeads, 'leads');
+                    return;
+                }
+            }
+            
+            // Final fallback: old sales agent
+            const stateRes = await fetch('/api/sales/state');
+            if (stateRes.ok) {
+                const stateData = await stateRes.json();
+                if (stateData.performance) {
+                    document.getElementById('leadsCount').textContent = stateData.performance.totalLeads || 0;
+                    document.getElementById('outreachCount').textContent = stateData.performance.totalOutreach || 0;
+                    document.getElementById('interestedCount').textContent = stateData.performance.totalResponses || 0;
+                    document.getElementById('revenueCount').textContent = '$' + (stateData.performance.totalRevenue || 0).toLocaleString();
                 }
             }
             
