@@ -618,13 +618,36 @@ app.post('/api/forecast/run', async (req, res) => {
 // ============================================
 // START SERVER
 // ============================================
-app.listen(PORT, '0.0.0.0', () => {
-    console.log('🚀 Sovereign Empire Platform running on port ' + PORT);
-    console.log('📊 Agents loaded: ' + Object.keys(AGENTS).length);
-    console.log('🔑 OpenRouter API: ' + (OPENROUTER_API_KEY ? '✅ Configured' : '❌ Missing'));
-    console.log('📊 Dashboard: http://localhost:' + PORT + '/dashboard');
-    console.log('💰 Revenue Dashboard: http://localhost:' + PORT + '/revenue-dashboard');
-    console.log('🌍 Multilingual Dashboard: http://localhost:' + PORT + '/multilingual-dashboard');
-    console.log('📊 Pipeline: http://localhost:' + PORT + '/pipeline');
-    console.log('📈 Forecast: http://localhost:' + PORT + '/api/forecast');
+// ============================================
+// APIFY LEADS API
+// ============================================
+app.get('/api/apify/leads', (req, res) => {
+    try {
+        const apifyPath = path.join(__dirname, './apify-leads-state.json');
+        if (!fs.existsSync(apifyPath)) {
+            return res.json({ 
+                success: true, 
+                leads: [],
+                qualifiedLeads: [],
+                total: 0,
+                message: 'No Apify leads yet'
+            });
+        }
+        const data = JSON.parse(fs.readFileSync(apifyPath, 'utf8'));
+        res.json({
+            success: true,
+            leads: data.leads || [],
+            qualifiedLeads: data.qualifiedLeads || [],
+            total: (data.leads || []).length
+        });
+    } catch (error) {
+        console.error('Error in /api/apify/leads:', error);
+        res.json({ 
+            success: false, 
+            error: error.message,
+            leads: [],
+            qualifiedLeads: [],
+            total: 0
+        });
+    }
 });
