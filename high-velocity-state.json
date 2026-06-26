@@ -1,0 +1,3730 @@
+{
+  "activeDeals": [
+    {
+      "id": "deal_1782439775716_0",
+      "lead": {
+        "name": "The Vault",
+        "company": "The Vault",
+        "email": "",
+        "phone": "(415) 908-1010",
+        "industry": "Coworking space"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_1",
+      "lead": {
+        "name": "BackScoop",
+        "company": "BackScoop",
+        "email": "",
+        "phone": "",
+        "industry": "Media company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_2",
+      "lead": {
+        "name": "HQ",
+        "company": "HQ",
+        "email": "",
+        "phone": "(628) 888-7346",
+        "industry": "Apartment complex"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_3",
+      "lead": {
+        "name": "Snapdocs",
+        "company": "Snapdocs",
+        "email": "",
+        "phone": "(833) 762-7362",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_4",
+      "lead": {
+        "name": "Validia",
+        "company": "Validia",
+        "email": "",
+        "phone": "(540) 287-0222",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_5",
+      "lead": {
+        "name": "Wunderdogs Agency",
+        "company": "Wunderdogs Agency",
+        "email": "",
+        "phone": "",
+        "industry": "Design agency"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_6",
+      "lead": {
+        "name": "Multistudio",
+        "company": "Multistudio",
+        "email": "",
+        "phone": "(415) 844-2110",
+        "industry": "Design agency"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_7",
+      "lead": {
+        "name": "People In AI",
+        "company": "People In AI",
+        "email": "",
+        "phone": "(917) 277-7000",
+        "industry": "Recruiter"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_8",
+      "lead": {
+        "name": "Functionly",
+        "company": "Functionly",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_9",
+      "lead": {
+        "name": "Verneek AI",
+        "company": "Verneek AI",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_10",
+      "lead": {
+        "name": "A.Team",
+        "company": "A.Team",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_11",
+      "lead": {
+        "name": "SBL Advantage Consulting",
+        "company": "SBL Advantage Consulting",
+        "email": "",
+        "phone": "(415) 638-9155",
+        "industry": "Business management consultant"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_12",
+      "lead": {
+        "name": "Leena AI HQ",
+        "company": "Leena AI HQ",
+        "email": "",
+        "phone": "(646) 453-5335",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_13",
+      "lead": {
+        "name": "AI City Inc.",
+        "company": "AI City Inc.",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_14",
+      "lead": {
+        "name": "Adaptive Intelligence International",
+        "company": "Adaptive Intelligence International",
+        "email": "",
+        "phone": "(800) 985-7395",
+        "industry": "Marketing agency"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_15",
+      "lead": {
+        "name": "Accern",
+        "company": "Accern",
+        "email": "",
+        "phone": "(347) 745-6649",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_16",
+      "lead": {
+        "name": "Structured AI",
+        "company": "Structured AI",
+        "email": "",
+        "phone": "(628) 222-8294",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_17",
+      "lead": {
+        "name": "New York AI Agency",
+        "company": "New York AI Agency",
+        "email": "",
+        "phone": "(646) 762-1388",
+        "industry": "Marketing agency"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_18",
+      "lead": {
+        "name": "Top AI Companies",
+        "company": "Top AI Companies",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_19",
+      "lead": {
+        "name": "Lightning AI",
+        "company": "Lightning AI",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_20",
+      "lead": {
+        "name": "Ai-i",
+        "company": "Ai-i",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_21",
+      "lead": {
+        "name": "Third Coast Foundry",
+        "company": "Third Coast Foundry",
+        "email": "",
+        "phone": "",
+        "industry": "Business center"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_22",
+      "lead": {
+        "name": "Apptunix USA - AI Mobile App & Software Development Company in USA | Hire App & Software Developers in USA",
+        "company": "Apptunix USA - AI Mobile App & Software Development Company in USA | Hire App & Software Developers in USA",
+        "email": "",
+        "phone": "(512) 872-3364",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_23",
+      "lead": {
+        "name": "RaiseMe HQ",
+        "company": "RaiseMe HQ",
+        "email": "",
+        "phone": "",
+        "industry": "Corporate office"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_24",
+      "lead": {
+        "name": "Embroker",
+        "company": "Embroker",
+        "email": "",
+        "phone": "(844) 436-2765",
+        "industry": "Insurance broker"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_25",
+      "lead": {
+        "name": "Enigma Technologies",
+        "company": "Enigma Technologies",
+        "email": "",
+        "phone": "(800) 510-2856",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_26",
+      "lead": {
+        "name": "Comp AI",
+        "company": "Comp AI",
+        "email": "",
+        "phone": "(201) 687-9545",
+        "industry": "Computer security service"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_27",
+      "lead": {
+        "name": "AIS Technolabs- Software & App Development Company in New York | Web Design & Development",
+        "company": "AIS Technolabs- Software & App Development Company in New York | Web Design & Development",
+        "email": "",
+        "phone": "(501) 261-6464",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_28",
+      "lead": {
+        "name": "Agicent App Company NYC",
+        "company": "Agicent App Company NYC",
+        "email": "",
+        "phone": "(646) 466-4369",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_29",
+      "lead": {
+        "name": "Shaper Tools, Inc.",
+        "company": "Shaper Tools, Inc.",
+        "email": "",
+        "phone": "(888) 281-1012",
+        "industry": "Corporate office"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_30",
+      "lead": {
+        "name": "Flyaps: AI-First Software Development Company in NYC",
+        "company": "Flyaps: AI-First Software Development Company in NYC",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_31",
+      "lead": {
+        "name": "FundersClub",
+        "company": "FundersClub",
+        "email": "",
+        "phone": "(888) 405-9335",
+        "industry": "Corporate office"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_32",
+      "lead": {
+        "name": "Denim Video Production LLC",
+        "company": "Denim Video Production LLC",
+        "email": "",
+        "phone": "(408) 480-1440",
+        "industry": "Video production service"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_33",
+      "lead": {
+        "name": "Stable Auto",
+        "company": "Stable Auto",
+        "email": "",
+        "phone": "",
+        "industry": "Corporate office"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_34",
+      "lead": {
+        "name": "RevAI - AI Development Company in New York",
+        "company": "RevAI - AI Development Company in New York",
+        "email": "",
+        "phone": "(800) 362-9239",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_35",
+      "lead": {
+        "name": "Human Interest",
+        "company": "Human Interest",
+        "email": "",
+        "phone": "(855) 622-7824",
+        "industry": "Financial institution"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_36",
+      "lead": {
+        "name": "Midstage Institute",
+        "company": "Midstage Institute",
+        "email": "",
+        "phone": "",
+        "industry": "Consultant"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_37",
+      "lead": {
+        "name": "Sierra",
+        "company": "Sierra",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_38",
+      "lead": {
+        "name": "Camus Energy",
+        "company": "Camus Energy",
+        "email": "",
+        "phone": "(415) 322-9127",
+        "industry": "Corporate office"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_39",
+      "lead": {
+        "name": "Osmind",
+        "company": "Osmind",
+        "email": "",
+        "phone": "(650) 800-5440",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_40",
+      "lead": {
+        "name": "SAM.AI",
+        "company": "SAM.AI",
+        "email": "",
+        "phone": "(800) 726-2140",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_41",
+      "lead": {
+        "name": "NextWorld",
+        "company": "NextWorld",
+        "email": "",
+        "phone": "(415) 528-5512",
+        "industry": "Financial institution"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_42",
+      "lead": {
+        "name": "Siren Care",
+        "company": "Siren Care",
+        "email": "",
+        "phone": "(888) 524-9820",
+        "industry": "Medical technology manufacturer"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_43",
+      "lead": {
+        "name": "Darling Ventures",
+        "company": "Darling Ventures",
+        "email": "",
+        "phone": "",
+        "industry": "Corporate office"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_44",
+      "lead": {
+        "name": "Mission Barns",
+        "company": "Mission Barns",
+        "email": "",
+        "phone": "(510) 859-4269",
+        "industry": "Biotechnology company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_45",
+      "lead": {
+        "name": "Betts Recruiting",
+        "company": "Betts Recruiting",
+        "email": "",
+        "phone": "(415) 318-7520",
+        "industry": "Employment agency"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_46",
+      "lead": {
+        "name": "ArohaTech USA",
+        "company": "ArohaTech USA",
+        "email": "",
+        "phone": "(415) 980-5280",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_47",
+      "lead": {
+        "name": "StackedSP",
+        "company": "StackedSP",
+        "email": "",
+        "phone": "+1 647-991-9471",
+        "industry": "Talent agency"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_48",
+      "lead": {
+        "name": "Clarify Health",
+        "company": "Clarify Health",
+        "email": "",
+        "phone": "(415) 343-4655",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_49",
+      "lead": {
+        "name": "MindMeld",
+        "company": "MindMeld",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_50",
+      "lead": {
+        "name": "Dolby Family Ventures",
+        "company": "Dolby Family Ventures",
+        "email": "",
+        "phone": "(415) 449-1005",
+        "industry": "Consultant"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_51",
+      "lead": {
+        "name": "Swissnex in San Francisco",
+        "company": "Swissnex in San Francisco",
+        "email": "",
+        "phone": "",
+        "industry": "Foreign consulate"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_52",
+      "lead": {
+        "name": "KarmaCheck",
+        "company": "KarmaCheck",
+        "email": "",
+        "phone": "(877) 732-2129",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_53",
+      "lead": {
+        "name": "Burkland Associates",
+        "company": "Burkland Associates",
+        "email": "",
+        "phone": "(415) 651-5319",
+        "industry": "Business management consultant"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_54",
+      "lead": {
+        "name": "Chronicled, Inc.",
+        "company": "Chronicled, Inc.",
+        "email": "",
+        "phone": "",
+        "industry": "Business to business service"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_55",
+      "lead": {
+        "name": "Vendition",
+        "company": "Vendition",
+        "email": "",
+        "phone": "(888) 235-1904",
+        "industry": "Apprenticeship center"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_56",
+      "lead": {
+        "name": "Cluely",
+        "company": "Cluely",
+        "email": "",
+        "phone": "+33 6 70 95 07 80",
+        "industry": "Corporate office"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_57",
+      "lead": {
+        "name": "Handshake",
+        "company": "Handshake",
+        "email": "",
+        "phone": "(415) 944-9960",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_58",
+      "lead": {
+        "name": "Mismo.team",
+        "company": "Mismo.team",
+        "email": "",
+        "phone": "(415) 500-2558",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_59",
+      "lead": {
+        "name": "muffins.io",
+        "company": "muffins.io",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_60",
+      "lead": {
+        "name": "Hemlane",
+        "company": "Hemlane",
+        "email": "",
+        "phone": "(855) 720-0224",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_61",
+      "lead": {
+        "name": "SKAEL, Inc.",
+        "company": "SKAEL, Inc.",
+        "email": "",
+        "phone": "(415) 653-9433",
+        "industry": "Corporate office"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_62",
+      "lead": {
+        "name": "bem",
+        "company": "bem",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_63",
+      "lead": {
+        "name": "Aptible",
+        "company": "Aptible",
+        "email": "",
+        "phone": "(866) 296-5003",
+        "industry": "Corporate office"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_64",
+      "lead": {
+        "name": "Chef Robotics",
+        "company": "Chef Robotics",
+        "email": "",
+        "phone": "(415) 320-7421",
+        "industry": "Corporate office"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_65",
+      "lead": {
+        "name": "Designer Fund",
+        "company": "Designer Fund",
+        "email": "",
+        "phone": "(415) 322-8406",
+        "industry": "Association / Organization"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_66",
+      "lead": {
+        "name": "Kruze Consulting",
+        "company": "Kruze Consulting",
+        "email": "",
+        "phone": "(415) 322-1610",
+        "industry": "Certified public accountant"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_67",
+      "lead": {
+        "name": "Voco Design",
+        "company": "Voco Design",
+        "email": "",
+        "phone": "(818) 850-5836",
+        "industry": "Website designer"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_68",
+      "lead": {
+        "name": "Epic Cleantec",
+        "company": "Epic Cleantec",
+        "email": "",
+        "phone": "(415) 651-7765",
+        "industry": "Environmental organization"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_69",
+      "lead": {
+        "name": "Industrial Next",
+        "company": "Industrial Next",
+        "email": "",
+        "phone": "(248) 819-9493",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_70",
+      "lead": {
+        "name": "IBM Garage",
+        "company": "IBM Garage",
+        "email": "",
+        "phone": "",
+        "industry": "Corporate office"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_71",
+      "lead": {
+        "name": "Swiftlane",
+        "company": "Swiftlane",
+        "email": "",
+        "phone": "(888) 292-1394",
+        "industry": "Security system supplier"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_72",
+      "lead": {
+        "name": "PeopleConnect San Francisco Recruiters",
+        "company": "PeopleConnect San Francisco Recruiters",
+        "email": "",
+        "phone": "(415) 479-3400",
+        "industry": "Recruiter"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_73",
+      "lead": {
+        "name": "Neo Innovation",
+        "company": "Neo Innovation",
+        "email": "",
+        "phone": "(415) 360-2992",
+        "industry": "Business management consultant"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_74",
+      "lead": {
+        "name": "Qualia",
+        "company": "Qualia",
+        "email": "",
+        "phone": "(855) 441-5498",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_75",
+      "lead": {
+        "name": "Canvas",
+        "company": "Canvas",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_76",
+      "lead": {
+        "name": "Scrubbed",
+        "company": "Scrubbed",
+        "email": "",
+        "phone": "(800) 837-5160",
+        "industry": "Bookkeeping service"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_77",
+      "lead": {
+        "name": "Abnormal Security",
+        "company": "Abnormal Security",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_78",
+      "lead": {
+        "name": "Mechanism Ventures",
+        "company": "Mechanism Ventures",
+        "email": "",
+        "phone": "(775) 232-6388",
+        "industry": "Venture capital company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_79",
+      "lead": {
+        "name": "IDEO.org",
+        "company": "IDEO.org",
+        "email": "",
+        "phone": "",
+        "industry": "Non-profit organization"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_80",
+      "lead": {
+        "name": "Bulgaria Innovation Hub, Inc.",
+        "company": "Bulgaria Innovation Hub, Inc.",
+        "email": "",
+        "phone": "",
+        "industry": "Non-profit organization"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_81",
+      "lead": {
+        "name": "Foundry Coliving San Francisco",
+        "company": "Foundry Coliving San Francisco",
+        "email": "",
+        "phone": "(415) 791-1940",
+        "industry": "Furnished apartment building"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_82",
+      "lead": {
+        "name": "UptimeAI",
+        "company": "UptimeAI",
+        "email": "",
+        "phone": "(415) 935-1195",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_83",
+      "lead": {
+        "name": "TonicAI, Inc.",
+        "company": "TonicAI, Inc.",
+        "email": "",
+        "phone": "(415) 340-0330",
+        "industry": "Corporate office"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_84",
+      "lead": {
+        "name": "Meadow",
+        "company": "Meadow",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_85",
+      "lead": {
+        "name": "AWS Builder Loft",
+        "company": "AWS Builder Loft",
+        "email": "",
+        "phone": "(323) 532-1688",
+        "industry": "Coworking space"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_86",
+      "lead": {
+        "name": "ABC - Software Development Company",
+        "company": "ABC - Software Development Company",
+        "email": "",
+        "phone": "(315) 634-7939",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_87",
+      "lead": {
+        "name": "PIXEL IT Company",
+        "company": "PIXEL IT Company",
+        "email": "",
+        "phone": "(415) 888-5651",
+        "industry": "Computer service"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_88",
+      "lead": {
+        "name": "Rocket Recruiting",
+        "company": "Rocket Recruiting",
+        "email": "",
+        "phone": "(415) 895-2862",
+        "industry": "Executive search firm"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_89",
+      "lead": {
+        "name": "SF Blue Tech",
+        "company": "SF Blue Tech",
+        "email": "",
+        "phone": "(650) 483-8816",
+        "industry": "Environmental organization"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_90",
+      "lead": {
+        "name": "Sigma Computing",
+        "company": "Sigma Computing",
+        "email": "",
+        "phone": "(415) 787-0744",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_91",
+      "lead": {
+        "name": "Launchpad Digital Health",
+        "company": "Launchpad Digital Health",
+        "email": "",
+        "phone": "",
+        "industry": "Corporate office"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_92",
+      "lead": {
+        "name": "IN NYC IT",
+        "company": "IN NYC IT",
+        "email": "",
+        "phone": "(212) 390-0190",
+        "industry": "Computer support and services"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_93",
+      "lead": {
+        "name": "Synopsys Software Integrity",
+        "company": "Synopsys Software Integrity",
+        "email": "",
+        "phone": "(415) 321-5200",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_94",
+      "lead": {
+        "name": "SOMAcentral",
+        "company": "SOMAcentral",
+        "email": "",
+        "phone": "(415) 727-6627",
+        "industry": "Coworking space"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_95",
+      "lead": {
+        "name": "Brightter Inc.",
+        "company": "Brightter Inc.",
+        "email": "",
+        "phone": "(415) 741-1005",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_96",
+      "lead": {
+        "name": "Everyware",
+        "company": "Everyware",
+        "email": "",
+        "phone": "(844) 311-5597",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_97",
+      "lead": {
+        "name": "Shop-Ware",
+        "company": "Shop-Ware",
+        "email": "",
+        "phone": "(415) 890-0906",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_98",
+      "lead": {
+        "name": "Ware",
+        "company": "Ware",
+        "email": "",
+        "phone": "(415) 890-2020",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_99",
+      "lead": {
+        "name": "Legal Robot",
+        "company": "Legal Robot",
+        "email": "",
+        "phone": "(415) 894-0240",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_100",
+      "lead": {
+        "name": "Apollo GraphQL",
+        "company": "Apollo GraphQL",
+        "email": "",
+        "phone": "(415) 891-0510",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_101",
+      "lead": {
+        "name": "Rainforest QA",
+        "company": "Rainforest QA",
+        "email": "",
+        "phone": "(415) 969-6326",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_102",
+      "lead": {
+        "name": "House of AI",
+        "company": "House of AI",
+        "email": "",
+        "phone": "",
+        "industry": "Educational institution"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_103",
+      "lead": {
+        "name": "Cymetrix Software - Salesforce Consulting Partner Company",
+        "company": "Cymetrix Software - Salesforce Consulting Partner Company",
+        "email": "",
+        "phone": "(650) 334-4141",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_104",
+      "lead": {
+        "name": "Web Design Agency in San Francisco for AI and B2B companies — Lazarev.agency",
+        "company": "Web Design Agency in San Francisco for AI and B2B companies — Lazarev.agency",
+        "email": "",
+        "phone": "(628) 250-5204",
+        "industry": "Website designer"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_105",
+      "lead": {
+        "name": "Bizzit AI",
+        "company": "Bizzit AI",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_106",
+      "lead": {
+        "name": "Motion Recruitment",
+        "company": "Motion Recruitment",
+        "email": "",
+        "phone": "(415) 904-8000",
+        "industry": "Recruiter"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_107",
+      "lead": {
+        "name": "Dhap Digital Inc",
+        "company": "Dhap Digital Inc",
+        "email": "",
+        "phone": "(415) 962-4900",
+        "industry": "Internet service provider"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_108",
+      "lead": {
+        "name": "Alchemy Cloud, Inc.",
+        "company": "Alchemy Cloud, Inc.",
+        "email": "",
+        "phone": "(415) 779-7001",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_109",
+      "lead": {
+        "name": "Workstream",
+        "company": "Workstream",
+        "email": "",
+        "phone": "",
+        "industry": "Corporate office"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_110",
+      "lead": {
+        "name": "CaptivateIQ, Inc.",
+        "company": "CaptivateIQ, Inc.",
+        "email": "",
+        "phone": "(415) 656-8261",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_111",
+      "lead": {
+        "name": "Lumos HQ",
+        "company": "Lumos HQ",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_112",
+      "lead": {
+        "name": "Startup Temple",
+        "company": "Startup Temple",
+        "email": "",
+        "phone": "",
+        "industry": "Corporate office"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_113",
+      "lead": {
+        "name": "Silicon Valley Software Group",
+        "company": "Silicon Valley Software Group",
+        "email": "",
+        "phone": "(844) 946-7874",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_114",
+      "lead": {
+        "name": "SuperTech FT",
+        "company": "SuperTech FT",
+        "email": "",
+        "phone": "(650) 770-6113",
+        "industry": "Education center"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_115",
+      "lead": {
+        "name": "nyle.ai",
+        "company": "nyle.ai",
+        "email": "",
+        "phone": "(917) 392-6948",
+        "industry": "Business development service"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_116",
+      "lead": {
+        "name": "Rasa Technologies Inc",
+        "company": "Rasa Technologies Inc",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_117",
+      "lead": {
+        "name": "Motive",
+        "company": "Motive",
+        "email": "",
+        "phone": "(855) 434-3564",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_118",
+      "lead": {
+        "name": "Patch",
+        "company": "Patch",
+        "email": "",
+        "phone": "(888) 477-1536",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_119",
+      "lead": {
+        "name": "Hayden AI Technologies",
+        "company": "Hayden AI Technologies",
+        "email": "",
+        "phone": "(510) 508-9953",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_120",
+      "lead": {
+        "name": "Ignition IT",
+        "company": "Ignition IT",
+        "email": "",
+        "phone": "(415) 854-0881",
+        "industry": "Computer support and services"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_121",
+      "lead": {
+        "name": "webdevelop pro",
+        "company": "webdevelop pro",
+        "email": "",
+        "phone": "(609) 733-7724",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_122",
+      "lead": {
+        "name": "Scale AI",
+        "company": "Scale AI",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_123",
+      "lead": {
+        "name": "Omneky",
+        "company": "Omneky",
+        "email": "",
+        "phone": "(415) 236-2333",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_124",
+      "lead": {
+        "name": "AI, IoT Consulting & Offshore Software Development Company in the USA",
+        "company": "AI, IoT Consulting & Offshore Software Development Company in the USA",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_125",
+      "lead": {
+        "name": "Smarking Inc.",
+        "company": "Smarking Inc.",
+        "email": "",
+        "phone": "(855) 949-4800",
+        "industry": "Business to business service"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_126",
+      "lead": {
+        "name": "Toi Labs",
+        "company": "Toi Labs",
+        "email": "",
+        "phone": "(415) 952-3470",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_127",
+      "lead": {
+        "name": "UIS Technology Partners",
+        "company": "UIS Technology Partners",
+        "email": "",
+        "phone": "(408) 414-5000",
+        "industry": "Computer service"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_128",
+      "lead": {
+        "name": "Compology",
+        "company": "Compology",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_129",
+      "lead": {
+        "name": "Kodexo Labs San Francisco - AI, Custom Software and Mobile App Development Company San Francisco",
+        "company": "Kodexo Labs San Francisco - AI, Custom Software and Mobile App Development Company San Francisco",
+        "email": "",
+        "phone": "(415) 498-1329",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_130",
+      "lead": {
+        "name": "ArcTouch",
+        "company": "ArcTouch",
+        "email": "",
+        "phone": "(415) 944-2000",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_131",
+      "lead": {
+        "name": "Jones IT",
+        "company": "Jones IT",
+        "email": "",
+        "phone": "(415) 578-7111",
+        "industry": "Computer service"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_132",
+      "lead": {
+        "name": "AngelList",
+        "company": "AngelList",
+        "email": "",
+        "phone": "",
+        "industry": "Corporate office"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_133",
+      "lead": {
+        "name": "SF AppWorks",
+        "company": "SF AppWorks",
+        "email": "",
+        "phone": "(918) 373-9364",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_134",
+      "lead": {
+        "name": "Prelay",
+        "company": "Prelay",
+        "email": "",
+        "phone": "(415) 968-1776",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_135",
+      "lead": {
+        "name": "Founders, Inc. | San Francisco Lab",
+        "company": "Founders, Inc. | San Francisco Lab",
+        "email": "",
+        "phone": "",
+        "industry": "Venture capital company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_136",
+      "lead": {
+        "name": "Appstem",
+        "company": "Appstem",
+        "email": "",
+        "phone": "(415) 956-7400",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_137",
+      "lead": {
+        "name": "Finix",
+        "company": "Finix",
+        "email": "",
+        "phone": "(415) 888-5080",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_138",
+      "lead": {
+        "name": "Founders Network",
+        "company": "Founders Network",
+        "email": "",
+        "phone": "(415) 489-0651",
+        "industry": "Association / Organization"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_139",
+      "lead": {
+        "name": "Tech Inclusion",
+        "company": "Tech Inclusion",
+        "email": "",
+        "phone": "(415) 578-0544",
+        "industry": "Association / Organization"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_140",
+      "lead": {
+        "name": "Siftery",
+        "company": "Siftery",
+        "email": "",
+        "phone": "(415) 484-8211",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_141",
+      "lead": {
+        "name": "Axiom, Inc.",
+        "company": "Axiom, Inc.",
+        "email": "",
+        "phone": "(628) 200-3079",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_142",
+      "lead": {
+        "name": "Vention - Software Development Company",
+        "company": "Vention - Software Development Company",
+        "email": "",
+        "phone": "(718) 374-5043",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_143",
+      "lead": {
+        "name": "Smart IT",
+        "company": "Smart IT",
+        "email": "",
+        "phone": "(408) 641-3300",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_144",
+      "lead": {
+        "name": "HEAVY.AI",
+        "company": "HEAVY.AI",
+        "email": "",
+        "phone": "(415) 851-4787",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_145",
+      "lead": {
+        "name": "Microsoft Reactor",
+        "company": "Microsoft Reactor",
+        "email": "",
+        "phone": "(415) 430-2700",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_146",
+      "lead": {
+        "name": "BootstrapLabs",
+        "company": "BootstrapLabs",
+        "email": "",
+        "phone": "(415) 200-2610",
+        "industry": "Venture capital company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_147",
+      "lead": {
+        "name": "Susa Ventures",
+        "company": "Susa Ventures",
+        "email": "",
+        "phone": "",
+        "industry": "Venture capital company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_148",
+      "lead": {
+        "name": "Zensoft",
+        "company": "Zensoft",
+        "email": "",
+        "phone": "(415) 895-0555",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_149",
+      "lead": {
+        "name": "Zazen Technologies",
+        "company": "Zazen Technologies",
+        "email": "",
+        "phone": "(877) 276-2332",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_150",
+      "lead": {
+        "name": "Startup Genome",
+        "company": "Startup Genome",
+        "email": "",
+        "phone": "",
+        "industry": "Economic consultant"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_151",
+      "lead": {
+        "name": "Pump",
+        "company": "Pump",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_152",
+      "lead": {
+        "name": "Galvanize Coworking - San Francisco",
+        "company": "Galvanize Coworking - San Francisco",
+        "email": "",
+        "phone": "(415) 805-1888",
+        "industry": "Coworking space"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_153",
+      "lead": {
+        "name": "Rollout AI - San Francisco Managed IT Services Company",
+        "company": "Rollout AI - San Francisco Managed IT Services Company",
+        "email": "",
+        "phone": "(415) 660-9391",
+        "industry": "Computer support and services"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_154",
+      "lead": {
+        "name": "TruAdvantage",
+        "company": "TruAdvantage",
+        "email": "",
+        "phone": "(415) 842-2300",
+        "industry": "Computer support and services"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_155",
+      "lead": {
+        "name": "IFTTT",
+        "company": "IFTTT",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_156",
+      "lead": {
+        "name": "Better Tomorrow Ventures",
+        "company": "Better Tomorrow Ventures",
+        "email": "",
+        "phone": "",
+        "industry": "Venture capital company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_157",
+      "lead": {
+        "name": "Invisible Technologies",
+        "company": "Invisible Technologies",
+        "email": "",
+        "phone": "(650) 332-2067",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_158",
+      "lead": {
+        "name": "Evisort",
+        "company": "Evisort",
+        "email": "",
+        "phone": "(888) 384-7678",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_159",
+      "lead": {
+        "name": "Vinta Software - Full-cycle Experts For Healthtech & Growth-Driven Startups",
+        "company": "Vinta Software - Full-cycle Experts For Healthtech & Growth-Driven Startups",
+        "email": "",
+        "phone": "(917) 982-2453",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_160",
+      "lead": {
+        "name": "InsideView Technologies, Inc.",
+        "company": "InsideView Technologies, Inc.",
+        "email": "",
+        "phone": "(415) 728-9300",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_161",
+      "lead": {
+        "name": "Abstract",
+        "company": "Abstract",
+        "email": "",
+        "phone": "(507) 615-4305",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_162",
+      "lead": {
+        "name": "SDLC Corp",
+        "company": "SDLC Corp",
+        "email": "",
+        "phone": "(510) 630-6507",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_163",
+      "lead": {
+        "name": "Rakuna - HR Tech Company",
+        "company": "Rakuna - HR Tech Company",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_164",
+      "lead": {
+        "name": "Watershed Technology Inc.",
+        "company": "Watershed Technology Inc.",
+        "email": "",
+        "phone": "(872) 371-9730",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_165",
+      "lead": {
+        "name": "AppVerticals - Mobile app development company San Francisco",
+        "company": "AppVerticals - Mobile app development company San Francisco",
+        "email": "",
+        "phone": "(833) 888-2433",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_166",
+      "lead": {
+        "name": "SF AI Labs",
+        "company": "SF AI Labs",
+        "email": "",
+        "phone": "(415) 340-0955",
+        "industry": "Consultant"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_167",
+      "lead": {
+        "name": "Foundry 415 Innovation Group",
+        "company": "Foundry 415 Innovation Group",
+        "email": "",
+        "phone": "",
+        "industry": "Business management consultant"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_168",
+      "lead": {
+        "name": "Cerebral Valley",
+        "company": "Cerebral Valley",
+        "email": "",
+        "phone": "",
+        "industry": "Association / Organization"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_169",
+      "lead": {
+        "name": "Unity Technologies",
+        "company": "Unity Technologies",
+        "email": "",
+        "phone": "",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_170",
+      "lead": {
+        "name": "Startuped",
+        "company": "Startuped",
+        "email": "",
+        "phone": "(951) 226-5485",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_171",
+      "lead": {
+        "name": "DG717",
+        "company": "DG717",
+        "email": "",
+        "phone": "",
+        "industry": "Coworking space"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_172",
+      "lead": {
+        "name": "Varsity Technologies | Managed IT Services & IT Consulting",
+        "company": "Varsity Technologies | Managed IT Services & IT Consulting",
+        "email": "",
+        "phone": "(415) 964-5565",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_173",
+      "lead": {
+        "name": "Techify IT Consulting LLC",
+        "company": "Techify IT Consulting LLC",
+        "email": "",
+        "phone": "",
+        "industry": "Non-profit organization"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_174",
+      "lead": {
+        "name": "CMIT Solutions",
+        "company": "CMIT Solutions",
+        "email": "",
+        "phone": "(512) 520-2766",
+        "industry": "Computer support and services"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_175",
+      "lead": {
+        "name": "Red Team IT (Austin Lane Technologies IT Services)",
+        "company": "Red Team IT (Austin Lane Technologies IT Services)",
+        "email": "",
+        "phone": "(214) 997-0842",
+        "industry": "Computer support and services"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_176",
+      "lead": {
+        "name": "TechnBrains San Francisco - Mobile App Development Company",
+        "company": "TechnBrains San Francisco - Mobile App Development Company",
+        "email": "",
+        "phone": "(833) 888-6032",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_177",
+      "lead": {
+        "name": "MaintainX Inc.",
+        "company": "MaintainX Inc.",
+        "email": "",
+        "phone": "(415) 548-4001",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_178",
+      "lead": {
+        "name": "Framework Security",
+        "company": "Framework Security",
+        "email": "",
+        "phone": "(800) 947-2937",
+        "industry": "Computer security service"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_179",
+      "lead": {
+        "name": "Upshift",
+        "company": "Upshift",
+        "email": "",
+        "phone": "",
+        "industry": "Car dealer"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 50,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_180",
+      "lead": {
+        "name": "Genius Tech Development",
+        "company": "Genius Tech Development",
+        "email": "",
+        "phone": "(888) 531-8488",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_181",
+      "lead": {
+        "name": "Accenture San Francisco Innovation Hub",
+        "company": "Accenture San Francisco Innovation Hub",
+        "email": "",
+        "phone": "(415) 537-5700",
+        "industry": "Business management consultant"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_182",
+      "lead": {
+        "name": "Kaizen Technology Partners",
+        "company": "Kaizen Technology Partners",
+        "email": "",
+        "phone": "(800) 828-7414",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_183",
+      "lead": {
+        "name": "Allied Consultants Inc.",
+        "company": "Allied Consultants Inc.",
+        "email": "",
+        "phone": "(512) 236-8535",
+        "industry": "Business management consultant"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_184",
+      "lead": {
+        "name": "BH Tech Connection",
+        "company": "BH Tech Connection",
+        "email": "",
+        "phone": "(415) 933-7742",
+        "industry": "Computer service"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_185",
+      "lead": {
+        "name": "Bolder Apps | Top Mobile App Developers in San Francisco",
+        "company": "Bolder Apps | Top Mobile App Developers in San Francisco",
+        "email": "",
+        "phone": "(650) 376-0229",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_186",
+      "lead": {
+        "name": "Mayven Studios - Software Design and Development",
+        "company": "Mayven Studios - Software Design and Development",
+        "email": "",
+        "phone": "(800) 860-9476",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_187",
+      "lead": {
+        "name": "CyberStreams | Managed IT Services and IT Support Company Austin",
+        "company": "CyberStreams | Managed IT Services and IT Support Company Austin",
+        "email": "",
+        "phone": "(512) 580-8126",
+        "industry": "Computer support and services"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_188",
+      "lead": {
+        "name": "Vintage IT Services",
+        "company": "Vintage IT Services",
+        "email": "",
+        "phone": "(512) 481-1117",
+        "industry": "Computer support and services"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_189",
+      "lead": {
+        "name": "ALCON DTS - Managed IT Services",
+        "company": "ALCON DTS - Managed IT Services",
+        "email": "",
+        "phone": "(512) 892-6900",
+        "industry": "Computer support and services"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_190",
+      "lead": {
+        "name": "GCS Technologies: IT Managed Services in Austin",
+        "company": "GCS Technologies: IT Managed Services in Austin",
+        "email": "",
+        "phone": "(512) 249-6080",
+        "industry": "Computer support and services"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_191",
+      "lead": {
+        "name": "42 Technologies",
+        "company": "42 Technologies",
+        "email": "",
+        "phone": "(424) 420-9797",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_192",
+      "lead": {
+        "name": "LastTechSol. Managed IT services and Consulting",
+        "company": "LastTechSol. Managed IT services and Consulting",
+        "email": "",
+        "phone": "(737) 264-4858",
+        "industry": "Information services"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_193",
+      "lead": {
+        "name": "TechGropse San Francisco - Mobile App Development Company | App Developer | Application Development",
+        "company": "TechGropse San Francisco - Mobile App Development Company | App Developer | Application Development",
+        "email": "",
+        "phone": "(267) 327-4760",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_194",
+      "lead": {
+        "name": "Canary Technologies",
+        "company": "Canary Technologies",
+        "email": "",
+        "phone": "(877) 739-1545",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_195",
+      "lead": {
+        "name": "Contigo Technology - Austin Managed IT Services Company",
+        "company": "Contigo Technology - Austin Managed IT Services Company",
+        "email": "",
+        "phone": "(512) 402-7496",
+        "industry": "Computer support and services"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_196",
+      "lead": {
+        "name": "ECHO Technology Solutions",
+        "company": "ECHO Technology Solutions",
+        "email": "",
+        "phone": "(415) 857-3246",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_197",
+      "lead": {
+        "name": "Sift",
+        "company": "Sift",
+        "email": "",
+        "phone": "(415) 882-7709",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_198",
+      "lead": {
+        "name": "Centre Technologies",
+        "company": "Centre Technologies",
+        "email": "",
+        "phone": "(833) 236-8731",
+        "industry": "Computer support and services"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_199",
+      "lead": {
+        "name": "Truly Technologies Inc.",
+        "company": "Truly Technologies Inc.",
+        "email": "",
+        "phone": "(855) 976-8759",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_200",
+      "lead": {
+        "name": "employbl",
+        "company": "employbl",
+        "email": "",
+        "phone": "(415) 717-5557",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_201",
+      "lead": {
+        "name": "dev3lop",
+        "company": "dev3lop",
+        "email": "",
+        "phone": "(214) 971-9869",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_202",
+      "lead": {
+        "name": "TekInvent - Mobile Application Development Company Austin",
+        "company": "TekInvent - Mobile Application Development Company Austin",
+        "email": "",
+        "phone": "(833) 544-4999",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_203",
+      "lead": {
+        "name": "Gravity Systems - Austin Managed IT Company",
+        "company": "Gravity Systems - Austin Managed IT Company",
+        "email": "",
+        "phone": "(512) 601-8005",
+        "industry": "Computer support and services"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_204",
+      "lead": {
+        "name": "Austin Consulting",
+        "company": "Austin Consulting",
+        "email": "",
+        "phone": "(440) 544-2600",
+        "industry": "Consultant"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_205",
+      "lead": {
+        "name": "ThoughtWorks, Inc.",
+        "company": "ThoughtWorks, Inc.",
+        "email": "",
+        "phone": "(415) 273-1389",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_206",
+      "lead": {
+        "name": "Idea Labs Consulting",
+        "company": "Idea Labs Consulting",
+        "email": "",
+        "phone": "(512) 775-6097",
+        "industry": "Business management consultant"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_207",
+      "lead": {
+        "name": "StartupHQ - 880 Harrison St",
+        "company": "StartupHQ - 880 Harrison St",
+        "email": "",
+        "phone": "(415) 745-1926",
+        "industry": "Coworking space"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_208",
+      "lead": {
+        "name": "Standard Cognition",
+        "company": "Standard Cognition",
+        "email": "",
+        "phone": "(415) 324-4156",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_209",
+      "lead": {
+        "name": "Blueshift",
+        "company": "Blueshift",
+        "email": "",
+        "phone": "(844) 258-3738",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_210",
+      "lead": {
+        "name": "LeewayHertz",
+        "company": "LeewayHertz",
+        "email": "",
+        "phone": "(415) 301-2880",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_211",
+      "lead": {
+        "name": "Integritek | Austin Managed IT Services Company",
+        "company": "Integritek | Austin Managed IT Services Company",
+        "email": "",
+        "phone": "(737) 371-8867",
+        "industry": "Computer support and services"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_212",
+      "lead": {
+        "name": "Ventura Tech, Inc",
+        "company": "Ventura Tech, Inc",
+        "email": "",
+        "phone": "(415) 494-8045",
+        "industry": "Computer support and services"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_213",
+      "lead": {
+        "name": "TekRevol - Mobile App Development Company in San Francisco",
+        "company": "TekRevol - Mobile App Development Company in San Francisco",
+        "email": "",
+        "phone": "(415) 226-1313",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_214",
+      "lead": {
+        "name": "Trango Tech San Francisco, CA - Mobile App Development Company",
+        "company": "Trango Tech San Francisco, CA - Mobile App Development Company",
+        "email": "",
+        "phone": "(833) 442-2270",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_215",
+      "lead": {
+        "name": "DxMinds Technologies - Hire Software Developers | Mobile App Development Company in San Francisco",
+        "company": "DxMinds Technologies - Hire Software Developers | Mobile App Development Company in San Francisco",
+        "email": "",
+        "phone": "(748) 354-6629",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_216",
+      "lead": {
+        "name": "Lab Zero Innovations Inc.",
+        "company": "Lab Zero Innovations Inc.",
+        "email": "",
+        "phone": "(415) 839-6861",
+        "industry": "Software company"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_217",
+      "lead": {
+        "name": "TechProComp-Managed IT Services Company",
+        "company": "TechProComp-Managed IT Services Company",
+        "email": "",
+        "phone": "(512) 488-1811",
+        "industry": "Computer support and services"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    },
+    {
+      "id": "deal_1782439775716_218",
+      "lead": {
+        "name": "7tech - Austin Managed IT Services Company",
+        "company": "7tech - Austin Managed IT Services Company",
+        "email": "",
+        "phone": "(855) 598-6002",
+        "industry": "Computer support and services"
+      },
+      "stage": "new",
+      "created": "2026-06-26T02:09:35.716Z",
+      "lastAction": "lead_intake",
+      "source": "Contact Details",
+      "score": 60,
+      "revenue": 0,
+      "closed": false
+    }
+  ],
+  "closedDeals": [],
+  "revenue": 0,
+  "timestamp": "2026-06-26T02:09:35.714Z"
+}
