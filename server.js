@@ -447,6 +447,7 @@ app.get('/api/leads', (req, res) => {
 // ============================================
 // HIGH VELOCITY SALES API
 // ============================================
+// Get high-velocity sales data
 app.get('/api/sales/high-velocity', (req, res) => {
     try {
         const statePath = path.join(__dirname, './high-velocity-state.json');
@@ -460,17 +461,65 @@ app.get('/api/sales/high-velocity', (req, res) => {
             });
         }
         const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
-        res.json({
+        
+        // Check different possible structures
+        let deals = [];
+        let closedDeals = [];
+        let revenue = 0;
+        
+        // Case 1: State has 'activeDeals' array
+        if (state.activeDeals && Array.isArray(state.activeDeals)) {
+            deals = state.activeDeals;
+            closedDeals = state.closedDeals || [];
+            revenue = state.revenue || 0;
+        }
+        // Case 2: State has 'deals' array at top level
+        else if (state.deals && Array.isArray(state.deals)) {
+            deals = state.deals;
+            closedDeals = state.closedDeals || [];
+            revenue = state.revenue || 0;
+        }
+        // Case 3: State has 'leads' array (from apify)
+        else if (state.leads && Array.isArray(state.leads)) {
+            // Convert leads to deals format
+            deals = state.leads.map(lead => ({
+                id: lead.id || 'lead_' + Date.now(),
+                lead: {
+                    name: lead.name || 'Unknown',
+                    company: lead.company || 'Unknown',
+                    email: lead.email || '',
+                    phone: lead.phone || '',
+                    industry: lead.industry || 'Unknown'
+                },
+                stage: lead.stage || 'new',
+                created: lead.created || new Date().toISOString(),
+                revenue: 0,
+                closed: false
+            }));
+            closedDeals = [];
+            revenue = 0;
+        }
+        
+        const response = {
             success: true,
-            deals: state.activeDeals || [],
-            closedDeals: state.closedDeals || [],
-            revenue: state.revenue || 0
-        });
+            deals: deals,
+            closedDeals: closedDeals,
+            revenue: revenue,
+            total: deals.length
+        };
+        
+        res.json(response);
     } catch (error) {
-        res.json({ success: false, error: error.message });
+        console.error('Error in /api/sales/high-velocity:', error);
+        res.json({ 
+            success: false, 
+            error: error.message,
+            deals: [],
+            closedDeals: [],
+            revenue: 0
+        });
     }
 });
-
 // ============================================
 // TIMESFM FORECASTING ROUTES
 // ============================================
