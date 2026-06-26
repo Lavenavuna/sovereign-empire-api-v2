@@ -479,54 +479,29 @@
     // ============================================
     // REFRESH LEADS
     // ============================================
-    async function refreshLeads() {
-        try {
-            const res = await fetch('/api/leads');
-            let leads = leadData;
-
-            if (res.ok) {
-                const data = await res.json();
-                if (data.success && data.leads && data.leads.length > 0) {
-                    leads = data.leads.map(l => ({
-                        name: l.name || 'Unknown',
-                        company: l.company || 'Unknown',
-                        interest: l.interest || Math.floor(Math.random() * 40) + 20,
-                        status: l.status || 'warm'
-                    }));
-                }
-            }
-
-            // Render leads
-            const tbody = document.getElementById('leadBody');
-            if (leads.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666;padding:20px;">No leads found</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = leads.map(lead => `
-                <tr>
-                    <td class="name">${lead.name}</td>
-                    <td class="company">${lead.company}</td>
-                    <td>
-                        <span class="interest-bar">
-                            <span class="fill" style="width:${lead.interest}%;"></span>
-                        </span>
-                        <span class="interest-text">${lead.interest}%</span>
-                    </td>
-                    <td><span class="status-tag status-${lead.status}">${lead.status.toUpperCase()}</span></td>
-                </tr>
-            `).join('');
-
-            document.getElementById('leadCount').textContent = leads.length + ' leads';
-            document.getElementById('leadUpdated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
-
-            // Calculate projections
-            updateProjections(leads);
-
-        } catch (e) {
-            console.error('Lead error:', e);
-        }
+    function renderLeadTable(leads) {
+    const tbody = document.getElementById('leadBody');
+    if (!leads || leads.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666;padding:20px;">No leads found</td></tr>';
+        return;
     }
+    
+    // Show top 10 leads
+    const displayLeads = leads.slice(0, 10);
+    tbody.innerHTML = displayLeads.map(lead => `
+        <tr>
+            <td>${lead.name}</td>
+            <td>${lead.company}</td>
+            <td>
+                <div class="interest-bar">
+                    <div class="fill" style="width:${Math.min(lead.interest, 100)}%;"></div>
+                </div>
+                ${lead.interest}%
+            </td>
+            <td><span class="badge ${lead.status === 'HOT' ? 'badge-hot' : lead.status === 'INTERESTED' ? 'badge-interested' : 'badge-new'}">${lead.status}</span></td>
+        </tr>
+    `).join('');
+}
 
     // ============================================
     // UPDATE PROJECTIONS
