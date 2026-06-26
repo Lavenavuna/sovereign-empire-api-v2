@@ -21,7 +21,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
 // ============================================
-// HEALTH CHECK - Must respond quickly for Railway
+// HEALTH CHECK - Must respond for Railway
 // ============================================
 app.get('/health', (req, res) => {
     res.status(200).json({
@@ -307,147 +307,8 @@ app.post('/api/agent/:name', async (req, res) => {
 });
 
 // ============================================
-// SALES AGENT STATE
-// ============================================
-app.get('/api/sales/state', (req, res) => {
-    try {
-        const statePath = path.join(__dirname, '../slideshow-kit/agent-state.json');
-        if (!fs.existsSync(statePath)) {
-            return res.json({ 
-                performance: { 
-                    totalLeads: 0, 
-                    totalOutreach: 0, 
-                    totalResponses: 0,
-                    totalConversions: 0, 
-                    totalRevenue: 0 
-                },
-                clients: [],
-                status: 'No data yet - run sales agent first'
-            });
-        }
-        const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
-        res.json({ ...state, status: 'ok' });
-    } catch (error) {
-        res.json({ 
-            performance: { 
-                totalLeads: 0, 
-                totalOutreach: 0, 
-                totalResponses: 0,
-                totalConversions: 0, 
-                totalRevenue: 0 
-            },
-            clients: [],
-            error: error.message,
-            status: 'degraded'
-        });
-    }
-});
-
-// ============================================
-// UNIFIED LEADS API
-// ============================================
-app.get('/api/leads', (req, res) => {
-    try {
-        const leads = [];
-        
-        const pipelinePath = path.join(__dirname, './pipeline-state.json');
-        if (fs.existsSync(pipelinePath)) {
-            const pipeline = JSON.parse(fs.readFileSync(pipelinePath, 'utf8'));
-            if (pipeline.deals) {
-                pipeline.deals.forEach(deal => {
-                    leads.push({
-                        id: deal.leadId || deal.id,
-                        name: deal.leadName,
-                        company: deal.company,
-                        email: deal.email,
-                        phone: deal.phone,
-                        industry: deal.industry,
-                        status: deal.stage || 'new',
-                        source: deal.source || 'Pipeline',
-                        created: deal.created,
-                        lastContact: deal.lastContact,
-                        revenue: deal.revenue || 0,
-                        stage: deal.stage || 'new',
-                        activities: deal.activities || []
-                    });
-                });
-            }
-        }
-        
-        const agentPath = path.join(__dirname, '../slideshow-kit/agent-state.json');
-        if (fs.existsSync(agentPath)) {
-            const agentState = JSON.parse(fs.readFileSync(agentPath, 'utf8'));
-            if (agentState.leads) {
-                agentState.leads.forEach(lead => {
-                    const exists = leads.some(l => l.id === lead.id);
-                    if (!exists) {
-                        leads.push({
-                            id: lead.id,
-                            name: lead.contactName || lead.name,
-                            company: lead.company,
-                            email: lead.contactEmail || lead.email,
-                            phone: lead.phone || '',
-                            industry: lead.industry || '',
-                            status: lead.status || 'new',
-                            source: lead.source || 'Sales Agent',
-                            created: lead.discoveredAt || lead.created,
-                            lastContact: null,
-                            revenue: 0,
-                            stage: lead.status || 'new',
-                            activities: []
-                        });
-                    }
-                });
-            }
-        }
-        
-        if (leads.length === 0) {
-            const sampleLeads = [
-                { id: 'sample_1', name: 'Sarah Johnson', company: 'TechFlow Solutions', email: 'sarah@techflow.com', status: 'interested' },
-                { id: 'sample_2', name: 'Michael Chen', company: 'DataSphere Inc', email: 'michael@datasphere.com', status: 'new' },
-                { id: 'sample_3', name: 'Emily Rodriguez', company: 'CloudPioneer', email: 'emily@cloudpioneer.com', status: 'interested' },
-                { id: 'sample_4', name: 'James Wilson', company: 'AI Innovations', email: 'james@aiinnovations.com', status: 'new' },
-                { id: 'sample_5', name: 'Lisa Park', company: 'Digital Transform', email: 'lisa@digitaltransform.com', status: 'interested' }
-            ];
-            sampleLeads.forEach(lead => {
-                leads.push({
-                    id: lead.id,
-                    name: lead.name,
-                    company: lead.company,
-                    email: lead.email,
-                    phone: '',
-                    industry: '',
-                    status: lead.status,
-                    source: 'Sample',
-                    created: new Date().toISOString(),
-                    lastContact: null,
-                    revenue: 0,
-                    stage: lead.status,
-                    activities: []
-                });
-            });
-        }
-        
-        res.json({
-            success: true,
-            count: leads.length,
-            leads: leads,
-            timestamp: new Date().toISOString()
-        });
-    } catch (error) {
-        res.json({
-            success: false,
-            error: error.message,
-            leads: [],
-            count: 0
-        });
-    }
-});
-
-// ============================================
 // HIGH VELOCITY SALES API
 // ============================================
-// Get high-velocity sales data
 app.get('/api/sales/high-velocity', (req, res) => {
     try {
         const statePath = path.join(__dirname, './high-velocity-state.json');
@@ -457,58 +318,22 @@ app.get('/api/sales/high-velocity', (req, res) => {
                 deals: [],
                 closedDeals: [],
                 revenue: 0,
+                total: 0,
                 message: 'No pipeline data yet'
             });
         }
         const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+        let deals = state.activeDeals || state.deals || [];
+        let closedDeals = state.closedDeals || [];
+        let revenue = state.revenue || 0;
         
-        // Check different possible structures
-        let deals = [];
-        let closedDeals = [];
-        let revenue = 0;
-        
-        // Case 1: State has 'activeDeals' array
-        if (state.activeDeals && Array.isArray(state.activeDeals)) {
-            deals = state.activeDeals;
-            closedDeals = state.closedDeals || [];
-            revenue = state.revenue || 0;
-        }
-        // Case 2: State has 'deals' array at top level
-        else if (state.deals && Array.isArray(state.deals)) {
-            deals = state.deals;
-            closedDeals = state.closedDeals || [];
-            revenue = state.revenue || 0;
-        }
-        // Case 3: State has 'leads' array (from apify)
-        else if (state.leads && Array.isArray(state.leads)) {
-            // Convert leads to deals format
-            deals = state.leads.map(lead => ({
-                id: lead.id || 'lead_' + Date.now(),
-                lead: {
-                    name: lead.name || 'Unknown',
-                    company: lead.company || 'Unknown',
-                    email: lead.email || '',
-                    phone: lead.phone || '',
-                    industry: lead.industry || 'Unknown'
-                },
-                stage: lead.stage || 'new',
-                created: lead.created || new Date().toISOString(),
-                revenue: 0,
-                closed: false
-            }));
-            closedDeals = [];
-            revenue = 0;
-        }
-        
-        const response = {
+        res.json({
             success: true,
             deals: deals,
             closedDeals: closedDeals,
             revenue: revenue,
             total: deals.length
-        };
-        
-        res.json(response);
+        });
     } catch (error) {
         console.error('Error in /api/sales/high-velocity:', error);
         res.json({ 
@@ -516,108 +341,12 @@ app.get('/api/sales/high-velocity', (req, res) => {
             error: error.message,
             deals: [],
             closedDeals: [],
-            revenue: 0
+            revenue: 0,
+            total: 0
         });
     }
 });
-// ============================================
-// TIMESFM FORECASTING ROUTES
-// ============================================
 
-// Get full forecast data
-app.get('/api/forecast', (req, res) => {
-    try {
-        const forecastPath = path.join(__dirname, './timesfm-forecasts.json');
-        if (!fs.existsSync(forecastPath)) {
-            return res.json({ 
-                success: false, 
-                message: 'No forecast data yet. Run timesfm-forecast.js first.'
-            });
-        }
-        const forecast = JSON.parse(fs.readFileSync(forecastPath, 'utf8'));
-        res.json({ success: true, data: forecast });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// Get forecast summary
-app.get('/api/forecast/summary', (req, res) => {
-    try {
-        const forecastPath = path.join(__dirname, './timesfm-forecasts.json');
-        if (!fs.existsSync(forecastPath)) {
-            return res.json({ 
-                success: false, 
-                message: 'No forecast data yet'
-            });
-        }
-        const forecast = JSON.parse(fs.readFileSync(forecastPath, 'utf8'));
-        
-        const summary = {
-            timestamp: new Date().toISOString(),
-            horizon: 30,
-            sales: null,
-            leads: null,
-            revenue: null
-        };
-        
-        if (forecast.sales && forecast.sales.prediction) {
-            const f = forecast.sales;
-            const values = f.prediction.map(d => d.value);
-            const total = values.reduce((a, b) => a + b, 0);
-            summary.sales = {
-                trend: values[values.length - 1] > values[0] ? 'increasing' : 'decreasing',
-                avg: Math.round(total / values.length),
-                peak: Math.max(...values),
-                final: values[values.length - 1]
-            };
-        }
-        
-        if (forecast.leads && forecast.leads.prediction) {
-            const f = forecast.leads;
-            const values = f.prediction.map(d => d.value);
-            const total = values.reduce((a, b) => a + b, 0);
-            summary.leads = {
-                trend: values[values.length - 1] > values[0] ? 'increasing' : 'decreasing',
-                avg: Math.round(total / values.length),
-                peak: Math.max(...values),
-                final: values[values.length - 1]
-            };
-        }
-        
-        if (forecast.revenue && forecast.revenue.prediction) {
-            const f = forecast.revenue;
-            const values = f.prediction.map(d => d.value);
-            const total = values.reduce((a, b) => a + b, 0);
-            summary.revenue = {
-                trend: values[values.length - 1] > values[0] ? 'increasing' : 'decreasing',
-                avg: Math.round(total / values.length),
-                peak: Math.max(...values),
-                final: values[values.length - 1]
-            };
-        }
-        
-        res.json({ success: true, data: summary });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// Run forecast manually
-app.post('/api/forecast/run', async (req, res) => {
-    try {
-        const module = await import('./timesfm-forecast.js');
-        const engine = new module.TimesFMEngine();
-        await engine.generateFullForecast();
-        res.json({ success: true, message: 'Forecast generated successfully' });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// ============================================
-// START SERVER
-// ============================================
 // ============================================
 // APIFY LEADS API
 // ============================================
@@ -650,4 +379,14 @@ app.get('/api/apify/leads', (req, res) => {
             total: 0
         });
     }
+});
+
+// ============================================
+// START SERVER
+// ============================================
+app.listen(PORT, '0.0.0.0', () => {
+    console.log('🚀 Sovereign Empire Platform running on port ' + PORT);
+    console.log('📊 Agents loaded: ' + Object.keys(AGENTS).length);
+    console.log('🔑 OpenRouter API: ' + (OPENROUTER_API_KEY ? '✅ Configured' : '❌ Missing'));
+    console.log('📊 Dashboard: http://localhost:' + PORT + '/dashboard');
 });
