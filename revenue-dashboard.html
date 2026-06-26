@@ -467,14 +467,68 @@
     // ============================================
     // REFRESH ALL
     // ============================================
-    async function refreshAll() {
-        await Promise.all([
-            refreshLeads(),
-            refreshStats(),
-            refreshSystemStatus(),
-            refreshAgents()
-        ]);
+    async function refreshLeads() {
+    console.log('🔄 Refreshing leads from REAL data...');
+    try {
+        // READ FROM APIFY
+        const response = await fetch('/api/apify/leads');
+        if (response.ok) {
+            const data = await response.json();
+            console.log('📊 Apify data:', data);
+            
+            if (data.success && data.leads) {
+                const leads = data.leads.map(function(l) {
+                    return {
+                        name: l.name || 'Unknown',
+                        company: l.company || 'Unknown',
+                        interest: l.score || 50,
+                        status: l.score >= 70 ? 'HOT' : l.score >= 50 ? 'INTERESTED' : 'NEW',
+                        email: l.email || '',
+                        phone: l.phone || ''
+                    };
+                });
+                
+                document.getElementById('totalLeads').textContent = leads.length;
+                document.getElementById('interestedLeads').textContent = leads.filter(function(l) { return l.status === 'HOT' || l.status === 'INTERESTED'; }).length;
+                
+                renderLeadTable(leads);
+                updateProjections(leads);
+                console.log('✅ Dashboard updated with ' + leads.length + ' REAL leads');
+                return;
+            }
+        }
+        
+        // FALLBACK: High-velocity
+        const hvResponse = await fetch('/api/sales/high-velocity');
+        if (hvResponse.ok) {
+            const hvData = await hvResponse.json();
+            if (hvData.success && hvData.deals) {
+                const deals = hvData.deals.map(function(d) {
+                    return {
+                        name: d.lead ? d.lead.name : 'Unknown',
+                        company: d.lead ? d.lead.company : 'Unknown',
+                        interest: d.score || 50,
+                        status: d.stage === 'negotiation' ? 'HOT' : d.stage === 'proposal_sent' ? 'INTERESTED' : 'NEW'
+                    };
+                });
+                document.getElementById('totalLeads').textContent = deals.length;
+                renderLeadTable(deals);
+                updateProjections(deals);
+                console.log('✅ Dashboard updated with ' + deals.length + ' deals');
+                return;
+            }
+        }
+        
+        console.log('⚠️ No real data found');
+        document.getElementById('totalLeads').textContent = '0';
+        document.getElementById('interestedLeads').textContent = '0';
+        
+    } catch (e) {
+        console.error('Error refreshing leads:', e.message);
+        document.getElementById('totalLeads').textContent = '0';
+        document.getElementById('interestedLeads').textContent = '0';
     }
+}
 
     // ============================================
     // REFRESH LEADS
