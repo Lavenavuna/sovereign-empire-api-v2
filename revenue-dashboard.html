@@ -1,326 +1,71 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sovereign Empire - Revenue Dashboard</title>
+    <title>Revenue Dashboard</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0f0c29;
-            min-height: 100vh;
-            padding: 20px;
-            color: #fff;
-        }
-        .container { max-width: 1400px; margin: 0 auto; }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 30px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 16px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        .header h1 { font-size: 28px; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .header .subtitle { color: #888; font-size: 14px; }
-        .header-actions { display: flex; gap: 12px; flex-wrap: wrap; }
-        .header-actions button { padding: 10px 20px; border: none; border-radius: 8px; background: rgba(255,255,255,0.1); color: #fff; cursor: pointer; transition: all 0.3s; }
-        .header-actions button:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
-        .status-badge { padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-        .status-online { background: #10b981; color: #fff; }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-        .stat-card {
-            background: rgba(255,255,255,0.05);
-            padding: 18px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.08);
-            text-align: center;
-        }
-        .stat-card .number { font-size: 28px; font-weight: 700; }
-        .stat-card .label { font-size: 12px; color: #888; margin-top: 4px; }
-        .stat-card .sub { font-size: 11px; color: #666; margin-top: 2px; }
-        .color-green { color: #10b981; }
-        .color-purple { color: #8b5cf6; }
-        .color-orange { color: #f59e0b; }
-        .color-pink { color: #ec4899; }
-        .color-cyan { color: #06b6d4; }
-        .color-yellow { color: #fbbf24; }
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-            margin-bottom: 25px;
-        }
-        @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
-        .card {
-            background: rgba(255,255,255,0.05);
-            border-radius: 16px;
-            padding: 22px;
-            border: 1px solid rgba(255,255,255,0.08);
-        }
-        .card h2 { font-size: 16px; margin-bottom: 15px; color: #ccc; }
-        .projection-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 15px;
-            margin-top: 10px;
-        }
-        .projection-item {
-            background: rgba(255,255,255,0.03);
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .projection-item .amount { font-size: 24px; font-weight: 700; }
-        .projection-item .label { font-size: 12px; color: #888; margin-top: 4px; }
-        .projection-item .detail { font-size: 11px; color: #666; margin-top: 4px; }
-        .lead-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        .lead-table th { text-align: left; padding: 10px 8px; color: #888; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .lead-table td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .interest-bar { width: 80px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; display: inline-block; vertical-align: middle; }
-        .interest-bar .fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #667eea, #764ba2); }
-        .badge { padding: 3px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; }
-        .badge-hot { background: #10b981; color: #fff; }
-        .badge-interested { background: #f59e0b; color: #fff; }
-        .badge-new { background: #6b7280; color: #fff; }
-        .last-updated { font-size: 12px; color: #666; margin-top: 10px; text-align: right; }
-        .footer { text-align: center; padding: 20px; color: #555; font-size: 12px; }
-        .refresh-btn { background: #667eea; color: #fff; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; }
-        .refresh-btn:hover { background: #764ba2; }
+        body { background: #0f0c29; color: #fff; font-family: Arial; padding: 40px; }
+        .card { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; margin: 10px 0; }
+        .number { font-size: 36px; font-weight: 700; color: #10b981; }
+        .label { color: #888; }
+        button { background: #667eea; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
     </style>
 </head>
 <body>
-<div class="container">
-
-    <div class="header">
-        <div>
-            <h1>💰 Revenue Dashboard</h1>
-            <div class="subtitle">Live Data · 24/7 Autonomous</div>
-        </div>
-        <div class="header-actions">
-            <span id="overallStatus" class="status-badge status-online">● All Systems Operational</span>
-            <button class="refresh-btn" onclick="refreshAll()">🔄 Refresh</button>
-            <button onclick="window.location.href='/dashboard'">📊 Main</button>
-        </div>
+    <h1>💰 Revenue Dashboard</h1>
+    <button onclick="refreshData()">🔄 Refresh</button>
+    <div id="data">
+        <div class="card"><div class="number" id="leads">0</div><div class="label">Total Leads</div></div>
+        <div class="card"><div class="number" id="interested">0</div><div class="label">Interested</div></div>
+        <div class="card"><div class="number" id="revenue">$0</div><div class="label">Revenue</div></div>
+        <div id="leadsList"></div>
     </div>
 
-    <!-- STATS -->
-    <div class="stats-grid" id="statsGrid">
-        <div class="stat-card"><div class="number color-green" id="totalRevenue">$0</div><div class="label">Revenue</div><div class="sub">Generated</div></div>
-        <div class="stat-card"><div class="number color-purple" id="totalLeads">0</div><div class="label">Leads</div><div class="sub">Total</div></div>
-        <div class="stat-card"><div class="number color-orange" id="interestedLeads">0</div><div class="label">Interested</div><div class="sub">Hot Prospects</div></div>
-        <div class="stat-card"><div class="number color-pink" id="dealsClosed">0</div><div class="label">Deals Closed</div><div class="sub">Won</div></div>
-        <div class="stat-card"><div class="number color-cyan" id="conversionRate">0%</div><div class="label">Conversion</div><div class="sub">Rate</div></div>
-        <div class="stat-card"><div class="number color-yellow" id="projectedRevenue">$0</div><div class="label">Projected</div><div class="sub">Next 30 days</div></div>
-    </div>
-
-    <!-- MAIN -->
-    <div class="main-grid">
-        <div class="card">
-            <h2>📋 Lead Pipeline <span id="leadCount" style="font-size:12px;color:#666;font-weight:400;">0 leads</span></h2>
-            <div style="overflow-x:auto;">
-                <table class="lead-table">
-                    <thead><tr><th>Name</th><th>Company</th><th>Interest</th><th>Status</th></tr></thead>
-                    <tbody id="leadBody"><tr><td colspan="4" style="text-align:center;color:#666;padding:20px;">Loading...</td></tr></tbody>
-                </table>
-            </div>
-            <div class="last-updated" id="leadUpdated">Last updated: Never</div>
-        </div>
-
-        <div class="card">
-            <h2>💰 Revenue Projection</h2>
-            <div class="projection-grid">
-                <div class="projection-item"><div class="amount color-green" id="projMin">$0</div><div class="label">Conservative</div><div class="detail">Cold leads</div></div>
-                <div class="projection-item"><div class="amount color-orange" id="projMid">$0</div><div class="label">Expected</div><div class="detail">Warm leads</div></div>
-                <div class="projection-item"><div class="amount color-pink" id="projMax">$0</div><div class="label">Optimistic</div><div class="detail">Hot leads</div></div>
-            </div>
-            <div style="margin-top:15px;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px;">
-                <div style="display:flex;justify-content:space-between;font-size:13px;">
-                    <span>🎯 Monthly Goal</span>
-                    <span style="color:#10b981;" id="goalProgress">$25,000</span>
-                </div>
-                <div style="width:100%;height:6px;background:rgba(255,255,255,0.1);border-radius:3px;margin-top:8px;">
-                    <div id="goalBar" style="height:100%;border-radius:3px;background:linear-gradient(90deg,#667eea,#764ba2);width:0%;"></div>
-                </div>
-                <div style="display:flex;justify-content:space-between;font-size:11px;color:#666;margin-top:4px;">
-                    <span>$0</span>
-                    <span id="goalPercent">0%</span>
-                    <span>$25,000</span>
-                </div>
-            </div>
-            <div class="last-updated" id="revenueUpdated">Last updated: Never</div>
-        </div>
-    </div>
-
-    <div class="footer">⚡ Sovereign Empire AI · Live Data · <span id="lastUpdated">Never</span></div>
-</div>
-
-<script>
-    // ============================================
-    // REFRESH ALL
-    // ============================================
-    function refreshAll() {
-        refreshLeads();
-    }
-
-    // ============================================
-    // REFRESH LEADS - READS REAL DATA
-    // ============================================
-    async function refreshLeads() {
-        console.log('🔄 Refreshing leads...');
-        try {
-            // FIRST: Try High-Velocity Sales
-            const hvResponse = await fetch('/api/sales/high-velocity');
-            if (hvResponse.ok) {
-                const hvData = await hvResponse.json();
-                console.log('📊 High-Velocity:', hvData);
-                
-                if (hvData.success && hvData.deals && hvData.deals.length > 0) {
-                    var leads = hvData.deals.map(function(d) {
-                        var name = d.lead ? d.lead.name : 'Unknown';
-                        var company = d.lead ? d.lead.company : 'Unknown';
-                        var stage = d.stage || 'new';
-                        var status = stage === 'negotiation' ? 'HOT' : stage === 'proposal_sent' ? 'INTERESTED' : 'NEW';
-                        var interest = d.score || 50;
+    <script>
+        async function refreshData() {
+            console.log('🔄 Refreshing...');
+            try {
+                // Try High-Velocity
+                const hv = await fetch('/api/sales/high-velocity');
+                if (hv.ok) {
+                    const data = await hv.json();
+                    if (data.deals && data.deals.length > 0) {
+                        document.getElementById('leads').textContent = data.deals.length;
+                        document.getElementById('interested').textContent = data.deals.filter(d => d.stage === 'proposal_sent' || d.stage === 'negotiation').length;
+                        document.getElementById('revenue').textContent = '$' + (data.revenue || 0);
                         
-                        return { name: name, company: company, interest: interest, status: status };
-                    });
-                    
-                    updateDashboard(leads);
-                    console.log('✅ Updated with ' + leads.length + ' deals from High-Velocity');
-                    return;
+                        let html = '<h3>Leads:</h3>';
+                        data.deals.slice(0, 5).forEach(d => {
+                            html += '<div class="card">' + (d.lead ? d.lead.name : 'Unknown') + ' - ' + (d.lead ? d.lead.company : '') + ' - ' + (d.stage || 'new') + '</div>';
+                        });
+                        document.getElementById('leadsList').innerHTML = html;
+                        return;
+                    }
                 }
-            }
-            
-            // SECOND: Try Apify
-            const apifyResponse = await fetch('/api/apify/leads');
-            if (apifyResponse.ok) {
-                const apifyData = await apifyResponse.json();
-                console.log('📊 Apify:', apifyData);
                 
-                if (apifyData.success && apifyData.leads && apifyData.leads.length > 0) {
-                    var leads = apifyData.leads.map(function(l) {
-                        var status = l.score >= 70 ? 'HOT' : l.score >= 50 ? 'INTERESTED' : 'NEW';
-                        return { name: l.name || 'Unknown', company: l.company || 'Unknown', interest: l.score || 50, status: status };
-                    });
-                    
-                    updateDashboard(leads);
-                    console.log('✅ Updated with ' + leads.length + ' leads from Apify');
-                    return;
+                // Try Apify
+                const apify = await fetch('/api/apify/leads');
+                if (apify.ok) {
+                    const data = await apify.json();
+                    if (data.leads && data.leads.length > 0) {
+                        document.getElementById('leads').textContent = data.leads.length;
+                        document.getElementById('interested').textContent = data.leads.filter(l => l.score >= 50).length;
+                        document.getElementById('revenue').textContent = '$0';
+                        
+                        let html = '<h3>Leads:</h3>';
+                        data.leads.slice(0, 5).forEach(l => {
+                            html += '<div class="card">' + (l.name || 'Unknown') + ' - ' + (l.company || '') + ' - Score: ' + (l.score || 0) + '</div>';
+                        });
+                        document.getElementById('leadsList').innerHTML = html;
+                        return;
+                    }
                 }
+                
+                document.getElementById('leadsList').innerHTML = '<div class="card">No data found. Check API.</div>';
+            } catch(e) {
+                document.getElementById('leadsList').innerHTML = '<div class="card">Error: ' + e.message + '</div>';
             }
-            
-            console.log('⚠️ No data found - showing sample');
-            var sampleLeads = [
-                { name: 'Sarah Johnson', company: 'TechFlow Solutions', interest: 80, status: 'INTERESTED' },
-                { name: 'Michael Chen', company: 'DataSphere Inc', interest: 65, status: 'NEW' },
-                { name: 'Emily Rodriguez', company: 'CloudPioneer', interest: 85, status: 'HOT' },
-                { name: 'James Wilson', company: 'AI Innovations', interest: 70, status: 'NEW' },
-                { name: 'Lisa Park', company: 'Digital Transform', interest: 75, status: 'INTERESTED' }
-            ];
-            updateDashboard(sampleLeads);
-            console.log('📋 Showing sample data (5 leads)');
-            
-        } catch (e) {
-            console.error('❌ Error:', e.message);
-            document.getElementById('totalLeads').textContent = '0';
-            document.getElementById('interestedLeads').textContent = '0';
-            renderLeadTable([]);
         }
-        
-        document.getElementById('leadUpdated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
-        document.getElementById('lastUpdated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
-        document.getElementById('revenueUpdated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
-    }
-
-    // ============================================
-    // UPDATE DASHBOARD
-    // ============================================
-    function updateDashboard(leads) {
-        document.getElementById('totalLeads').textContent = leads.length;
-        var interestedCount = leads.filter(function(l) { return l.status === 'HOT' || l.status === 'INTERESTED'; }).length;
-        document.getElementById('interestedLeads').textContent = interestedCount;
-        document.getElementById('leadCount').textContent = leads.length + ' leads';
-        
-        renderLeadTable(leads);
-        updateProjections(leads);
-    }
-
-    // ============================================
-    // RENDER LEAD TABLE
-    // ============================================
-    function renderLeadTable(leads) {
-        var tbody = document.getElementById('leadBody');
-        if (!leads || leads.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666;padding:20px;">No leads found</td></tr>';
-            return;
-        }
-        
-        var displayLeads = leads.slice(0, 10);
-        var html = '';
-        for (var i = 0; i < displayLeads.length; i++) {
-            var lead = displayLeads[i];
-            var statusClass = lead.status === 'HOT' ? 'badge-hot' : lead.status === 'INTERESTED' ? 'badge-interested' : 'badge-new';
-            html += '<tr>' +
-                '<td>' + lead.name + '</td>' +
-                '<td>' + lead.company + '</td>' +
-                '<td>' +
-                    '<span class="interest-bar"><span class="fill" style="width:' + Math.min(lead.interest, 100) + '%;"></span></span> ' +
-                    lead.interest + '%' +
-                '</td>' +
-                '<td><span class="badge ' + statusClass + '">' + lead.status + '</span></td>' +
-            '</tr>';
-        }
-        tbody.innerHTML = html;
-    }
-
-    // ============================================
-    // UPDATE PROJECTIONS
-    // ============================================
-    function updateProjections(leads) {
-        var hot = leads.filter(function(l) { return l.status === 'HOT'; });
-        var warm = leads.filter(function(l) { return l.status === 'INTERESTED'; });
-        var cold = leads.filter(function(l) { return l.status === 'NEW'; });
-        
-        var minRevenue = cold.length * 2000 + warm.length * 3500 + hot.length * 5000;
-        var midRevenue = cold.length * 3500 + warm.length * 6000 + hot.length * 10000;
-        var maxRevenue = cold.length * 5000 + warm.length * 10000 + hot.length * 15000;
-        
-        document.getElementById('projMin').textContent = '$' + minRevenue.toLocaleString();
-        document.getElementById('projMid').textContent = '$' + midRevenue.toLocaleString();
-        document.getElementById('projMax').textContent = '$' + maxRevenue.toLocaleString();
-        
-        var goal = 25000;
-        var progress = Math.min(100, (midRevenue / goal) * 100);
-        document.getElementById('goalProgress').textContent = '$' + midRevenue.toLocaleString() + ' / $25,000';
-        document.getElementById('goalBar').style.width = progress + '%';
-        document.getElementById('goalPercent').textContent = progress.toFixed(0) + '%';
-        document.getElementById('projectedRevenue').textContent = '$' + midRevenue.toLocaleString();
-        
-        document.getElementById('revenueUpdated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
-    }
-
-    // ============================================
-    // INIT
-    // ============================================
-    document.addEventListener('DOMContentLoaded', function() {
-        refreshLeads();
-        setInterval(refreshLeads, 60000);
-    });
-
-    console.log('💰 Revenue Dashboard loaded');
-</script>
+        refreshData();
+    </script>
 </body>
 </html>
