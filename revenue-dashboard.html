@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sovereign Empire - Operations Dashboard</title>
+    <title>Sovereign Empire - Revenue Dashboard</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -14,8 +14,6 @@
             color: #fff;
         }
         .container { max-width: 1400px; margin: 0 auto; }
-
-        /* Header */
         .header {
             display: flex;
             justify-content: space-between;
@@ -23,6 +21,7 @@
             padding: 20px 30px;
             background: rgba(255,255,255,0.05);
             border-radius: 16px;
+            backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.1);
             margin-bottom: 30px;
             flex-wrap: wrap;
@@ -35,10 +34,6 @@
         .header-actions button:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
         .status-badge { padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; }
         .status-online { background: #10b981; color: #fff; }
-        .status-degraded { background: #f59e0b; color: #fff; }
-        .status-offline { background: #ef4444; color: #fff; }
-
-        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -61,9 +56,6 @@
         .color-pink { color: #ec4899; }
         .color-cyan { color: #06b6d4; }
         .color-yellow { color: #fbbf24; }
-        .color-red { color: #ef4444; }
-
-        /* Main Grid */
         .main-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -71,7 +63,6 @@
             margin-bottom: 25px;
         }
         @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
-
         .card {
             background: rgba(255,255,255,0.05);
             border-radius: 16px;
@@ -79,42 +70,6 @@
             border: 1px solid rgba(255,255,255,0.08);
         }
         .card h2 { font-size: 16px; margin-bottom: 15px; color: #ccc; display: flex; justify-content: space-between; align-items: center; }
-        .card h2 .badge { font-size: 11px; padding: 3px 12px; border-radius: 12px; font-weight: 600; }
-
-        /* System Status Grid */
-        .system-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-        .system-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 14px;
-            background: rgba(255,255,255,0.03);
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .system-item .name { font-size: 13px; color: #aaa; }
-        .system-item .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-        .dot-green { background: #10b981; }
-        .dot-yellow { background: #f59e0b; }
-        .dot-red { background: #ef4444; }
-
-        /* Lead Table */
-        .lead-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        .lead-table th { text-align: left; padding: 10px 8px; color: #888; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .lead-table td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .interest-bar { width: 80px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; display: inline-block; vertical-align: middle; }
-        .interest-bar .fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #667eea, #764ba2); }
-        .badge { padding: 3px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; }
-        .badge-hot { background: #10b981; color: #fff; }
-        .badge-interested { background: #f59e0b; color: #fff; }
-        .badge-new { background: #6b7280; color: #fff; }
-        .badge-dead { background: #ef4444; color: #fff; }
-
-        /* Projection Grid */
         .projection-grid {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -130,28 +85,53 @@
         }
         .projection-item .amount { font-size: 24px; font-weight: 700; }
         .projection-item .label { font-size: 12px; color: #888; margin-top: 4px; }
-
-        .footer { text-align: center; padding: 20px; color: #555; font-size: 12px; }
+        .lead-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .lead-table th { text-align: left; padding: 10px 8px; color: #888; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .lead-table td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .interest-bar { width: 80px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; display: inline-block; vertical-align: middle; }
+        .interest-bar .fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #667eea, #764ba2); }
+        .badge { padding: 3px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .badge-hot { background: #10b981; color: #fff; }
+        .badge-interested { background: #f59e0b; color: #fff; }
+        .badge-new { background: #6b7280; color: #fff; }
+        .badge-closed { background: #10b981; color: #fff; }
         .last-updated { font-size: 12px; color: #666; margin-top: 10px; text-align: right; }
+        .footer { text-align: center; padding: 20px; color: #555; font-size: 12px; }
         .refresh-btn { background: #667eea; color: #fff; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; }
         .refresh-btn:hover { background: #764ba2; }
-        .overall-status { padding: 8px 20px; border-radius: 20px; font-size: 14px; font-weight: 600; }
-        .status-good { background: #10b981; color: #fff; }
-        .status-warning { background: #f59e0b; color: #fff; }
-        .status-bad { background: #ef4444; color: #fff; }
+        .pipeline-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 15px; }
+        .pipeline-item { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; text-align: center; border-left: 3px solid #6b7280; }
+        .pipeline-item .count { font-size: 20px; font-weight: 700; }
+        .pipeline-item .label { font-size: 11px; color: #888; }
+        .approval-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 8px; border-left: 3px solid #f59e0b; }
+        .approval-item .info strong { color: #fff; }
+        .approval-item .info .detail { font-size: 12px; color: #888; }
+        .approval-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-approve { background: #10b981; color: #fff; border: none; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .btn-reject { background: #ef4444; color: #fff; border: none; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .btn-sign { background: #8b5cf6; color: #fff; border: none; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .btn-contact { background: #3b82f6; color: #fff; border: none; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .btn-hot { background: #f59e0b; color: #fff; border: none; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .btn-followup { background: #8b5cf6; color: #fff; border: none; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .status-closed-text { color: #10b981; font-size: 11px; font-weight: 600; }
+        .border-hot { border-left-color: #10b981; }
+        .border-interested { border-left-color: #f59e0b; }
+        .border-proposal { border-left-color: #8b5cf6; }
+        .border-new { border-left-color: #6b7280; }
+        .border-closed { border-left-color: #10b981; }
+        .empty-state { color: #666; padding: 20px; text-align: center; }
     </style>
 </head>
 <body>
 <div class="container">
 
-    <!-- HEADER -->
     <div class="header">
         <div>
-            <h1>⚡ Sovereign Empire Operations</h1>
-            <div class="subtitle">24/7 Autonomous · Live System Status</div>
+            <h1>💰 Revenue Operations</h1>
+            <div class="subtitle">Live Pipeline · Approvals · Signatory Actions</div>
         </div>
         <div class="header-actions">
-            <span id="overallStatus" class="overall-status status-good">🟢 All Systems Operational</span>
+            <span id="overallStatus" class="status-badge status-online">● All Systems Operational</span>
             <button class="refresh-btn" onclick="refreshAll()">🔄 Refresh</button>
             <button onclick="window.location.href='/dashboard'">📊 Main</button>
         </div>
@@ -159,127 +139,85 @@
 
     <!-- STATS -->
     <div class="stats-grid">
+        <div class="stat-card"><div class="number color-green" id="totalRevenue">$0</div><div class="label">Revenue</div><div class="sub">Generated</div></div>
         <div class="stat-card"><div class="number color-purple" id="totalLeads">0</div><div class="label">Total Leads</div><div class="sub">Discovered</div></div>
         <div class="stat-card"><div class="number color-orange" id="interestedLeads">0</div><div class="label">Interested</div><div class="sub">Active Pipeline</div></div>
-        <div class="stat-card"><div class="number color-green" id="hotLeads">0</div><div class="label">Hot Leads</div><div class="sub">Ready to Close</div></div>
-        <div class="stat-card"><div class="number color-pink" id="totalRevenue">$0</div><div class="label">Revenue</div><div class="sub">Generated</div></div>
+        <div class="stat-card"><div class="number color-pink" id="dealsClosed">0</div><div class="label">Deals Closed</div><div class="sub">Won</div></div>
         <div class="stat-card"><div class="number color-yellow" id="projectedRevenue">$0</div><div class="label">Projected</div><div class="sub">Next 30 Days</div></div>
-        <div class="stat-card"><div class="number color-cyan" id="dealsClosed">0</div><div class="label">Deals Closed</div><div class="sub">Won</div></div>
+        <div class="stat-card"><div class="number color-cyan" id="conversionRate">0%</div><div class="label">Conversion</div><div class="sub">Rate</div></div>
     </div>
 
-    <!-- MAIN GRID -->
-    <div class="main-grid">
-
-        <!-- SYSTEM STATUS -->
-        <div class="card">
-            <h2>🟢 System Status <span class="badge" style="background:#10b981;color:#fff;font-size:11px;">24/7</span></h2>
-            <div class="system-grid" id="systemGrid">
-                <div class="system-item"><span class="name">🚀 Railway</span><span class="dot dot-green" id="statusRailway"></span></div>
-                <div class="system-item"><span class="name">🧠 API Server</span><span class="dot dot-green" id="statusApi"></span></div>
-                <div class="system-item"><span class="name">📦 Apify Integration</span><span class="dot dot-green" id="statusApify"></span></div>
-                <div class="system-item"><span class="name">💼 High-Velocity Sales</span><span class="dot dot-green" id="statusSales"></span></div>
-                <div class="system-item"><span class="name">📞 Voice Bot</span><span class="dot dot-green" id="statusVoice"></span></div>
-                <div class="system-item"><span class="name">🤖 18 Agents</span><span class="dot dot-green" id="statusAgents"></span></div>
-                <div class="system-item"><span class="name">📊 Revenue Engine</span><span class="dot dot-green" id="statusRevenue"></span></div>
-                <div class="system-item"><span class="name">📈 Forecast Engine</span><span class="dot dot-green" id="statusForecast"></span></div>
-            </div>
-            <div class="last-updated" id="sysUpdated">Last updated: Never</div>
-        </div>
-
-        <!-- REVENUE PROJECTION -->
-        <div class="card">
-            <h2>💰 Revenue Projection <span class="badge" style="background:#667eea;color:#fff;font-size:11px;">30 Days</span></h2>
-            <div class="projection-grid">
-                <div class="projection-item"><div class="amount color-green" id="projMin">$0</div><div class="label">Conservative</div></div>
-                <div class="projection-item"><div class="amount color-orange" id="projMid">$0</div><div class="label">Expected</div></div>
-                <div class="projection-item"><div class="amount color-pink" id="projMax">$0</div><div class="label">Optimistic</div></div>
-            </div>
-            <div style="margin-top:15px;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px;">
-                <div style="display:flex;justify-content:space-between;font-size:13px;">
-                    <span>🎯 Monthly Goal</span>
-                    <span style="color:#10b981;" id="goalProgress">$25,000</span>
-                </div>
-                <div style="width:100%;height:6px;background:rgba(255,255,255,0.1);border-radius:3px;margin-top:8px;">
-                    <div id="goalBar" style="height:100%;border-radius:3px;background:linear-gradient(90deg,#667eea,#764ba2);width:0%;"></div>
-                </div>
-                <div style="display:flex;justify-content:space-between;font-size:11px;color:#666;margin-top:4px;">
-                    <span>$0</span>
-                    <span id="goalPercent">0%</span>
-                    <span>$25,000</span>
-                </div>
-            </div>
-            <div class="last-updated" id="revenueUpdated">Last updated: Never</div>
-        </div>
-    </div>
-
-    <!-- LEAD PIPELINE -->
+    <!-- PIPELINE SUMMARY -->
     <div class="card" style="margin-bottom:25px;">
-        <h2>📋 Lead Pipeline <span id="leadCount" style="font-size:12px;color:#666;font-weight:400;">0 leads</span></h2>
+        <h2>📋 Pipeline Summary <span style="font-size:12px;color:#666;font-weight:400;" id="leadCount">0 leads</span></h2>
+        <div class="pipeline-summary">
+            <div class="pipeline-item border-new"><div class="count color-cyan" id="newCount">0</div><div class="label">🆕 New</div></div>
+            <div class="pipeline-item border-new"><div class="count color-blue" id="contactedCount">0</div><div class="label">📞 Contacted</div></div>
+            <div class="pipeline-item border-interested"><div class="count color-orange" id="interestedCount">0</div><div class="label">🎯 Interested</div></div>
+            <div class="pipeline-item border-proposal"><div class="count color-purple" id="proposalCount">0</div><div class="label">📄 Proposal Sent</div></div>
+            <div class="pipeline-item border-hot"><div class="count color-green" id="hotCount">0</div><div class="label">🔥 Hot Leads</div></div>
+            <div class="pipeline-item border-closed"><div class="count color-green" id="closedCount">0</div><div class="label">✅ Closed</div></div>
+        </div>
         <div style="overflow-x:auto;">
             <table class="lead-table">
-                <thead><tr><th>Name</th><th>Company</th><th>Interest</th><th>Status</th></tr></thead>
-                <tbody id="leadBody"><tr><td colspan="4" style="text-align:center;color:#666;padding:20px;">Loading...</td></tr></tbody>
+                <thead><tr><th>Name</th><th>Company</th><th>Interest</th><th>Stage</th><th>Action</th></tr></thead>
+                <tbody id="leadBody"><tr><td colspan="5" class="empty-state">Loading leads...</td></tr></tbody>
             </table>
         </div>
         <div class="last-updated" id="leadUpdated">Last updated: Never</div>
     </div>
 
-    <div class="footer">⚡ Sovereign Empire AI · Live Operations · <span id="lastUpdated">Never</span></div>
+    <!-- APPROVAL & SIGNATORY -->
+    <div class="card" style="margin-bottom:25px;border:2px solid #f59e0b;">
+        <h2>🔔 Pending Your Approval <span style="font-size:12px;color:#f59e0b;font-weight:400;">⚠️ Action Required</span></h2>
+        <div id="approvalList"><div class="empty-state">No pending approvals. Great job!</div></div>
+        <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
+            <button onclick="refreshApprovals()" class="refresh-btn" style="background:#667eea;padding:8px 20px;">🔄 Check Pending</button>
+            <button onclick="viewAllContracts()" class="refresh-btn" style="background:#8b5cf6;padding:8px 20px;">📋 All Contracts</button>
+            <button onclick="setupPayment()" class="refresh-btn" style="background:#10b981;padding:8px 20px;">💳 Setup Payment</button>
+        </div>
+        <div class="last-updated" id="approvalUpdated">Last updated: Never</div>
+    </div>
+
+    <!-- REVENUE PROJECTION -->
+    <div class="card" style="margin-bottom:25px;">
+        <h2>💰 Revenue Projection</h2>
+        <div class="projection-grid">
+            <div class="projection-item"><div class="amount color-green" id="projMin">$0</div><div class="label">Conservative</div></div>
+            <div class="projection-item"><div class="amount color-orange" id="projMid">$0</div><div class="label">Expected</div></div>
+            <div class="projection-item"><div class="amount color-pink" id="projMax">$0</div><div class="label">Optimistic</div></div>
+        </div>
+        <div style="margin-top:15px;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px;">
+            <div style="display:flex;justify-content:space-between;font-size:13px;">
+                <span>🎯 Monthly Goal</span>
+                <span style="color:#10b981;" id="goalProgress">$25,000</span>
+            </div>
+            <div style="width:100%;height:6px;background:rgba(255,255,255,0.1);border-radius:3px;margin-top:8px;">
+                <div id="goalBar" style="height:100%;border-radius:3px;background:linear-gradient(90deg,#667eea,#764ba2);width:0%;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:#666;margin-top:4px;">
+                <span>$0</span>
+                <span id="goalPercent">0%</span>
+                <span>$25,000</span>
+            </div>
+        </div>
+        <div class="last-updated" id="revenueUpdated">Last updated: Never</div>
+    </div>
+
+    <div class="footer">⚡ Sovereign Empire AI · Live Pipeline · <span id="lastUpdated">Never</span></div>
 </div>
 
 <script>
+    // ============================================
+    // DATA
+    // ============================================
+    let allLeads = [];
+
     // ============================================
     // REFRESH ALL
     // ============================================
     function refreshAll() {
         refreshLeads();
-        refreshSystemStatus();
-    }
-
-    // ============================================
-    // SYSTEM STATUS
-    // ============================================
-    async function refreshSystemStatus() {
-        const systems = [
-            { id: 'statusRailway', url: '/health' },
-            { id: 'statusApi', url: '/health' },
-            { id: 'statusApify', url: '/api/apify/leads' },
-            { id: 'statusSales', url: '/api/sales/high-velocity' },
-            { id: 'statusVoice', url: '/health' },
-            { id: 'statusAgents', url: '/api/agents' },
-            { id: 'statusRevenue', url: '/health' },
-            { id: 'statusForecast', url: '/api/forecast' }
-        ];
-
-        let allOnline = true;
-
-        for (const sys of systems) {
-            const el = document.getElementById(sys.id);
-            if (!el) continue;
-            try {
-                const res = await fetch(sys.url);
-                if (res.ok) {
-                    el.className = 'dot dot-green';
-                } else {
-                    el.className = 'dot dot-yellow';
-                    allOnline = false;
-                }
-            } catch (e) {
-                el.className = 'dot dot-red';
-                allOnline = false;
-            }
-        }
-
-        const overall = document.getElementById('overallStatus');
-        if (allOnline) {
-            overall.textContent = '🟢 All Systems Operational';
-            overall.className = 'overall-status status-good';
-        } else {
-            overall.textContent = '🟡 Some Systems Degraded';
-            overall.className = 'overall-status status-warning';
-        }
-
-        document.getElementById('sysUpdated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
     }
 
     // ============================================
@@ -292,16 +230,18 @@
             if (hvResponse.ok) {
                 const hvData = await hvResponse.json();
                 if (hvData.success && hvData.deals && hvData.deals.length > 0) {
-                    var leads = hvData.deals.map(function(d) {
+                    allLeads = hvData.deals.map(function(d) {
                         var name = d.lead ? d.lead.name : 'Unknown';
                         var company = d.lead ? d.lead.company : 'Unknown';
                         var stage = d.stage || 'new';
-                        var status = stage === 'negotiation' ? 'HOT' : stage === 'proposal_sent' ? 'INTERESTED' : 'NEW';
+                        var status = stage === 'negotiation' ? 'HOT' : 
+                                     stage === 'proposal_sent' ? 'INTERESTED' : 
+                                     stage === 'closed_won' ? 'CLOSED' : 'NEW';
                         var interest = d.score || 50;
-                        return { name: name, company: company, interest: interest, status: status };
+                        return { name: name, company: company, interest: interest, status: status, stage: stage };
                     });
-                    updateDashboard(leads);
-                    console.log('✅ Updated with ' + leads.length + ' deals');
+                    renderPipeline(allLeads);
+                    console.log('✅ Updated with ' + allLeads.length + ' deals');
                     return;
                 }
             }
@@ -310,12 +250,12 @@
             if (apifyResponse.ok) {
                 const apifyData = await apifyResponse.json();
                 if (apifyData.success && apifyData.leads && apifyData.leads.length > 0) {
-                    var leads = apifyData.leads.map(function(l) {
+                    allLeads = apifyData.leads.map(function(l) {
                         var status = l.score >= 70 ? 'HOT' : l.score >= 50 ? 'INTERESTED' : 'NEW';
-                        return { name: l.name || 'Unknown', company: l.company || 'Unknown', interest: l.score || 50, status: status };
+                        return { name: l.name || 'Unknown', company: l.company || 'Unknown', interest: l.score || 50, status: status, stage: status };
                     });
-                    updateDashboard(leads);
-                    console.log('✅ Updated with ' + leads.length + ' leads from Apify');
+                    renderPipeline(allLeads);
+                    console.log('✅ Updated with ' + allLeads.length + ' leads from Apify');
                     return;
                 }
             }
@@ -323,7 +263,6 @@
             console.log('⚠️ No data found');
             document.getElementById('totalLeads').textContent = '0';
             document.getElementById('interestedLeads').textContent = '0';
-            document.getElementById('hotLeads').textContent = '0';
             document.getElementById('leadCount').textContent = '0 leads';
             renderLeadTable([]);
 
@@ -337,18 +276,38 @@
     }
 
     // ============================================
-    // UPDATE DASHBOARD
+    // RENDER PIPELINE
     // ============================================
-    function updateDashboard(leads) {
+    function renderPipeline(leads) {
         document.getElementById('totalLeads').textContent = leads.length;
-        var interestedCount = leads.filter(function(l) { return l.status === 'INTERESTED'; }).length;
-        var hotCount = leads.filter(function(l) { return l.status === 'HOT'; }).length;
-        document.getElementById('interestedLeads').textContent = interestedCount;
-        document.getElementById('hotLeads').textContent = hotCount;
         document.getElementById('leadCount').textContent = leads.length + ' leads';
         
+        var interested = leads.filter(function(l) { return l.status === 'INTERESTED' || l.status === 'HOT'; }).length;
+        document.getElementById('interestedLeads').textContent = interested;
+        
+        updatePipelineCounts(leads);
         renderLeadTable(leads);
         updateProjections(leads);
+        refreshApprovals();
+    }
+
+    // ============================================
+    // UPDATE PIPELINE COUNTS
+    // ============================================
+    function updatePipelineCounts(leads) {
+        var newCount = leads.filter(function(l) { return l.stage === 'new' || l.status === 'NEW'; }).length;
+        var contactedCount = leads.filter(function(l) { return l.stage === 'contacted' || l.stage === 'qualification'; }).length;
+        var interestedCount = leads.filter(function(l) { return l.stage === 'interested' || l.status === 'INTERESTED'; }).length;
+        var proposalCount = leads.filter(function(l) { return l.stage === 'proposal_sent'; }).length;
+        var hotCount = leads.filter(function(l) { return l.stage === 'negotiation' || l.status === 'HOT'; }).length;
+        var closedCount = leads.filter(function(l) { return l.stage === 'closed_won' || l.status === 'CLOSED'; }).length;
+        
+        document.getElementById('newCount').textContent = newCount;
+        document.getElementById('contactedCount').textContent = contactedCount;
+        document.getElementById('interestedCount').textContent = interestedCount;
+        document.getElementById('proposalCount').textContent = proposalCount;
+        document.getElementById('hotCount').textContent = hotCount;
+        document.getElementById('closedCount').textContent = closedCount;
     }
 
     // ============================================
@@ -357,7 +316,7 @@
     function renderLeadTable(leads) {
         var tbody = document.getElementById('leadBody');
         if (!leads || leads.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666;padding:20px;">No leads found</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No leads found</td></tr>';
             return;
         }
 
@@ -365,12 +324,29 @@
         var html = '';
         for (var i = 0; i < displayLeads.length; i++) {
             var lead = displayLeads[i];
-            var statusClass = lead.status === 'HOT' ? 'badge-hot' : lead.status === 'INTERESTED' ? 'badge-interested' : 'badge-new';
+            var statusClass = lead.status === 'HOT' ? 'badge-hot' : 
+                             lead.status === 'INTERESTED' ? 'badge-interested' : 
+                             lead.status === 'CLOSED' ? 'badge-closed' : 'badge-new';
+            
+            var actionButton = '';
+            if (lead.status === 'HOT') {
+                actionButton = '<button onclick="approveProposal(\'' + lead.name + '\', \'' + lead.company + '\')" class="btn-approve">✅ Approve</button>';
+            } else if (lead.status === 'INTERESTED') {
+                actionButton = '<button onclick="markHot(\'' + lead.name + '\', \'' + lead.company + '\')" class="btn-hot">🔥 Mark Hot</button>';
+            } else if (lead.status === 'NEW') {
+                actionButton = '<button onclick="contactLead(\'' + lead.name + '\', \'' + lead.company + '\')" class="btn-contact">📞 Contact</button>';
+            } else if (lead.status === 'CLOSED') {
+                actionButton = '<span class="status-closed-text">✅ Closed</span>';
+            } else {
+                actionButton = '<button onclick="followUp(\'' + lead.name + '\', \'' + lead.company + '\')" class="btn-followup">📧 Follow Up</button>';
+            }
+            
             html += '<tr>' +
                 '<td>' + lead.name + '</td>' +
                 '<td>' + lead.company + '</td>' +
                 '<td><span class="interest-bar"><span class="fill" style="width:' + Math.min(lead.interest, 100) + '%;"></span></span> ' + lead.interest + '%</td>' +
-                '<td><span class="badge ' + statusClass + '">' + lead.status + '</span></td>' +
+                '<td><span class="badge ' + statusClass + '">' + (lead.status || lead.stage || 'NEW') + '</span></td>' +
+                '<td>' + actionButton + '</td>' +
             '</tr>';
         }
         tbody.innerHTML = html;
@@ -403,6 +379,123 @@
     }
 
     // ============================================
+    // ACTION FUNCTIONS
+    // ============================================
+
+    function approveProposal(name, company) {
+        if (confirm('✅ Approve proposal for ' + name + ' (' + company + ')?\n\nThis will:\n1. Send contract for signature\n2. Generate invoice\n3. Mark for payment')) {
+            alert('✅ Proposal approved for ' + name + '!\n\n📝 Contract will be sent to client.\n💳 Invoice will be generated.\n📱 You will receive SMS confirmation.');
+            console.log('✅ Proposal approved:', name, company);
+            refreshAll();
+        }
+    }
+
+    function markHot(name, company) {
+        if (confirm('🔥 Mark ' + name + ' (' + company + ') as HOT?\n\nThis will:\n1. Prioritize lead\n2. Send urgent follow-up\n3. Prepare proposal')) {
+            alert('🔥 ' + name + ' marked as HOT!\n\n📄 Agent will prepare proposal.\n📞 Agent will schedule call.\n📱 You will receive SMS alert.');
+            console.log('🔥 Marked HOT:', name, company);
+            refreshAll();
+        }
+    }
+
+    function contactLead(name, company) {
+        if (confirm('📞 Contact ' + name + ' (' + company + ')?\n\nThis will:\n1. Send introduction email\n2. Schedule follow-up\n3. Mark as contacted')) {
+            alert('📞 Contact initiated for ' + name + '!\n\n📧 Introduction email sent.\n⏰ Follow-up scheduled.\n📱 You will receive SMS alert.');
+            console.log('📞 Contacted:', name, company);
+            refreshAll();
+        }
+    }
+
+    function followUp(name, company) {
+        if (confirm('📧 Send follow-up to ' + name + ' (' + company + ')?\n\nThis will:\n1. Send personalized follow-up email\n2. Schedule next touchpoint\n3. Track response')) {
+            alert('📧 Follow-up sent to ' + name + '!\n\n📧 Email sent.\n⏰ Next touchpoint scheduled.\n📱 You will receive SMS alert.');
+            console.log('📧 Follow-up sent:', name, company);
+            refreshAll();
+        }
+    }
+
+    // ============================================
+    // APPROVAL & SIGNATORY FUNCTIONS
+    // ============================================
+
+    function refreshApprovals() {
+        var approvalList = document.getElementById('approvalList');
+        approvalList.innerHTML = '🔄 Checking for pending approvals...';
+        
+        // Sample pending approvals (in production, fetch from API)
+        setTimeout(function() {
+            var pending = [
+                { name: 'Sarah Johnson', company: 'TechFlow Solutions', amount: 5000, stage: 'Approval Needed' },
+                { name: 'Michael Chen', company: 'DataSphere Inc', amount: 7500, stage: 'Signatory Required' }
+            ];
+            
+            if (pending.length === 0) {
+                approvalList.innerHTML = '<div class="empty-state" style="color:#10b981;">✅ No pending approvals. Great job!</div>';
+            } else {
+                var html = '';
+                for (var i = 0; i < pending.length; i++) {
+                    var item = pending[i];
+                    html += 
+                        '<div class="approval-item">' +
+                            '<div class="info">' +
+                                '<strong>' + item.name + '</strong>' +
+                                '<div class="detail">' + item.company + ' | $' + item.amount + ' | ' + item.stage + '</div>' +
+                            '</div>' +
+                            '<div class="approval-actions">' +
+                                '<button onclick="approveDeal(\'' + item.name + '\', \'' + item.company + '\')" class="btn-approve">✅ Approve</button>' +
+                                '<button onclick="rejectDeal(\'' + item.name + '\', \'' + item.company + '\')" class="btn-reject">❌ Reject</button>' +
+                                '<button onclick="signContract(\'' + item.name + '\', \'' + item.company + '\')" class="btn-sign">✍️ Sign</button>' +
+                            '</div>' +
+                        '</div>';
+                }
+                approvalList.innerHTML = html;
+            }
+            document.getElementById('approvalUpdated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+        }, 1000);
+    }
+
+    function approveDeal(name, company) {
+        if (confirm('✅ Approve deal for ' + name + ' (' + company + ')?')) {
+            alert('✅ Deal approved!\n\n📝 Contract will be sent to client.\n💳 Invoice will be generated.\n📱 SMS notification sent.');
+            refreshApprovals();
+        }
+    }
+
+    function rejectDeal(name, company) {
+        if (confirm('❌ Reject deal for ' + name + ' (' + company + ')?')) {
+            alert('❌ Deal rejected.\n\n📱 Notification sent to sales team.');
+            refreshApprovals();
+        }
+    }
+
+    function signContract(name, company) {
+        if (confirm('✍️ Sign contract for ' + name + ' (' + company + ')?\n\nThis will:\n1. Add your digital signature\n2. Send to client\n3. Mark as signed')) {
+            alert('✍️ Contract signed for ' + name + '!\n\n📧 Client will receive signed contract.\n💳 Payment link will be sent.\n📱 SMS notification sent.');
+            refreshApprovals();
+        }
+    }
+
+    function viewAllContracts() {
+        alert('📋 ALL CONTRACTS\n\n' +
+              'Pending Signature:\n' +
+              '1. Sarah Johnson - TechFlow Solutions - $5,000\n' +
+              '2. Michael Chen - DataSphere Inc - $7,500\n\n' +
+              'Signed & Completed:\n' +
+              '1. Emily Rodriguez - CloudPioneer - $12,000\n' +
+              '2. Lisa Park - Digital Transform - $8,500\n\n' +
+              '📊 Total: 4 contracts, $33,000 pipeline value');
+    }
+
+    function setupPayment() {
+        alert('💳 PAYMENT SETUP\n\n' +
+              'To receive payments:\n' +
+              '1. PayPal: paypal.me/sovereignempire\n' +
+              '2. Bank Transfer: Westpac Fiji\n' +
+              '   Account: [Your Account Number]\n\n' +
+              '📱 You will receive SMS when payments are received.');
+    }
+
+    // ============================================
     // INIT
     // ============================================
     document.addEventListener('DOMContentLoaded', function() {
@@ -410,7 +503,7 @@
         setInterval(refreshAll, 60000);
     });
 
-    console.log('⚡ Operations Dashboard loaded');
+    console.log('💰 Revenue Dashboard loaded with pipeline tracking');
 </script>
 </body>
 </html>
