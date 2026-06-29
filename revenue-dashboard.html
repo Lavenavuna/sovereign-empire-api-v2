@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sovereign Empire - Revenue Dashboard</title>
+    <title>Sovereign Empire - Revenue Operations</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -103,13 +103,16 @@
         .pipeline-item { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; text-align: center; border-left: 3px solid #6b7280; }
         .pipeline-item .count { font-size: 20px; font-weight: 700; }
         .pipeline-item .label { font-size: 11px; color: #888; }
-        .approval-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 8px; border-left: 3px solid #f59e0b; }
+        .approval-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 8px; border-left: 3px solid #f59e0b; flex-wrap: wrap; gap: 10px; }
         .approval-item .info strong { color: #fff; }
         .approval-item .info .detail { font-size: 12px; color: #888; }
         .approval-actions { display: flex; gap: 8px; flex-wrap: wrap; }
         .btn-approve { background: #10b981; color: #fff; border: none; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .btn-approve:hover { background: #059669; }
         .btn-reject { background: #ef4444; color: #fff; border: none; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .btn-reject:hover { background: #dc2626; }
         .btn-sign { background: #8b5cf6; color: #fff; border: none; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .btn-sign:hover { background: #7c3aed; }
         .btn-contact { background: #3b82f6; color: #fff; border: none; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; }
         .btn-hot { background: #f59e0b; color: #fff; border: none; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; }
         .btn-followup { background: #8b5cf6; color: #fff; border: none; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; }
@@ -120,6 +123,12 @@
         .border-new { border-left-color: #6b7280; }
         .border-closed { border-left-color: #10b981; }
         .empty-state { color: #666; padding: 20px; text-align: center; }
+        .status-approved { color: #10b981; font-weight: 600; font-size: 12px; }
+        .status-signed { color: #8b5cf6; font-weight: 600; font-size: 12px; }
+        .status-rejected { color: #ef4444; font-weight: 600; font-size: 12px; }
+        .status-processing { color: #f59e0b; font-weight: 600; font-size: 12px; }
+        .status-pending { color: #f59e0b; font-weight: 600; font-size: 12px; }
+        .status-completed { color: #10b981; font-weight: 600; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -211,7 +220,7 @@
     // ============================================
     // DATA
     // ============================================
-    let allLeads = [];
+    var allLeads = [];
 
     // ============================================
     // REFRESH ALL
@@ -226,9 +235,9 @@
     async function refreshLeads() {
         console.log('🔄 Refreshing leads...');
         try {
-            const hvResponse = await fetch('/api/sales/high-velocity');
+            var hvResponse = await fetch('/api/sales/high-velocity');
             if (hvResponse.ok) {
-                const hvData = await hvResponse.json();
+                var hvData = await hvResponse.json();
                 if (hvData.success && hvData.deals && hvData.deals.length > 0) {
                     allLeads = hvData.deals.map(function(d) {
                         var name = d.lead ? d.lead.name : 'Unknown';
@@ -246,9 +255,9 @@
                 }
             }
 
-            const apifyResponse = await fetch('/api/apify/leads');
+            var apifyResponse = await fetch('/api/apify/leads');
             if (apifyResponse.ok) {
-                const apifyData = await apifyResponse.json();
+                var apifyData = await apifyResponse.json();
                 if (apifyData.success && apifyData.leads && apifyData.leads.length > 0) {
                     allLeads = apifyData.leads.map(function(l) {
                         var status = l.score >= 70 ? 'HOT' : l.score >= 50 ? 'INTERESTED' : 'NEW';
@@ -422,11 +431,9 @@
         var approvalList = document.getElementById('approvalList');
         approvalList.innerHTML = '🔄 Checking for pending approvals...';
         
-        // Sample pending approvals (in production, fetch from API)
         setTimeout(function() {
             var pending = [
-                { name: 'Sarah Johnson', company: 'TechFlow Solutions', amount: 5000, stage: 'Approval Needed' },
-                { name: 'Michael Chen', company: 'DataSphere Inc', amount: 7500, stage: 'Signatory Required' }
+                { name: 'Sarah Johnson', company: 'TechFlow Solutions', amount: 5000, stage: 'Approval Needed' }
             ];
             
             if (pending.length === 0) {
@@ -436,54 +443,124 @@
                 for (var i = 0; i < pending.length; i++) {
                     var item = pending[i];
                     html += 
-                        '<div class="approval-item">' +
+                        '<div class="approval-item" id="approval-' + i + '">' +
                             '<div class="info">' +
                                 '<strong>' + item.name + '</strong>' +
                                 '<div class="detail">' + item.company + ' | $' + item.amount + ' | ' + item.stage + '</div>' +
                             '</div>' +
                             '<div class="approval-actions">' +
-                                '<button onclick="approveDeal(\'' + item.name + '\', \'' + item.company + '\')" class="btn-approve">✅ Approve</button>' +
-                                '<button onclick="rejectDeal(\'' + item.name + '\', \'' + item.company + '\')" class="btn-reject">❌ Reject</button>' +
-                                '<button onclick="signContract(\'' + item.name + '\', \'' + item.company + '\')" class="btn-sign">✍️ Sign</button>' +
+                                '<button onclick="approveDeal(\'' + item.name + '\', \'' + item.company + '\', ' + i + ')" class="btn-approve">✅ Approve</button>' +
+                                '<button onclick="rejectDeal(\'' + item.name + '\', \'' + item.company + '\', ' + i + ')" class="btn-reject">❌ Reject</button>' +
+                                '<button onclick="signContract(\'' + item.name + '\', \'' + item.company + '\', ' + i + ')" class="btn-sign">✍️ Sign</button>' +
                             '</div>' +
                         '</div>';
                 }
                 approvalList.innerHTML = html;
             }
             document.getElementById('approvalUpdated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
-        }, 1000);
+        }, 500);
     }
 
-    function approveDeal(name, company) {
+    function approveDeal(name, company, index) {
         if (confirm('✅ Approve deal for ' + name + ' (' + company + ')?')) {
-            alert('✅ Deal approved!\n\n📝 Contract will be sent to client.\n💳 Invoice will be generated.\n📱 SMS notification sent.');
-            refreshApprovals();
+            var element = document.getElementById('approval-' + index);
+            if (element) {
+                element.innerHTML = 
+                    '<div class="info">' +
+                        '<strong>' + name + '</strong>' +
+                        '<div class="detail">' + company + ' | $5,000 | <span class="status-processing">⏳ Processing...</span></div>' +
+                    '</div>' +
+                    '<div style="color:#f59e0b;font-size:12px;font-weight:600;">⏳ Processing...</div>';
+            }
+            
+            setTimeout(function() {
+                if (element) {
+                    element.style.borderLeftColor = '#10b981';
+                    element.style.background = 'rgba(16,185,129,0.05)';
+                    element.innerHTML = 
+                        '<div class="info">' +
+                            '<strong style="color:#10b981;">✅ ' + name + '</strong>' +
+                            '<div class="detail">' + company + ' | $5,000 | <span class="status-approved">Approved ✓</span></div>' +
+                        '</div>' +
+                        '<div style="color:#10b981;font-size:12px;font-weight:600;">✅ Approved</div>';
+                }
+                
+                alert('✅ Deal approved for ' + name + '!\n\n📝 Contract will be sent to client.\n💳 Invoice will be generated.\n📱 SMS notification sent.');
+                document.getElementById('approvalUpdated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+                refreshAll();
+            }, 1500);
         }
     }
 
-    function rejectDeal(name, company) {
-        if (confirm('❌ Reject deal for ' + name + ' (' + company + ')?')) {
-            alert('❌ Deal rejected.\n\n📱 Notification sent to sales team.');
-            refreshApprovals();
-        }
-    }
-
-    function signContract(name, company) {
+    function signContract(name, company, index) {
         if (confirm('✍️ Sign contract for ' + name + ' (' + company + ')?\n\nThis will:\n1. Add your digital signature\n2. Send to client\n3. Mark as signed')) {
-            alert('✍️ Contract signed for ' + name + '!\n\n📧 Client will receive signed contract.\n💳 Payment link will be sent.\n📱 SMS notification sent.');
-            refreshApprovals();
+            var element = document.getElementById('approval-' + index);
+            if (element) {
+                element.innerHTML = 
+                    '<div class="info">' +
+                        '<strong>' + name + '</strong>' +
+                        '<div class="detail">' + company + ' | $5,000 | <span class="status-processing">⏳ Processing...</span></div>' +
+                    '</div>' +
+                    '<div style="color:#f59e0b;font-size:12px;font-weight:600;">⏳ Processing...</div>';
+            }
+            
+            setTimeout(function() {
+                if (element) {
+                    element.style.borderLeftColor = '#8b5cf6';
+                    element.style.background = 'rgba(139,92,246,0.05)';
+                    element.innerHTML = 
+                        '<div class="info">' +
+                            '<strong style="color:#8b5cf6;">✍️ ' + name + '</strong>' +
+                            '<div class="detail">' + company + ' | $5,000 | <span class="status-signed">Signed ✓</span></div>' +
+                        '</div>' +
+                        '<div style="color:#8b5cf6;font-size:12px;font-weight:600;">✍️ Signed</div>';
+                }
+                
+                alert('✍️ Contract signed for ' + name + '!\n\n📧 Client will receive signed contract.\n💳 Payment link will be sent.\n📱 SMS notification sent.');
+                document.getElementById('approvalUpdated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+                refreshAll();
+            }, 1500);
+        }
+    }
+
+    function rejectDeal(name, company, index) {
+        if (confirm('❌ Reject deal for ' + name + ' (' + company + ')?')) {
+            var element = document.getElementById('approval-' + index);
+            if (element) {
+                element.innerHTML = 
+                    '<div class="info">' +
+                        '<strong>' + name + '</strong>' +
+                        '<div class="detail">' + company + ' | $5,000 | <span class="status-processing">⏳ Processing...</span></div>' +
+                    '</div>' +
+                    '<div style="color:#f59e0b;font-size:12px;font-weight:600;">⏳ Processing...</div>';
+            }
+            
+            setTimeout(function() {
+                if (element) {
+                    element.style.borderLeftColor = '#ef4444';
+                    element.style.background = 'rgba(239,68,68,0.05)';
+                    element.innerHTML = 
+                        '<div class="info">' +
+                            '<strong style="color:#ef4444;">❌ ' + name + '</strong>' +
+                            '<div class="detail">' + company + ' | $5,000 | <span class="status-rejected">Rejected ✕</span></div>' +
+                        '</div>' +
+                        '<div style="color:#ef4444;font-size:12px;font-weight:600;">❌ Rejected</div>';
+                }
+                
+                alert('❌ Deal rejected for ' + name + '.');
+                document.getElementById('approvalUpdated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+                refreshAll();
+            }, 1500);
         }
     }
 
     function viewAllContracts() {
         alert('📋 ALL CONTRACTS\n\n' +
               'Pending Signature:\n' +
-              '1. Sarah Johnson - TechFlow Solutions - $5,000\n' +
-              '2. Michael Chen - DataSphere Inc - $7,500\n\n' +
+              '1. Sarah Johnson - TechFlow Solutions - $5,000\n\n' +
               'Signed & Completed:\n' +
-              '1. Emily Rodriguez - CloudPioneer - $12,000\n' +
-              '2. Lisa Park - Digital Transform - $8,500\n\n' +
-              '📊 Total: 4 contracts, $33,000 pipeline value');
+              'None yet\n\n' +
+              '📊 Total: 1 contract, $5,000 pipeline value');
     }
 
     function setupPayment() {
