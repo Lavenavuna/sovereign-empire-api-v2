@@ -1,54 +1,35 @@
 ﻿import express from 'express';
 import cors from 'cors';
-import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
-
-// Import routes
-import invoiceRoutes from './routes/invoice.js';
-import leadsRoutes from './routes/leads.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// ── Middleware ──
+// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.static('.'));
 
-// ── Routes ──
-app.use('/api/invoices', invoiceRoutes);
-app.use('/api/leads', leadsRoutes);
-
-// ── Health Check ──
+// Healthcheck (must respond quickly)
 app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime()
-  });
+  res.status(200).send('OK');
 });
 
-// ── Root ──
+// Simple root
 app.get('/', (req, res) => {
+  res.json({ status: 'running' });
+});
+
+// Invoice route
+app.get('/api/invoices', (req, res) => {
   res.json({ 
-    message: 'Sovereign Empire API is running',
-    version: '2.0.0',
-    endpoints: {
-      invoices: '/api/invoices',
-      leads: '/api/leads',
-      health: '/health'
-    }
+    success: true, 
+    message: 'VAT system ready!',
+    vat_rate: '12.5%',
+    currency: 'FJD'
   });
 });
 
-// ── Start Server ──
+// Start server
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅ Sovereign Empire API running on port ${PORT}`);
-  console.log(`   Health: http://localhost:${PORT}/health`);
-  console.log(`   Invoices: http://localhost:${PORT}/api/invoices`);
-  console.log(`   Leads: http://localhost:${PORT}/api/leads`);
+  console.log(`Server running on port ${PORT}`);
 });
