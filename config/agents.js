@@ -1,8 +1,21 @@
 ﻿// config/agents.js
 // SINGLE SOURCE OF TRUTH for the agent registry and risk tiers.
+//
+// v4.0 — DNA EVOLUTION LAYER: this file is now the BASELINE only. Runtime changes
+// (tier adjustments the system has proposed AND you've approved) live in
+// config/dna-overrides.json and are merged in at getTier()/getPrompt() time.
+// You should rarely need to hand-edit this file again — approved evolution goes
+// through lib/dnaEvolution.js instead. See DNA_NOTES.md for how that works.
+//
 // server.js, scheduler.js, and lib/*.js all import from here.
-// If you add or retier an agent, do it here — not inline anywhere else.
-// Mirrors AGENTS.md — keep both in sync when either changes.
+
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const OVERRIDES_PATH = path.join(__dirname, 'dna-overrides.json');
 
 export const AGENTS = {
     'competitor-analyzer': {
@@ -97,6 +110,8 @@ export const AGENTS = {
     }
 };
 
+// BASELINE tiers — the fail-safe defaults. Only change these via a deliberate
+// code edit + commit, not at runtime.
 // T0 = autonomous · T1 = logged autonomous · T2 = gated (requires approval)
 // Any agent not listed here defaults to T2 — fail safe, not fail open.
 export const AGENT_TIER = {
@@ -123,8 +138,36 @@ export const AGENT_TIER = {
 // Agents that run a bounded RAG loop instead of a single-shot call.
 export const RAG_LOOP_AGENTS = new Set(['market-researcher', 'competitor-analyzer']);
 
+// --- DNA EVOLUTION LAYER: read approved overrides, merge over baseline ---
+// IMPORTANT SAFETY RULE, enforced here: overrides can only ever move a tier UP
+// in strictness (T0->T1->T2), never down. A T2 agent can never be demoted to
+// T0/T1 by an override — that would let approved "evolution" quietly loosen a
+// gate. Loosening a tier requires an actual code change to AGENT_TIER above,
+// not a runtime override. See lib/dnaEvolution.js for how overrides are proposed.
+const TIER_RANK = { T0: 0, T1: 1, T2: 2 };
+
+function loadOverrides() {
+    try {
+        if (fs.existsSync(OVERRIDES_PATH)) {
+            return JSON.parse(fs.readFileSync(OVERRIDES_PATH, 'utf8'));
+        }
+    } catch (e) {
+        console.error('Failed to load dna-overrides.json:', e.message);
+    }
+    return { tierOverrides: {}, version: 0, updatedAt: null };
+}
+
 export function getTier(agentName) {
-    return AGENT_TIER[agentName] || 'T2';
+    const baseline = AGENT_TIER[agentName] || 'T2';
+    const overrides = loadOverrides();
+    const override = overrides.tierOverrides?.[agentName];
+    if (!override) return baseline;
+    // Only allow the override to be stricter (higher rank) than baseline, never looser.
+    return TIER_RANK[override] > TIER_RANK[baseline] ? override : baseline;
+}
+
+export function getDnaVersion() {
+    return loadOverrides().version || 0;
 }
 
 export function getPrompt(agentName) {

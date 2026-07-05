@@ -9,7 +9,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 
-import { AGENTS, AGENT_TIER, getTier, getPrompt, selectAgent } from './config/agents.js';
+import { AGENTS, AGENT_TIER, getTier, getPrompt, selectAgent, getDnaVersion } from './config/agents.js';
 import {
     loadJSON, saveJSON, logAction,
     loadAuditLog, loadPendingApprovals, savePendingApprovals,
@@ -17,6 +17,7 @@ import {
     PENDING_APPROVALS_PATH
 } from './lib/auditLog.js';
 import { buildTrustReport } from './lib/trustReport.js';
+import { listProposals, applyProposal, rejectProposal, getChangelog, analyzeAndPropose } from './lib/dnaEvolution.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -208,6 +209,38 @@ app.get('/api/trust-report', (req, res) => {
 });
 
 // ============================================
+// DNA EVOLUTION — the system proposes, a human approves. Never auto-applies.
+// See lib/dnaEvolution.js and DNA_NOTES.md.
+// ============================================
+app.get('/api/dna/proposals', (req, res) => {
+    const proposals = listProposals();
+    res.json({ pending: proposals.filter(p => p.status === 'pending'), all: proposals });
+});
+
+app.post('/api/dna/proposals/:id/approve', (req, res) => {
+    const result = applyProposal(req.params.id);
+    if (!result.success) return res.status(400).json(result);
+    logAction({ agent: result.proposal.agent, tier: null, action: 'dna-proposal-approved', proposalId: result.proposal.id });
+    res.json(result);
+});
+
+app.post('/api/dna/proposals/:id/reject', (req, res) => {
+    const result = rejectProposal(req.params.id, req.body?.note);
+    res.json(result);
+});
+
+app.get('/api/dna/changelog', (req, res) => {
+    res.json({ changelog: getChangelog() });
+});
+
+// Manually trigger analysis (also runs automatically each scheduler cycle)
+app.post('/api/dna/analyze', (req, res) => {
+    const hours = parseInt(req.body?.windowHours) || 168;
+    const proposals = analyzeAndPropose(hours);
+    res.json({ proposalsGenerated: proposals.length, proposals });
+});
+
+// ============================================
 // HIGH VELOCITY SALES API (now fed by real approvals, not just hand-edited JSON)
 // ============================================
 app.get('/api/sales/high-velocity', (req, res) => {
@@ -251,6 +284,7 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log('📊 Agents loaded: ' + Object.keys(AGENTS).length);
     console.log('🔒 T2-gated agents: ' + Object.entries(AGENT_TIER).filter(([_, t]) => t === 'T2').map(([n]) => n).join(', '));
     console.log('🔑 OpenRouter API: ' + (OPENROUTER_API_KEY ? '✅ Configured' : '❌ Missing'));
+    console.log('🧬 DNA version: ' + getDnaVersion() + ' (0 = baseline, no approved overrides yet)');
     console.log('📊 Dashboard: http://localhost:' + PORT + '/dashboard');
     console.log('🛡️  Trust Report: http://localhost:' + PORT + '/trust-report');
 });

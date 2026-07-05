@@ -10,6 +10,7 @@
 import cron from 'node-cron';
 import { runRagLoop } from './lib/ragLoop.js';
 import { logAction, loadPendingApprovals, savePendingApprovals } from './lib/auditLog.js';
+import { analyzeAndPropose } from './lib/dnaEvolution.js';
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
 const CYCLE_CRON = process.env.CYCLE_CRON || '*/15 * * * *';
@@ -82,6 +83,13 @@ async function runCycle() {
 
     console.log('✅ Cycle complete. Deal proposal queued:', approvalId,
         '| research grounded:', research.grounded, '| competitor grounded:', competitor.grounded);
+
+    // DNA evolution: look for patterns worth flagging. This only ever PROPOSES —
+    // see lib/dnaEvolution.js for why nothing here can loosen a gate unsupervised.
+    const dnaProposals = analyzeAndPropose(168);
+    if (dnaProposals.length > 0) {
+        console.log('🧬 DNA analysis: ' + dnaProposals.length + ' new proposal(s) waiting for review at /api/dna/proposals');
+    }
 }
 
 runCycle().catch(e => console.error('Cycle error:', e.message));
