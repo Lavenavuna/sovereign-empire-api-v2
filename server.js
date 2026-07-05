@@ -8,6 +8,7 @@ import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import invoiceRoutes from './routes/invoice.js';
 
 import { AGENTS, AGENT_TIER, getTier, getPrompt, selectAgent, getDnaVersion } from './config/agents.js';
 import {
@@ -29,6 +30,7 @@ const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
+app.use('/api/invoices', invoiceRoutes);
 
 // ============================================
 // HEALTH CHECK
