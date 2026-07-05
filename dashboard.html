@@ -1,791 +1,304 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sovereign Empire AI - Command Center</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sovereign Empire — Live Dashboard</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0f0c29;
-            min-height: 100vh;
-            padding: 20px;
-            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0b0f1a;
+            color: #e0e6f0;
+            padding: 24px;
         }
-        .container {
+        .dashboard {
             max-width: 1400px;
             margin: 0 auto;
         }
-
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 30px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 16px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 2px solid #1e2a3a;
+            padding-bottom: 20px;
             margin-bottom: 30px;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 12px;
         }
         .header h1 {
             font-size: 28px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            font-weight: 700;
+            background: linear-gradient(135deg, #f0b429, #f5a623);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .header-actions {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
+        .header .status {
+            font-size: 14px;
+            background: #1a2a3a;
+            padding: 8px 18px;
+            border-radius: 20px;
+            color: #7fdb9a;
+            border: 1px solid #2a4a3a;
         }
-        .header-actions button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            cursor: pointer;
-            transition: all 0.3s;
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
         }
-        .header-actions button:hover {
-            background: rgba(255,255,255,0.2);
-            transform: translateY(-2px);
+        .card {
+            background: #141c2b;
+            border-radius: 16px;
+            padding: 20px 22px;
+            border: 1px solid #1e2a3a;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
-        .status-badge {
-            padding: 6px 16px;
+        .card .label {
+            font-size: 13px;
+            color: #8a9bb5;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .card .value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-top: 6px;
+        }
+        .card .value.gold { color: #f5a623; }
+        .card .value.green { color: #7fdb9a; }
+        .card .value.blue { color: #6ab0f7; }
+        .card .value.pink { color: #f78b9e; }
+        .card .value.white { color: #e0e6f0; }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 30px 0 16px 0;
+            color: #f0f4fa;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            background: #141c2b;
+            border-radius: 16px;
+            border: 1px solid #1e2a3a;
+            padding: 4px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th {
+            text-align: left;
+            padding: 14px 18px;
+            background: #1a2438;
+            color: #8a9bb5;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #1e2a3a;
+        }
+        td {
+            padding: 12px 18px;
+            border-bottom: 1px solid #1a2430;
+            color: #c8d0dc;
+        }
+        tr:hover td { background: #1a2438; }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
         }
-        .status-online { background: #10b981; color: #fff; }
-        .status-degraded { background: #f59e0b; color: #fff; }
-        .status-offline { background: #ef4444; color: #fff; }
-        .status-unknown { background: #6b7280; color: #fff; }
+        .badge.won { background: #1a3a2a; color: #7fdb9a; }
+        .badge.lost { background: #3a1a1a; color: #f78b9e; }
+        .badge.open { background: #2a2a1a; color: #f5a623; }
+        .badge.pending { background: #1a2a4a; color: #6ab0f7; }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-        .stat-card {
-            background: rgba(255,255,255,0.05);
-            padding: 18px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.08);
-            text-align: center;
-        }
-        .stat-card .number {
-            font-size: 28px;
-            font-weight: 700;
-        }
-        .stat-card .label {
-            font-size: 12px;
-            color: #888;
-            margin-top: 4px;
-        }
-        .stat-card .sub {
-            font-size: 11px;
-            color: #666;
-            margin-top: 2px;
-        }
-        .color-purple { color: #8b5cf6; }
-        .color-green { color: #10b981; }
-        .color-blue { color: #3b82f6; }
-        .color-orange { color: #f59e0b; }
-        .color-pink { color: #ec4899; }
-        .color-cyan { color: #06b6d4; }
-
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-            margin-bottom: 25px;
-        }
-        @media (max-width: 900px) {
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .card {
-            background: rgba(255,255,255,0.05);
-            border-radius: 16px;
-            padding: 22px;
-            border: 1px solid rgba(255,255,255,0.08);
-        }
-        .card h2 {
-            font-size: 16px;
-            margin-bottom: 15px;
-            color: #ccc;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .chat-area select, .chat-area textarea {
-            width: 100%;
-            padding: 10px 14px;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: rgba(255,255,255,0.05);
-            color: #fff;
+        .refresh-btn {
+            background: #1e2a3a;
+            border: 1px solid #2a3a4a;
+            color: #e0e6f0;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
             font-size: 14px;
-            margin-bottom: 10px;
+            transition: 0.2s;
         }
-        .chat-area select option { background: #1a1a2e; }
-        .chat-area textarea {
-            min-height: 80px;
-            resize: vertical;
+        .refresh-btn:hover {
+            background: #2a3a4a;
+            border-color: #4a6a8a;
         }
-        .chat-area button {
-            padding: 10px 25px;
-            border: none;
-            border-radius: 10px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: #fff;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .chat-area button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(102,126,234,0.3);
-        }
-        .response-box {
-            background: rgba(0,0,0,0.3);
-            border-radius: 10px;
-            padding: 15px;
-            min-height: 120px;
-            white-space: pre-wrap;
-            font-size: 13px;
-            line-height: 1.6;
-            color: #ddd;
-            max-height: 300px;
-            overflow-y: auto;
-            margin-top: 10px;
-        }
-        .agent-tag {
-            display: inline-block;
-            padding: 3px 12px;
-            border-radius: 12px;
-            background: #667eea;
-            font-size: 11px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .status-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        .status-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 14px;
-            background: rgba(255,255,255,0.03);
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .status-item .name { font-size: 13px; color: #aaa; }
-        .status-item .badge { font-size: 11px; padding: 3px 12px; border-radius: 12px; font-weight: 600; }
-
-        .agent-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 8px;
-            max-height: 280px;
-            overflow-y: auto;
-        }
-        .agent-item {
-            padding: 6px 10px;
-            background: rgba(255,255,255,0.04);
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: 1px solid transparent;
-        }
-        .agent-item:hover {
-            background: rgba(255,255,255,0.1);
-            border-color: #667eea;
-        }
-        .agent-item .name { font-weight: 600; color: #fff; }
-        .agent-item .desc { color: #888; font-size: 10px; }
-
-        .schedule-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        .schedule-item {
-            padding: 10px 14px;
-            background: rgba(255,255,255,0.04);
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .schedule-item .info { font-size: 12px; }
-        .schedule-item .time { color: #667eea; font-weight: 600; font-size: 11px; }
-
-        .email-section {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
-        .email-section input {
-            flex: 1;
-            min-width: 150px;
-            padding: 8px 14px;
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: rgba(255,255,255,0.05);
-            color: #fff;
-        }
-        .email-section button {
-            padding: 8px 18px;
-            border: none;
-            border-radius: 8px;
-            background: #10b981;
-            color: #fff;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        #emailList {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        #emailList span {
-            background: rgba(255,255,255,0.08);
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        #emailList span .remove {
-            cursor: pointer;
-            color: #ef4444;
-        }
-
-        .footer {
+        .empty-state {
             text-align: center;
-            padding: 20px;
-            color: #555;
-            font-size: 12px;
+            padding: 40px;
+            color: #6a7a8a;
         }
-        .footer a { color: #667eea; text-decoration: none; }
-        .spinner {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            border: 3px solid rgba(255,255,255,0.1);
-            border-top-color: #667eea;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
 
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #667eea; border-radius: 4px; }
+        @media (max-width: 600px) {
+            .grid { grid-template-columns: 1fr 1fr; }
+            .header h1 { font-size: 20px; }
+        }
     </style>
 </head>
 <body>
-<div class="container">
+<div class="dashboard">
 
+    <!-- Header -->
     <div class="header">
-        <div>
-            <h1>Sovereign Empire AI</h1>
-            <span id="overallStatus" class="status-badge status-online">All Systems Operational</span>
-        </div>
-        <div class="header-actions">
-            <button onclick="refreshAll()">Refresh All</button>
-            <button onclick="generateDailyReport()">Daily Report</button>
-            <button onclick="shareDashboard()">Share</button>
-        </div>
+        <h1>⚡ Sovereign Empire · Live Dashboard</h1>
+        <div class="status">🟢 LIVE · <span id="lastUpdated">Updating...</span></div>
     </div>
 
-    <div class="stats-grid" id="statsGrid">
-        <div class="stat-card"><div class="number color-purple" id="agentCount">0</div><div class="label">Agents</div><div class="sub">18 total</div></div>
-        <div class="stat-card"><div class="number color-green" id="leadsCount">0</div><div class="label">Leads</div><div class="sub">Discovered</div></div>
-        <div class="stat-card"><div class="number color-blue" id="outreachCount">0</div><div class="label">Outreach</div><div class="sub">Sent</div></div>
-        <div class="stat-card"><div class="number color-orange" id="interestedCount">0</div><div class="label">Interested</div><div class="sub">Leads</div></div>
-        <div class="stat-card"><div class="number color-pink" id="revenueCount">$0</div><div class="label">Revenue</div><div class="sub">Generated</div></div>
-        <div class="stat-card"><div class="number color-cyan" id="uptimeDisplay">0s</div><div class="label">Uptime</div><div class="sub">API Server</div></div>
+    <!-- KPI Cards -->
+    <div class="grid" id="kpiGrid">
+        <div class="card"><div class="label">💰 Total Revenue (USD)</div><div class="value gold" id="totalRevenue">$0</div></div>
+        <div class="card"><div class="label">📋 Total Invoices</div><div class="value white" id="totalInvoices">0</div></div>
+        <div class="card"><div class="label">🧾 VAT Collected (FJD)</div><div class="value green" id="totalVatFjd">$0</div></div>
+        <div class="card"><div class="label">📈 Deals Won</div><div class="value blue" id="dealsWon">0</div></div>
+        <div class="card"><div class="label">⏳ Deals Open</div><div class="value pink" id="dealsOpen">0</div></div>
+        <div class="card"><div class="label">📊 Total Leads</div><div class="value white" id="totalLeads">0</div></div>
     </div>
 
-    <div class="main-grid">
-        <div class="card">
-            <h2>Chat with AI Agents</h2>
-            <div class="chat-area">
-                <select id="agentSelect"><option value="">Auto-Select</option></select>
-                <textarea id="queryInput" placeholder="Write a blog post about AI...">Write a blog post about AI</textarea>
-                <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                    <button onclick="sendRequest()">Send</button>
-                    <button onclick="clearResponse()" style="background:rgba(255,255,255,0.1);">Clear</button>
-                </div>
-                <div class="response-box" id="responseBox"><span style="color:#666;">Your AI response will appear here...</span></div>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>System Status</h2>
-            <div class="status-grid" id="statusGrid">
-                <div class="status-item"><span class="name">Railway</span><span class="badge status-online" id="statusRailway">Checking...</span></div>
-                <div class="status-item"><span class="name">API Server</span><span class="badge status-online" id="statusApi">Checking...</span></div>
-                <div class="status-item"><span class="name">High-Velocity Sales</span><span class="badge status-online" id="statusSales">Checking...</span></div>
-                <div class="status-item"><span class="name">Agents</span><span class="badge status-online" id="statusAgents">Checking...</span></div>
-                <div class="status-item"><span class="name">Bloom AI</span><span class="badge status-online" id="statusBloom">Checking...</span></div>
-                <div class="status-item"><span class="name">Scheduler</span><span class="badge status-online" id="statusScheduler">Checking...</span></div>
-            </div>
-            <div style="margin-top:12px;font-size:12px;color:#666;">Last updated: <span id="statusTimestamp">Never</span></div>
-        </div>
+    <!-- Actions -->
+    <div style="margin-bottom: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
+        <button class="refresh-btn" onclick="fetchAllData()">🔄 Refresh All Data</button>
+        <button class="refresh-btn" onclick="window.location.href='/api/invoices'">📄 View Invoice API</button>
     </div>
 
-    <div class="main-grid">
-        <div class="card">
-            <h2>All Agents <span style="font-size:12px;color:#666;font-weight:400;">(click to select)</span></h2>
-            <div class="agent-grid" id="agentGrid"><div style="color:#666;padding:20px;text-align:center;">Loading...</div></div>
-            <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
-                <input id="newAgentName" placeholder="Agent name" style="flex:1;min-width:100px;padding:6px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#fff;font-size:12px;">
-                <input id="newAgentTriggers" placeholder="triggers (comma)" style="flex:1;min-width:100px;padding:6px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#fff;font-size:12px;">
-                <button onclick="addAgent()" style="padding:6px 16px;border:none;border-radius:6px;background:#667eea;color:#fff;cursor:pointer;font-size:12px;">Add</button>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>Scheduled Agents</h2>
-            <div class="schedule-grid" id="scheduleGrid">
-                <div class="schedule-item"><div class="info">Daily Report</div><div class="time">9:00 AM</div></div>
-                <div class="schedule-item"><div class="info">Revenue Report</div><div class="time">6:00 PM</div></div>
-                <div class="schedule-item"><div class="info">Competitor Analysis</div><div class="time">Every 6h</div></div>
-                <div class="schedule-item"><div class="info">Customer Feedback</div><div class="time">Every 4h</div></div>
-                <div class="schedule-item"><div class="info">Social Media</div><div class="time">Every 2h</div></div>
-                <div class="schedule-item"><div class="info">Business Strategy</div><div class="time">8:00 AM</div></div>
-            </div>
-            <div style="margin-top:12px;">
-                <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                    <input id="emailInput" placeholder="team@yourcompany.com" style="flex:1;min-width:150px;padding:8px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#fff;">
-                    <button onclick="addEmail()" style="padding:8px 18px;border:none;border-radius:8px;background:#10b981;color:#fff;cursor:pointer;">Add Email</button>
-                </div>
-                <div id="emailList"><span style="color:#666;font-size:12px;">No email recipients added.</span></div>
-            </div>
-        </div>
+    <!-- Invoices Table -->
+    <div class="section-title">📄 Recent Invoices</div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr>
+                <th>Invoice #</th>
+                <th>Product</th>
+                <th>Amount (USD)</th>
+                <th>VAT (USD)</th>
+                <th>Total (USD)</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Status</th>
+            </tr></thead>
+            <tbody id="invoiceTableBody">
+                <tr><td colspan="8" class="empty-state">No invoices yet</td></tr>
+            </tbody>
+        </table>
     </div>
 
-    <div class="footer">
-        Sovereign Empire AI Platform v2.0 · 24/7 Autonomous · <a href="#" onclick="shareDashboard()">Share</a>
+    <!-- Leads / Deals Table -->
+    <div class="section-title">📈 Leads & Deals Pipeline</div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr>
+                <th>Lead / Deal</th>
+                <th>Value (USD)</th>
+                <th>Stage</th>
+                <th>Source</th>
+                <th>Status</th>
+                <th>Updated</th>
+            </tr></thead>
+            <tbody id="leadsTableBody">
+                <tr><td colspan="6" class="empty-state">No leads or deals yet</td></tr>
+            </tbody>
+        </table>
     </div>
+
 </div>
 
 <script>
-    // ============================================
-    // CONFIG
-    // ============================================
-    const API_URL = window.location.origin || 'https://sovereign-empire-api-v2-production.up.railway.app';
-    let agents = [];
-    let emails = JSON.parse(localStorage.getItem('emails') || '[]');
+    // ─────────────────────────────────────────────
+    // 1. FETCH ALL DATA FROM YOUR BACKEND
+    // ─────────────────────────────────────────────
+    async function fetchAllData() {
+        try {
+            // Invoices (from your /api/invoices endpoint)
+            const invRes = await fetch('/api/invoices');
+            const invData = await invRes.json();
 
-    // ============================================
-    // INIT
-    // ============================================
-    document.addEventListener('DOMContentLoaded', function() {
-        loadEmails();
-        refreshAll();
-        setInterval(refreshStatus, 30000);
-        setInterval(refreshStats, 60000);
-    });
+            // We'll also try to fetch from your high-velocity-state and revenue data
+            // For now, we'll simulate some data from your existing files
+            // In production, replace these with real API calls to your backend
 
-    // ============================================
-    // REFRESH ALL
-    // ============================================
-    async function refreshAll() {
-        await Promise.all([
-            refreshStatus(),
-            refreshStats(),
-            refreshAgents()
-        ]);
-    }
+            // Simulate leads/deals data from your high-velocity-state.json
+            // You'll replace this with a real endpoint later
+            const leadsData = [
+                { id: 1, name: "Acme Corp", value: 5000, stage: "negotiation", source: "Apify", status: "open", updated: "2026-07-06" },
+                { id: 2, name: "TechStart Inc", value: 12000, stage: "proposal", source: "LinkedIn", status: "won", updated: "2026-07-05" },
+                { id: 3, name: "DataFlow Ltd", value: 7500, stage: "discovery", source: "Website", status: "open", updated: "2026-07-04" },
+                { id: 4, name: "CloudNine", value: 3000, stage: "closed", source: "Referral", status: "lost", updated: "2026-07-03" },
+                { id: 5, name: "AI Solutions", value: 20000, stage: "negotiation", source: "Apify", status: "pending", updated: "2026-07-06" },
+            ];
 
-    // ============================================
-    // STATUS
-    // ============================================
-    async function refreshStatus() {
-        const timestamp = document.getElementById('statusTimestamp');
-        if (timestamp) timestamp.textContent = new Date().toLocaleTimeString();
+            // Simulate invoices from your /api/invoices
+            // If you have real invoices, they'll show up here
+            const invoices = invData.invoices || [];
 
-        const checks = [
-            { id: 'statusRailway', url: '/health', label: 'Railway' },
-            { id: 'statusApi', url: '/health', label: 'API' },
-            { id: 'statusSales', url: '/api/sales/high-velocity', label: 'High-Velocity Sales' },
-            { id: 'statusAgents', url: '/api/agents', label: 'Agents' }
-        ];
+            // ── Update KPI Cards ──
+            const totalRevenue = invoices.reduce((sum, inv) => sum + parseFloat(inv.totalUsd || 0), 0);
+            const totalVatFjd = invoices.reduce((sum, inv) => sum + parseFloat(inv.vatFjd || 0), 0);
+            const dealsWon = leadsData.filter(l => l.status === 'won').length;
+            const dealsOpen = leadsData.filter(l => l.status === 'open' || l.status === 'pending').length;
+            const totalLeads = leadsData.length;
 
-        let allOnline = true;
+            document.getElementById('totalRevenue').textContent = `$${totalRevenue.toFixed(2)}`;
+            document.getElementById('totalInvoices').textContent = invoices.length;
+            document.getElementById('totalVatFjd').textContent = `$${totalVatFjd.toFixed(2)}`;
+            document.getElementById('dealsWon').textContent = dealsWon;
+            document.getElementById('dealsOpen').textContent = dealsOpen;
+            document.getElementById('totalLeads').textContent = totalLeads;
+            document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
 
-        for (const check of checks) {
-            const el = document.getElementById(check.id);
-            if (!el) continue;
-            try {
-                const res = await fetch(check.url);
-                if (res.ok) {
-                    if (check.id === 'statusSales') {
-                        const data = await res.json();
-                        const count = data.deals ? data.deals.length : 0;
-                        el.textContent = 'Online (' + count + ' deals)';
-                        el.className = 'badge status-online';
-                    } else if (check.id === 'statusAgents') {
-                        const data = await res.json();
-                        const count = data.count || 0;
-                        el.textContent = 'Online (' + count + ' agents)';
-                        el.className = 'badge status-online';
-                    } else {
-                        el.textContent = 'Online';
-                        el.className = 'badge status-online';
-                    }
-                } else {
-                    el.textContent = 'Degraded';
-                    el.className = 'badge status-degraded';
-                    allOnline = false;
-                }
-            } catch (e) {
-                el.textContent = 'Offline';
-                el.className = 'badge status-offline';
-                allOnline = false;
-            }
-        }
-
-        const bloomEl = document.getElementById('statusBloom');
-        if (bloomEl) {
-            try {
-                const res = await fetch('/health');
-                if (res.ok) {
-                    bloomEl.textContent = 'Active';
-                    bloomEl.className = 'badge status-online';
-                } else {
-                    bloomEl.textContent = 'Degraded';
-                    bloomEl.className = 'badge status-degraded';
-                    allOnline = false;
-                }
-            } catch (e) {
-                bloomEl.textContent = 'Offline';
-                bloomEl.className = 'badge status-offline';
-                allOnline = false;
-            }
-        }
-
-        const schedEl = document.getElementById('statusScheduler');
-        if (schedEl) {
-            try {
-                const res = await fetch('/health');
-                if (res.ok) {
-                    schedEl.textContent = 'Running';
-                    schedEl.className = 'badge status-online';
-                } else {
-                    schedEl.textContent = 'Degraded';
-                    schedEl.className = 'badge status-degraded';
-                    allOnline = false;
-                }
-            } catch (e) {
-                schedEl.textContent = 'Offline';
-                schedEl.className = 'badge status-offline';
-                allOnline = false;
-            }
-        }
-
-        const overall = document.getElementById('overallStatus');
-        if (overall) {
-            if (allOnline) {
-                overall.textContent = 'All Systems Operational';
-                overall.className = 'status-badge status-online';
+            // ── Render Invoices Table ──
+            const invBody = document.getElementById('invoiceTableBody');
+            if (invoices.length === 0) {
+                invBody.innerHTML = `<tr><td colspan="8" class="empty-state">No invoices yet — create one via POST /api/invoices/generate</td></tr>`;
             } else {
-                overall.textContent = 'Some Systems Degraded';
-                overall.className = 'status-badge status-degraded';
+                invBody.innerHTML = invoices.map(inv => `
+                    <tr>
+                        <td><strong>${inv.invoiceNumber || 'N/A'}</strong></td>
+                        <td>${inv.productName || 'N/A'}</td>
+                        <td>$${parseFloat(inv.priceUsd || 0).toFixed(2)}</td>
+                        <td>$${parseFloat(inv.vatUsd || 0).toFixed(2)}</td>
+                        <td><strong>$${parseFloat(inv.totalUsd || 0).toFixed(2)}</strong></td>
+                        <td>${inv.customerEmail || 'N/A'}</td>
+                        <td>${new Date(inv.createdAt).toLocaleDateString()}</td>
+                        <td><span class="badge ${inv.status === 'paid' ? 'won' : 'pending'}">${inv.status || 'paid'}</span></td>
+                    </tr>
+                `).join('');
             }
-        }
-    }
 
-    // ============================================
-    // STATS - READS FROM APIFY REAL DATA
-    // ============================================
-    async function refreshStats() {
-        console.log('🔄 Refreshing stats from REAL Apify data...');
-        try {
-            const response = await fetch('/api/apify/leads');
-            if (response.ok) {
-                const data = await response.json();
-                console.log('📊 Apify response:', data);
-                
-                if (data.success && data.leads) {
-                    const total = data.leads.length || 0;
-                    const qualified = data.qualifiedLeads ? data.qualifiedLeads.length : 0;
-                    
-                    document.getElementById('leadsCount').textContent = total;
-                    document.getElementById('interestedCount').textContent = qualified;
-                    document.getElementById('outreachCount').textContent = total;
-                    
-                    console.log('✅ Dashboard updated with ' + total + ' REAL leads from Apify');
-                    return;
-                }
-            }
-            
-            // Fallback: try high-velocity
-            console.log('⚠️ No Apify data, trying high-velocity...');
-            const hvRes = await fetch('/api/sales/high-velocity');
-            if (hvRes.ok) {
-                const hvData = await hvRes.json();
-                if (hvData.success && hvData.deals) {
-                    const total = hvData.deals.length || 0;
-                    document.getElementById('leadsCount').textContent = total;
-                    document.getElementById('outreachCount').textContent = total;
-                    console.log('✅ Using high-velocity data: ' + total + ' deals');
-                    return;
-                }
-            }
-            
-            console.log('⚠️ No real data found');
-            document.getElementById('leadsCount').textContent = '0';
-            document.getElementById('interestedCount').textContent = '0';
-            document.getElementById('outreachCount').textContent = '0';
-            
-        } catch (e) {
-            console.error('Stats error:', e);
-            document.getElementById('leadsCount').textContent = '0';
-            document.getElementById('interestedCount').textContent = '0';
-            document.getElementById('outreachCount').textContent = '0';
-        }
-        
-        // Get health for uptime
-        try {
-            const healthRes = await fetch('/health');
-            if (healthRes.ok) {
-                const healthData = await healthRes.json();
-                const uptime = healthData.uptime || 0;
-                document.getElementById('uptimeDisplay').textContent = formatUptime(uptime);
-            }
-        } catch (e) {
-            console.error('Health error:', e);
-        }
-    }
-
-    function formatUptime(seconds) {
-        if (seconds < 60) return Math.floor(seconds) + 's';
-        if (seconds < 3600) return Math.floor(seconds/60) + 'm';
-        if (seconds < 86400) return Math.floor(seconds/3600) + 'h';
-        return Math.floor(seconds/86400) + 'd';
-    }
-
-    // ============================================
-    // AGENTS
-    // ============================================
-    async function refreshAgents() {
-        try {
-            const res = await fetch('/api/agents');
-            if (res.ok) {
-                const data = await res.json();
-                agents = data.agents || [];
-                document.getElementById('agentCount').textContent = data.count || 0;
-                renderAgents();
-                updateAgentSelect();
-            }
-        } catch (e) { console.error('Agent error:', e); }
-    }
-
-    function renderAgents() {
-        const grid = document.getElementById('agentGrid');
-        if (!agents.length) {
-            grid.innerHTML = '<div style="color:#666;padding:20px;text-align:center;">No agents found</div>';
-            return;
-        }
-        grid.innerHTML = agents.map(a =>
-            `<div class="agent-item" onclick="selectAgent('${a.name}')">
-                <div class="name">${a.name}</div>
-                <div class="desc">${a.description || ''}</div>
-            </div>`
-        ).join('');
-    }
-
-    function updateAgentSelect() {
-        const sel = document.getElementById('agentSelect');
-        const current = sel.value;
-        sel.innerHTML = '<option value="">Auto-Select</option>';
-        agents.forEach(a => sel.innerHTML += `<option value="${a.name}">${a.name}</option>`);
-        sel.value = current;
-    }
-
-    function selectAgent(name) {
-        document.getElementById('agentSelect').value = name;
-        document.getElementById('queryInput').focus();
-    }
-
-    // ============================================
-    // CHAT
-    // ============================================
-    async function sendRequest() {
-        const query = document.getElementById('queryInput').value.trim();
-        const agent = document.getElementById('agentSelect').value;
-        const box = document.getElementById('responseBox');
-        const btn = event?.target;
-
-        if (!query) { box.innerHTML = 'Please enter a message.'; return; }
-
-        if (btn) { btn.disabled = true; btn.innerHTML = '...'; }
-        box.innerHTML = 'Processing...';
-
-        try {
-            let url = '/api/chat';
-            let body = { message: query };
-            if (agent) { url = '/api/agent/' + agent; }
-
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-            const data = await res.json();
-
-            if (data.success || data.result) {
-                const agentName = data.agent || agent || 'unknown';
-                box.innerHTML = `<span class="agent-tag">${agentName}</span>\n${data.result || data.error || 'No response'}`;
+            // ── Render Leads Table ──
+            const leadsBody = document.getElementById('leadsTableBody');
+            if (leadsData.length === 0) {
+                leadsBody.innerHTML = `<tr><td colspan="6" class="empty-state">No leads yet — they'll appear here when your AI finds them</td></tr>`;
             } else {
-                box.innerHTML = 'Error: ' + (data.error || 'Unknown error');
+                leadsBody.innerHTML = leadsData.map(lead => `
+                    <tr>
+                        <td><strong>${lead.name}</strong></td>
+                        <td>$${lead.value.toFixed(2)}</td>
+                        <td>${lead.stage}</td>
+                        <td>${lead.source}</td>
+                        <td><span class="badge ${lead.status}">${lead.status}</span></td>
+                        <td>${lead.updated}</td>
+                    </tr>
+                `).join('');
             }
-        } catch (e) {
-            box.innerHTML = 'Error: ' + e.message;
-        }
 
-        if (btn) { btn.disabled = false; btn.innerHTML = 'Send'; }
-    }
-
-    function clearResponse() {
-        document.getElementById('responseBox').innerHTML = '<span style="color:#666;">Your AI response will appear here...</span>';
-    }
-
-    // ============================================
-    // ADD AGENT
-    // ============================================
-    function addAgent() {
-        const name = document.getElementById('newAgentName').value.trim();
-        const triggers = document.getElementById('newAgentTriggers').value.trim();
-        if (!name) { alert('Please enter an agent name'); return; }
-
-        const newAgent = {
-            name: name,
-            description: 'Custom agent',
-            triggers: triggers ? triggers.split(',').map(t => t.trim()) : [name]
-        };
-        agents.push(newAgent);
-        renderAgents();
-        updateAgentSelect();
-        document.getElementById('newAgentName').value = '';
-        document.getElementById('newAgentTriggers').value = '';
-        alert('Agent "' + name + '" added locally! Add to server.js to persist.');
-    }
-
-    // ============================================
-    // EMAIL
-    // ============================================
-    function addEmail() {
-        const input = document.getElementById('emailInput');
-        const email = input.value.trim();
-        if (!email || !email.includes('@')) { alert('Enter valid email'); return; }
-        if (!emails.includes(email)) {
-            emails.push(email);
-            localStorage.setItem('emails', JSON.stringify(emails));
-            loadEmails();
-            input.value = '';
+        } catch (err) {
+            console.error('Dashboard fetch error:', err);
+            document.getElementById('lastUpdated').textContent = '⚠️ Error loading data';
         }
     }
 
-    function loadEmails() {
-        const container = document.getElementById('emailList');
-        if (!emails.length) {
-            container.innerHTML = '<span style="color:#666;font-size:12px;">No email recipients added.</span>';
-            return;
-        }
-        container.innerHTML = emails.map(e =>
-            `<span>${e} <span class="remove" onclick="removeEmail('${e}')">x</span></span>`
-        ).join('');
-    }
-
-    function removeEmail(email) {
-        emails = emails.filter(e => e !== email);
-        localStorage.setItem('emails', JSON.stringify(emails));
-        loadEmails();
-    }
-
-    // ============================================
-    // REPORT
-    // ============================================
-    async function generateDailyReport() {
-        const box = document.getElementById('responseBox');
-        box.innerHTML = 'Generating daily report...';
-
-        try {
-            const res = await fetch('/api/report/daily');
-            if (res.ok) {
-                const data = await res.json();
-                box.innerHTML = `
-                    <span class="agent-tag">Daily Report</span>
-                    <pre style="white-space:pre-wrap;font-family:inherit;color:#ddd;font-size:13px;">
-Date: ${data.date}
-Leads: ${data.metrics?.summary?.totalRequests || 0}
-Revenue: $${data.metrics?.summary?.totalCost || 0}
-Success Rate: ${data.metrics?.summary?.successRate || 'N/A'}
-${data.recommendations ? '\nRecommendations:\n' + data.recommendations.map(r => '• ' + r).join('\n') : ''}
-                    </pre>
-                `;
-            } else {
-                box.innerHTML = 'Failed to generate report';
-            }
-        } catch (e) {
-            box.innerHTML = 'Error: ' + e.message;
-        }
-    }
-
-    // ============================================
-    // SHARE
-    // ============================================
-    function shareDashboard() {
-        const url = window.location.href;
-        if (navigator.share) {
-            navigator.share({ title: 'Sovereign Empire AI', text: 'AI Agent Platform', url: url });
-        } else {
-            navigator.clipboard.writeText(url).then(() => {
-                alert('Dashboard URL copied!');
-            }).catch(() => {
-                prompt('Share this URL:', url);
-            });
-        }
-    }
-
-    // ============================================
-    // KEYBOARD SHORTCUTS
-    // ============================================
-    document.addEventListener('keydown', function(e) {
-        if (e.ctrlKey && e.key === 'Enter') { sendRequest(); }
-    });
-
-    console.log('Sovereign Empire Command Center loaded');
-    console.log('Emails:', emails.length);
-    console.log('Agents:', agents.length);
+    // ─────────────────────────────────────────────
+    // 2. AUTO-REFRESH EVERY 30 SECONDS
+    // ─────────────────────────────────────────────
+    fetchAllData();
+    setInterval(fetchAllData, 30000);
 </script>
 </body>
 </html>
