@@ -49,7 +49,7 @@ const CONFIG = {
     qualification: {
         minScore: 60,
         maxResults: 50,
-        autoCreateDeals: true
+        autoCreateDeals: false
     }
 };
 
