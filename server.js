@@ -1,35 +1,52 @@
 ﻿import express from 'express';
 import cors from 'cors';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+// Import routes
+import invoiceRoutes from './routes/invoice.js';
+import leadsRoutes from './routes/leads.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// Middleware
+// ── Middleware ──
 app.use(cors());
 app.use(express.json());
 app.use(express.static('.'));
 
-// Healthcheck (must respond quickly)
+// ── Routes ──
+app.use('/api/invoices', invoiceRoutes);
+app.use('/api/leads', leadsRoutes);
+
+// ── Health Check (must respond fast for Railway) ──
 app.get('/health', (req, res) => {
   res.status(200).send('OK');
 });
 
-// Simple root
+// ── Root ──
 app.get('/', (req, res) => {
-  res.json({ status: 'running' });
-});
-
-// Invoice route
-app.get('/api/invoices', (req, res) => {
   res.json({ 
-    success: true, 
-    message: 'VAT system ready!',
-    vat_rate: '12.5%',
-    currency: 'FJD'
+    message: 'Sovereign Empire API is running',
+    version: '2.0.0',
+    endpoints: {
+      invoices: '/api/invoices',
+      leads: '/api/leads',
+      health: '/health',
+      dashboard: '/dashboard.html'
+    }
   });
 });
 
-// Start server
+// ── Start Server ──
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`✅ Sovereign Empire API running on port ${PORT}`);
+  console.log(`   Health: http://localhost:${PORT}/health`);
+  console.log(`   Invoices: http://localhost:${PORT}/api/invoices`);
+  console.log(`   Leads: http://localhost:${PORT}/api/leads`);
+  console.log(`   Dashboard: http://localhost:${PORT}/dashboard.html`);
 });
