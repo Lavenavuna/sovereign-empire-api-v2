@@ -12,11 +12,7 @@ const __dirname = path.dirname(__filename);
 const CONFIG = {
     forecastHorizon: 30,
     confidenceLevel: 0.95,
-    dataSources: {
-        sales: './data/sales-history.json',
-        leads: './data/leads-history.json',
-        revenue: './data/revenue-history.json'
-    },
+    revenueMultiplier: 450,
     triggers: {
         sales: true,
         leads: true,
@@ -63,40 +59,39 @@ class TimesFMEngine {
     }
 
     generateSampleHistory() {
-    const now = Date.now();
-    const dayMs = 24 * 60 * 60 * 1000;
-    
-    for (let i = 90; i >= 0; i--) {
-        const date = new Date(now - i * dayMs).toISOString().split('T')[0];
+        const now = Date.now();
+        const dayMs = 24 * 60 * 60 * 1000;
         
-        // Sales (small numbers)
-        const baseSales = 500 + (90 - i) * 2;
-        const seasonalSales = 100 * Math.sin(i / 7 * Math.PI);
-        const noiseSales = (Math.random() - 0.5) * 50;
-        const salesValue = Math.max(0, Math.round(baseSales + seasonalSales + noiseSales));
-        this.history.sales.push({ date, value: salesValue });
+        for (let i = 90; i >= 0; i--) {
+            const date = new Date(now - i * dayMs).toISOString().split('T')[0];
+            
+            const baseSales = 500 + (90 - i) * 2;
+            const seasonalSales = 100 * Math.sin(i / 7 * Math.PI);
+            const noiseSales = (Math.random() - 0.5) * 50;
+            const salesValue = Math.max(0, Math.round(baseSales + seasonalSales + noiseSales));
+            this.history.sales.push({ date, value: salesValue });
+            
+            const baseLeads = 20 + (90 - i) * 0.5;
+            const noiseLeads = (Math.random() - 0.5) * 8;
+            const leadsValue = Math.max(0, Math.round(baseLeads + noiseLeads));
+            this.history.leads.push({ date, value: leadsValue });
+            
+            const baseRevenue = 80 + (90 - i) * 2;
+            const seasonalRevenue = 20 * Math.sin(i / 7 * Math.PI);
+            const noiseRevenue = (Math.random() - 0.5) * 10;
+            const revenueValue = Math.max(0, Math.round(baseRevenue + seasonalRevenue + noiseRevenue));
+            this.history.revenue.push({ date, value: revenueValue });
+        }
         
-        // Leads (small numbers)
-        const baseLeads = 20 + (90 - i) * 0.5;
-        const noiseLeads = (Math.random() - 0.5) * 8;
-        const leadsValue = Math.max(0, Math.round(baseLeads + noiseLeads));
-        this.history.leads.push({ date, value: leadsValue });
-        
-        // Revenue (LARGE NUMBERS - store as small values with multiplier)
-        const baseRevenue = 80 + (90 - i) * 2;
-        const seasonalRevenue = 20 * Math.sin(i / 7 * Math.PI);
-        const noiseRevenue = (Math.random() - 0.5) * 10;
-        const revenueValue = Math.max(0, Math.round(baseRevenue + seasonalRevenue + noiseRevenue));
-        this.history.revenue.push({ date, value: revenueValue });
+        this.saveHistory();
+        console.log('✅ Sample history generated');
     }
-    
-    this.saveHistory();
-    console.log('✅ Sample history generated');
-}
 
     saveHistory() {
         const dir = './data';
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
         fs.writeFileSync('./data/sales-history.json', JSON.stringify(this.history.sales, null, 2));
         fs.writeFileSync('./data/leads-history.json', JSON.stringify(this.history.leads, null, 2));
         fs.writeFileSync('./data/revenue-history.json', JSON.stringify(this.history.revenue, null, 2));
@@ -153,80 +148,62 @@ class TimesFMEngine {
     }
 
     async forecastRevenue() {
-    console.log('💰 Forecasting revenue...');
-    const data = this.history.revenue.slice(-90);
-    const prediction = await this.runTimesFM(data, CONFIG.forecastHorizon);
-    
-    // Multiply the forecast values to get realistic revenue
-    const revenueMultiplier = 450; // Adjust this based on your business
-    const revenuePrediction = prediction.map(p => ({
-        ...p,
-        value: Math.round(p.value * revenueMultiplier),
-        lowerBound: Math.round(p.lowerBound * revenueMultiplier),
-        upperBound: Math.round(p.upperBound * revenueMultiplier)
-    }));
-    
-    this.forecasts.revenue = {
-        data: data.slice(-30),
-        prediction: revenuePrediction,
-        horizon: CONFIG.forecastHorizon,
-        generated: new Date().toISOString()
-    };
-    
-    console.log('✅ Revenue forecast generated: ' + revenuePrediction.length + ' days');
-    return this.forecasts.revenue;
-}
+        console.log('💰 Forecasting revenue...');
+        const data = this.history.revenue.slice(-90);
+        const prediction = await this.runTimesFM(data, CONFIG.forecastHorizon);
         
-        console.log('✅ Revenue forecast generated: ' + prediction.length + ' days');
+        // Apply revenue multiplier to get realistic business revenue
+        const revenuePrediction = prediction.map(function(p) {
+            return {
+                date: p.date,
+                value: Math.round(p.value * CONFIG.revenueMultiplier),
+                lowerBound: Math.round(p.lowerBound * CONFIG.revenueMultiplier),
+                upperBound: Math.round(p.upperBound * CONFIG.revenueMultiplier)
+            };
+        });
+        
+        this.forecasts.revenue = {
+            data: data.slice(-30),
+            prediction: revenuePrediction,
+            horizon: CONFIG.forecastHorizon,
+            generated: new Date().toISOString()
+        };
+        
+        console.log('✅ Revenue forecast generated: ' + revenuePrediction.length + ' days');
         return this.forecasts.revenue;
     }
 
-// ============================================
-// TIMESFM SIMULATION - REAL REVENUE
-// ============================================
-async runTimesFM(data, horizon) {
-    // Check if this is revenue data (higher values) or generic data
-    const values = data.map(d => d.value);
-    const avgValue = values.reduce((a, b) => a + b, 0) / values.length;
-    const isRevenue = avgValue > 1000; // Revenue data has higher values
-    
-    const lastValue = values.length > 0 ? values[values.length - 1] : 100;
-    const avgChange = values.length > 1 ? (values[values.length - 1] - values[0]) / values.length : 0;
-    
-    const prediction = [];
-    let currentValue = lastValue;
-    
-    for (let i = 0; i < horizon; i++) {
-        const trend = avgChange * (i + 1);
-        const seasonality = 20 * Math.sin(i / 7 * Math.PI);
-        const noise = (Math.random() - 0.5) * 10;
+    // ============================================
+    // TIMESFM SIMULATION
+    // ============================================
+    async runTimesFM(data, horizon) {
+        const values = data.map(function(d) { return d.value; });
+        const lastValue = values.length > 0 ? values[values.length - 1] : 100;
+        const avgChange = values.length > 1 ? (values[values.length - 1] - values[0]) / values.length : 0;
         
-        // For revenue, amplify the values to realistic business numbers
-        let multiplier = 1;
-        if (isRevenue) {
-            multiplier = 450; // Revenue multiplier (adjust based on your business)
+        var prediction = [];
+        var currentValue = lastValue;
+        
+        for (var i = 0; i < horizon; i++) {
+            var trend = avgChange * (i + 1);
+            var seasonality = 20 * Math.sin(i / 7 * Math.PI);
+            var noise = (Math.random() - 0.5) * 10;
+            
+            currentValue = Math.max(10, currentValue + trend * 0.5 + seasonality * 0.3 + noise * 0.2);
+            
+            var lowerBound = Math.max(5, currentValue * 0.85);
+            var upperBound = Math.max(10, currentValue * 1.15);
+            
+            prediction.push({
+                date: new Date(Date.now() + (i + 1) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                value: Math.round(currentValue),
+                lowerBound: Math.round(lowerBound),
+                upperBound: Math.round(upperBound)
+            });
         }
         
-        currentValue = Math.max(10, currentValue + trend * 0.5 + seasonality * 0.3 + noise * 0.2);
-        
-        let finalValue = currentValue;
-        if (isRevenue) {
-            finalValue = currentValue * multiplier;
-        }
-        
-        const lowerBound = Math.max(5, finalValue * 0.85);
-        const upperBound = Math.max(10, finalValue * 1.15);
-        
-        prediction.push({
-            date: new Date(Date.now() + (i + 1) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            value: Math.round(finalValue),
-            lowerBound: Math.round(lowerBound),
-            upperBound: Math.round(upperBound)
-        });
+        return prediction;
     }
-    
-    return prediction;
-}
 
     // ============================================
     // GENERATE FULL FORECAST
@@ -282,8 +259,8 @@ async runTimesFM(data, horizon) {
             var avg = Math.round(total / values.length);
             var last = f.prediction[f.prediction.length - 1];
             console.log('📈 Revenue: ' + f.prediction.length + ' day forecast');
-            console.log('   Average: $' + avg);
-            console.log('   Final: $' + Math.round(last.value) + ' ($' + Math.round(last.lowerBound) + ' - $' + Math.round(last.upperBound) + ')');
+            console.log('   Average: $' + avg.toLocaleString());
+            console.log('   Final: $' + Math.round(last.value).toLocaleString() + ' ($' + Math.round(last.lowerBound).toLocaleString() + ' - $' + Math.round(last.upperBound).toLocaleString() + ')');
         }
         
         console.log('='.repeat(60));
@@ -340,14 +317,11 @@ async runTimesFM(data, horizon) {
 // ============================================
 var forecastEngine = new TimesFMEngine();
 
-// Run immediately
 await forecastEngine.generateFullForecast();
 
-// Run every 6 hours
 setInterval(async function() {
     await forecastEngine.generateFullForecast();
 }, 6 * 60 * 60 * 1000);
 
 console.log('\n⏰ Forecasting running every 6 hours');
 console.log('📊 Forecasts saved to: timesfm-forecasts.json');
-console.log('📈 Agents can access forecasts via getForecastSummary()');

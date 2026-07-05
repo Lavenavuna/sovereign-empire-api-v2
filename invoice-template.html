@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice - Sovereign Empire AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fff;
+            padding: 40px;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .invoice-box {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin: 0;
+        }
+        .header .logo {
+            font-size: 12px;
+            color: #888;
+            text-align: right;
+        }
+        .invoice-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .invoice-details .client {
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        .invoice-details .meta {
+            text-align: right;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+        }
+        th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid #667eea;
+            font-size: 14px;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+        .total-row {
+            font-weight: 700;
+            font-size: 18px;
+        }
+        .total-row td {
+            border-top: 2px solid #667eea;
+            padding-top: 15px;
+        }
+        .notes {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #555;
+        }
+        .payment-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f4ff;
+            border-radius: 8px;
+            font-size: 13px;
+            border-left: 4px solid #667eea;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 12px;
+            color: #888;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .btn-print {
+            background: #667eea;
+            color: #fff;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        .btn-print:hover {
+            background: #764ba2;
+        }
+    </style>
+</head>
+<body>
+<div class="invoice-box" id="invoiceContent">
+    <div class="header">
+        <div>
+            <h1>⚡ Sovereign Empire AI</h1>
+            <div style="font-size:13px;color:#666;margin-top:5px;">
+                Autonomous AI Agents · 24/7 Business Automation
+            </div>
+        </div>
+        <div class="logo">
+            <div><strong>INVOICE</strong></div>
+            <div style="margin-top:5px;" id="invoiceNumber">#INV-001</div>
+            <div id="invoiceDate">Date: 26 June 2026</div>
+            <div style="margin-top:5px;color:#10b981;font-weight:700;">Due on receipt</div>
+        </div>
+    </div>
+
+    <div class="invoice-details">
+        <div class="client">
+            <strong>Bill To:</strong><br>
+            <span id="clientName">[Client Name]</span><br>
+            <span id="clientCompany">[Company Name]</span><br>
+            <span id="clientEmail">[Email Address]</span><br>
+            <span id="clientAddress">[Physical Address]</span>
+        </div>
+        <div class="meta">
+            <strong>From:</strong><br>
+            Sovereign Empire AI<br>
+            [Your Business Address]<br>
+            [Your Contact Number]<br>
+            TIN: [Your TIN Number]
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th style="text-align:center;">Qty</th>
+                <th style="text-align:right;">Price</th>
+                <th style="text-align:right;">Total (FJD)</th>
+            </tr>
+        </thead>
+        <tbody id="invoiceItems">
+            <tr>
+                <td>Sovereign Empire AI - Business Tier</td>
+                <td style="text-align:center;">1</td>
+                <td style="text-align:right;">$99.99</td>
+                <td style="text-align:right;">$99.99</td>
+            </tr>
+            <tr>
+                <td style="font-size:12px;color:#666;border-bottom:none;" colspan="4">
+                    ✅ 18 AI Agents · Unlimited Requests · Priority Support · Daily Reports
+                </td>
+            </tr>
+        </tbody>
+        <tr class="total-row">
+            <td colspan="3" style="text-align:right;border-top:2px solid #667eea;">Subtotal:</td>
+            <td style="text-align:right;border-top:2px solid #667eea;" id="subtotal">$0.00</td>
+        </tr>
+        <tr>
+            <td colspan="3" style="text-align:right;">VAT (15%):</td>
+            <td style="text-align:right;" id="vatAmount">$0.00</td>
+        </tr>
+        <tr class="total-row">
+            <td colspan="3" style="text-align:right;border-top:2px solid #667eea;">Total Amount:</td>
+            <td style="text-align:right;border-top:2px solid #667eea;" id="totalAmount">$0.00</td>
+        </tr>
+    </table>
+
+    <div class="payment-info">
+        <strong>💳 Payment Details</strong><br>
+        <div style="margin-top:8px;font-size:14px;">
+            <span style="display:inline-block;width:140px;font-weight:600;">PayPal:</span>
+            <span id="paypalLink">paypal.me/sovereignempire</span>
+        </div>
+        <div style="margin-top:5px;font-size:14px;">
+            <span style="display:inline-block;width:140px;font-weight:600;">Bank Transfer:</span>
+            <span id="bankDetails">Westpac Fiji - [Your Account Details]</span>
+        </div>
+    </div>
+
+    <div class="notes">
+        <strong>📋 Notes:</strong><br>
+        • Payment is due immediately upon receipt.<br>
+        • A 10% late fee will apply after 30 days.<br>
+        • For support, contact: support@sovereign-empire.ai
+    </div>
+
+    <div class="footer">
+        ⚡ Sovereign Empire AI · 24/7 Autonomous · <a href="#" style="color:#667eea;">www.sovereign-empire.ai</a>
+    </div>
+</div>
+
+<div style="text-align:center;margin-top:20px;">
+    <button class="btn-print" onclick="printInvoice()">🖨️ Print Invoice</button>
+    <button class="btn-print" onclick="sendInvoiceEmail()" style="background:#10b981;">📧 Send Email</button>
+</div>
+
+<script>
+    // ============================================
+    // INVOICE DATA
+    // ============================================
+    const plans = {
+        pro: { name: 'Pro', price: 29.99 },
+        business: { name: 'Business', price: 99.99 },
+        enterprise: { name: 'Enterprise', price: 499.99 }
+    };
+
+    // VAT Rate (Fiji)
+    const VAT_RATE = 0.125;
+
+    function generateInvoice() {
+        // Get plan from URL parameter or use default
+        const params = new URLSearchParams(window.location.search);
+        const planKey = params.get('plan') || 'business';
+        const plan = plans[planKey] || plans.business;
+
+        const subtotal = plan.price;
+        const vat = subtotal * VAT_RATE;
+        const total = subtotal + vat;
+
+        document.getElementById('subtotal').textContent = '$' + subtotal.toFixed(2);
+        document.getElementById('vatAmount').textContent = '$' + vat.toFixed(2);
+        document.getElementById('totalAmount').textContent = '$' + total.toFixed(2);
+
+        // Update description
+        document.querySelector('#invoiceItems tr td:first-child').textContent =
+            'Sovereign Empire AI - ' + plan.name + ' Tier';
+
+        // Update invoice number
+        const invoiceNum = 'INV-' + String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+        document.getElementById('invoiceNumber').textContent = '#' + invoiceNum;
+    }
+
+    function printInvoice() {
+        window.print();
+    }
+
+    function sendInvoiceEmail() {
+        const clientName = document.getElementById('clientName').textContent;
+        const total = document.getElementById('totalAmount').textContent;
+        alert('📧 Invoice would be sent to client: ' + clientName + '\nTotal: ' + total);
+    }
+
+    // Generate invoice on load
+    document.addEventListener('DOMContentLoaded', generateInvoice);
+</script>
+</body>
+</html>

@@ -1,0 +1,657 @@
+{
+  "leads": [
+    {
+      "id": "lead_1",
+      "name": "Sarah Johnson",
+      "company": "TechFlow Solutions",
+      "phone": "+1-555-0101",
+      "email": "sarah@techflow.com",
+      "industry": "SaaS",
+      "language": "en",
+      "lastCall": "2026-06-23T05:16:44.959Z",
+      "status": "maybe",
+      "interestLevel": 50,
+      "callLog": [
+        {
+          "stage": "intro",
+          "script": "Hi, I'm Sovereign AI Assistant. I noticed you were interested in how AI can help your business. Is now a good time to discuss how AI can transform your operations?",
+          "language": "en"
+        },
+        {
+          "stage": "response",
+          "response": "Hi, yes I have a moment."
+        },
+        {
+          "stage": "discovery",
+          "script": "Do you have a moment to chat about how we can help your business grow?",
+          "language": "en"
+        },
+        {
+          "stage": "response",
+          "response": "We're looking to scale but can't afford more headcount."
+        },
+        {
+          "stage": "value",
+          "script": "Based on what you've shared, we can help you save 20+ hours per week and increase revenue by 40%.",
+          "language": "en"
+        },
+        {
+          "stage": "response",
+          "response": "What kind of results have other companies seen?"
+        },
+        {
+          "stage": "objection",
+          "script": "The sooner you start, the sooner you'll see the benefits.",
+          "language": "en"
+        },
+        {
+          "stage": "response",
+          "response": "I need to check with my team first."
+        },
+        {
+          "stage": "closing",
+          "script": "Based on our conversation, I'll send you a proposal within 24 hours.",
+          "language": "en"
+        },
+        {
+          "stage": "response",
+          "response": "I'm interested. What are the next steps?"
+        },
+        {
+          "stage": "final_close",
+          "script": "Great! I'll send the proposal to your email. Once you sign, we can start saving you time immediately.",
+          "language": "en"
+        }
+      ],
+      "languageUsed": "en"
+    },
+    {
+      "id": "lead_2",
+      "name": "Carlos Rodriguez",
+      "company": "DataSphere Inc",
+      "phone": "+1-555-0102",
+      "email": "carlos@datasphere.com",
+      "industry": "Technology",
+      "language": "es",
+      "lastCall": "2026-06-23T05:16:46.974Z",
+      "status": "rejected",
+      "interestLevel": 0,
+      "callLog": [
+        {
+          "stage": "intro",
+          "script": "Hola, soy el Asistente AI de Sovereign Empire. Noté que estaba interesado en cómo la IA puede ayudar a su negocio. ¿Es ahora un buen momento para discutir cómo la IA puede transformar sus operaciones?",
+          "language": "es"
+        },
+        {
+          "stage": "response",
+          "response": "Sí, me interesa saber más."
+        },
+        {
+          "stage": "discovery",
+          "script": "¿Es ahora un buen momento para discutir cómo la IA puede transformar sus operaciones?",
+          "language": "es"
+        },
+        {
+          "stage": "response",
+          "response": "Buscamos escalar pero no podemos contratar más personal."
+        },
+        {
+          "stage": "value",
+          "script": "Otras empresas en su industria han visto ROI en 30 días usando nuestra plataforma.",
+          "language": "es"
+        },
+        {
+          "stage": "response",
+          "response": "Me gustaría saber más sobre eso."
+        },
+        {
+          "stage": "objection",
+          "script": "Cuanto antes comience, antes verá los beneficios.",
+          "language": "es"
+        },
+        {
+          "stage": "response",
+          "response": "Ya hemos probado IA antes y no funcionó."
+        },
+        {
+          "stage": "closing",
+          "script": "¿Cuándo sería un buen momento para hacer seguimiento y revisar la propuesta juntos?",
+          "language": "es"
+        },
+        {
+          "stage": "response",
+          "response": "Creo que esto realmente podría funcionar para nosotros."
+        },
+        {
+          "stage": "final_close",
+          "script": "¡Perfecto! Recibirá el contrato en 24 horas. Una vez firmado, nuestro equipo configurará todo.",
+          "language": "es"
+        }
+      ],
+      "languageUsed": "es"
+    },
+    {
+      "id": "lead_3",
+      "name": "Marie Dubois",
+      "company": "CloudPioneer",
+      "phone": "+1-555-0103",
+      "email": "marie@cloudpioneer.com",
+      "industry": "Cloud Services",
+      "language": "fr",
+      "lastCall": "2026-06-23T05:16:48.980Z",
+      "status": "not_interested",
+      "interestLevel": 25,
+      "callLog": [
+        {
+          "stage": "intro",
+          "script": "Bonjour, je suis l'assistant IA de Sovereign Empire. Je vous appelle car vous avez manifesté votre intérêt pour notre plateforme d'automatisation IA. Est-ce le bon moment pour discuter de la façon dont l'IA peut transformer vos opérations?",
+          "language": "fr"
+        },
+        {
+          "stage": "response",
+          "response": "Oui, je suis intéressé à en savoir plus."
+        },
+        {
+          "stage": "discovery",
+          "script": "Est-ce le bon moment pour discuter de la façon dont l'IA peut transformer vos opérations?",
+          "language": "fr"
+        },
+        {
+          "stage": "response",
+          "response": "Nous cherchons à évoluer mais ne pouvons pas embaucher plus de personnel."
+        },
+        {
+          "stage": "value",
+          "script": "D'autres entreprises de votre secteur ont vu un ROI en 30 jours en utilisant notre plateforme.",
+          "language": "fr"
+        },
+        {
+          "stage": "response",
+          "response": "J'aimerais en savoir plus à ce sujet."
+        },
+        {
+          "stage": "objection",
+          "script": "Plus tôt vous commencez, plus tôt vous verrez les avantages.",
+          "language": "fr"
+        },
+        {
+          "stage": "response",
+          "response": "Je dois vérifier avec mon équipe d'abord."
+        },
+        {
+          "stage": "closing",
+          "script": "Quand serait-il bon de faire un suivi et d'examiner la proposition ensemble?",
+          "language": "fr"
+        },
+        {
+          "stage": "response",
+          "response": "Cela semble prometteur. Envoyez-moi la proposition."
+        },
+        {
+          "stage": "final_close",
+          "script": "Super! Je vous enverrai la proposition par email. Une fois que vous aurez signé, nous pourrons commencer à vous faire gagner du temps immédiatement.",
+          "language": "fr"
+        }
+      ],
+      "languageUsed": "fr"
+    },
+    {
+      "id": "lead_4",
+      "name": "Hans Schmidt",
+      "company": "AI Innovations",
+      "phone": "+1-555-0104",
+      "email": "hans@aiinnovations.com",
+      "industry": "AI",
+      "language": "de",
+      "lastCall": "2026-06-23T05:16:50.994Z",
+      "status": "rejected",
+      "interestLevel": 0,
+      "callLog": [
+        {
+          "stage": "intro",
+          "script": "Hallo, ich bin der KI-Assistent von Sovereign Empire. Ich rufe an, weil Sie Interesse an unserer KI-Automatisierungsplattform bekundet haben. Haben Sie einen Moment Zeit, um zu besprechen, wie wir Ihrem Unternehmen beim Wachstum helfen können?",
+          "language": "de"
+        },
+        {
+          "stage": "response",
+          "response": "Hallo, ja ich habe einen Moment."
+        },
+        {
+          "stage": "discovery",
+          "script": "Haben Sie einen Moment Zeit, um zu besprechen, wie wir Ihrem Unternehmen beim Wachstum helfen können?",
+          "language": "de"
+        },
+        {
+          "stage": "response",
+          "response": "Wir möchten wachsen, können aber kein weiteres Personal einstellen."
+        },
+        {
+          "stage": "value",
+          "script": "Andere Unternehmen in Ihrer Branche haben innerhalb von 30 Tagen ROI mit unserer Plattform erzielt.",
+          "language": "de"
+        },
+        {
+          "stage": "response",
+          "response": "Ich würde gerne mehr darüber erfahren."
+        },
+        {
+          "stage": "objection",
+          "script": "Ich verstehe die Preisbedenken. Viele Kunden erzielten in 90 Tagen 3x ROI.",
+          "language": "de"
+        },
+        {
+          "stage": "response",
+          "response": "Ich mache mir Sorgen wegen der Kosten."
+        },
+        {
+          "stage": "closing",
+          "script": "Wann wäre ein guter Zeitpunkt für ein Follow-up, um das Angebot gemeinsam zu prüfen?",
+          "language": "de"
+        },
+        {
+          "stage": "response",
+          "response": "Ich denke, das könnte wirklich für uns funktionieren."
+        },
+        {
+          "stage": "final_close",
+          "script": "Perfekt! Sie erhalten den Vertrag innerhalb von 24 Stunden. Sobald er unterschrieben ist, wird unser Team alles einrichten.",
+          "language": "de"
+        }
+      ],
+      "languageUsed": "de"
+    },
+    {
+      "id": "lead_5",
+      "name": "Wei Zhang",
+      "company": "Digital Transform",
+      "phone": "+1-555-0105",
+      "email": "wei@digitaltransform.com",
+      "industry": "Digital Marketing",
+      "language": "zh",
+      "lastCall": "2026-06-23T05:16:52.998Z",
+      "status": "maybe",
+      "interestLevel": 50,
+      "callLog": [
+        {
+          "stage": "intro",
+          "script": "您好，我是 Sovereign Empire 的 AI 助理。我打电话是因为您对我们的 AI 自动化平台表示了兴趣。 您有时间聊聊我们如何帮助您的业务增长吗？",
+          "language": "zh"
+        },
+        {
+          "stage": "response",
+          "response": "Yes, I'm interested in learning more."
+        },
+        {
+          "stage": "discovery",
+          "script": "现在是讨论 AI 如何改变您的运营的好时机吗？",
+          "language": "zh"
+        },
+        {
+          "stage": "response",
+          "response": "We're spending too much time on manual tasks."
+        },
+        {
+          "stage": "value",
+          "script": "您所在行业的其他公司使用我们的平台在 30 天内就获得了回报。",
+          "language": "zh"
+        },
+        {
+          "stage": "response",
+          "response": "What kind of results have other companies seen?"
+        },
+        {
+          "stage": "objection",
+          "script": "成本会被您每周节省的 20 多个小时所抵消。",
+          "language": "zh"
+        },
+        {
+          "stage": "response",
+          "response": "We've tried AI before and it didn't work."
+        },
+        {
+          "stage": "closing",
+          "script": "根据我们的讨论，我将在 24 小时内向您发送提案。",
+          "language": "zh"
+        },
+        {
+          "stage": "response",
+          "response": "I'm interested. What are the next steps?"
+        },
+        {
+          "stage": "final_close",
+          "script": "完美！您将在 24 小时内收到合同。一旦签署，我们的团队将为您设置一切。",
+          "language": "zh"
+        }
+      ],
+      "languageUsed": "zh"
+    },
+    {
+      "id": "lead_6",
+      "name": "Yuki Tanaka",
+      "company": "Nexus Systems",
+      "phone": "+1-555-0106",
+      "email": "yuki@nexus.com",
+      "industry": "Software",
+      "language": "ja",
+      "lastCall": "2026-06-23T07:16:55.010Z",
+      "status": "maybe",
+      "interestLevel": 50,
+      "callLog": [
+        {
+          "stage": "intro",
+          "script": "こんにちは、Sovereign EmpireのAIアシスタントです。AIがどのようにビジネスに役立つかにご興味をお持ちだと伺いました。 ビジネスの成長をどのように支援できるかについてお話しする時間はありますか？",
+          "language": "ja"
+        },
+        {
+          "stage": "response",
+          "response": "Yes, I'm interested in learning more."
+        },
+        {
+          "stage": "discovery",
+          "script": "ビジネスの成長をどのように支援できるかについてお話しする時間はありますか？",
+          "language": "ja"
+        },
+        {
+          "stage": "response",
+          "response": "Our team is overwhelmed with repetitive work."
+        },
+        {
+          "stage": "value",
+          "script": "ご共有いただいた内容に基づき、週20時間以上の節約と収益40%増加をお手伝いできます。",
+          "language": "ja"
+        },
+        {
+          "stage": "response",
+          "response": "What kind of results have other companies seen?"
+        },
+        {
+          "stage": "objection",
+          "script": "早く始めれば始めるほど、早くメリットを実感いただけます。",
+          "language": "ja"
+        },
+        {
+          "stage": "response",
+          "response": "We've tried AI before and it didn't work."
+        },
+        {
+          "stage": "closing",
+          "script": "提案書を一緒に確認するフォローアップに適したタイミングはいつですか？",
+          "language": "ja"
+        },
+        {
+          "stage": "response",
+          "response": "I'm interested. What are the next steps?"
+        },
+        {
+          "stage": "final_close",
+          "script": "完璧です！24時間以内に契約書をお受け取りいただけます。署名後、当社チームがすべてをセットアップいたします。",
+          "language": "ja"
+        }
+      ],
+      "languageUsed": "ja"
+    },
+    {
+      "id": "lead_7",
+      "name": "Fatima Al-Hassan",
+      "company": "BrightCore",
+      "phone": "+1-555-0107",
+      "email": "fatima@brightcore.com",
+      "industry": "FinTech",
+      "language": "ar",
+      "lastCall": "2026-06-23T07:16:57.026Z",
+      "status": "maybe",
+      "interestLevel": 50,
+      "callLog": [
+        {
+          "stage": "intro",
+          "script": "مرحباً، أنا مساعد الذكاء الاصطناعي من Sovereign Empire. أتصل بك لأنك أبديت اهتماماً بمنصتنا لأتمتة الذكاء الاصطناعي. هل الآن وقت مناسب لمناقشة كيف يمكن للذكاء الاصطناعي تحويل عملياتك؟",
+          "language": "ar"
+        },
+        {
+          "stage": "response",
+          "response": "Hi, yes I have a moment."
+        },
+        {
+          "stage": "discovery",
+          "script": "هل لديك لحظة للحديث عن كيف يمكننا مساعدة عملك على النمو؟",
+          "language": "ar"
+        },
+        {
+          "stage": "response",
+          "response": "Our team is overwhelmed with repetitive work."
+        },
+        {
+          "stage": "value",
+          "script": "بناءً على ما شاركته، يمكننا مساعدتك في توفير 20+ ساعة أسبوعياً وزيادة الإيرادات بنسبة 40%.",
+          "language": "ar"
+        },
+        {
+          "stage": "response",
+          "response": "What kind of results have other companies seen?"
+        },
+        {
+          "stage": "objection",
+          "script": "يمكننا البدء بتجربة 30 يوماً حتى ترى النتائج قبل الالتزام.",
+          "language": "ar"
+        },
+        {
+          "stage": "response",
+          "response": "We've tried AI before and it didn't work."
+        },
+        {
+          "stage": "closing",
+          "script": "متى يكون وقت مناسب للمتابعة ومراجعة العرض معاً؟",
+          "language": "ar"
+        },
+        {
+          "stage": "response",
+          "response": "I'm interested. What are the next steps?"
+        },
+        {
+          "stage": "final_close",
+          "script": "ممتاز! ستتلقى العقد خلال 24 ساعة. بمجرد التوقيع، سيقوم فريقنا بإعداد كل شيء.",
+          "language": "ar"
+        }
+      ],
+      "languageUsed": "ar"
+    },
+    {
+      "id": "lead_8",
+      "name": "David Patel",
+      "company": "Quantum AI",
+      "phone": "+1-555-0108",
+      "email": "david@quantum.ai",
+      "industry": "AI/ML",
+      "language": "en",
+      "lastCall": "2026-06-23T07:16:59.041Z",
+      "status": "not_interested",
+      "interestLevel": 40,
+      "callLog": [
+        {
+          "stage": "intro",
+          "script": "Hi, I'm Sovereign AI Assistant. I noticed you were interested in how AI can help your business. Do you have a moment to chat about how we can help your business grow?",
+          "language": "en"
+        },
+        {
+          "stage": "response",
+          "response": "Hi, yes I have a moment."
+        },
+        {
+          "stage": "discovery",
+          "script": "Do you have a moment to chat about how we can help your business grow?",
+          "language": "en"
+        },
+        {
+          "stage": "response",
+          "response": "We're looking to scale but can't afford more headcount."
+        },
+        {
+          "stage": "value",
+          "script": "Based on what you've shared, we can help you save 20+ hours per week and increase revenue by 40%.",
+          "language": "en"
+        },
+        {
+          "stage": "response",
+          "response": "What kind of results have other companies seen?"
+        },
+        {
+          "stage": "objection",
+          "script": "I understand the price concern. Many clients generated 3x ROI in 90 days.",
+          "language": "en"
+        },
+        {
+          "stage": "response",
+          "response": "I'm concerned about the cost."
+        },
+        {
+          "stage": "closing",
+          "script": "Based on our conversation, I'll send you a proposal within 24 hours.",
+          "language": "en"
+        },
+        {
+          "stage": "response",
+          "response": "That sounds promising. Send me the proposal."
+        },
+        {
+          "stage": "final_close",
+          "script": "Perfect! You'll receive the contract within 24 hours. Once signed, our team will set everything up.",
+          "language": "en"
+        }
+      ],
+      "languageUsed": "en"
+    },
+    {
+      "id": "lead_9",
+      "name": "Maria Garcia",
+      "company": "EcoSphere",
+      "phone": "+1-555-0109",
+      "email": "maria@ecosphere.com",
+      "industry": "Sustainability",
+      "language": "es",
+      "lastCall": "2026-06-23T07:17:01.046Z",
+      "status": "rejected",
+      "interestLevel": 0,
+      "callLog": [
+        {
+          "stage": "intro",
+          "script": "Hola, soy el Asistente AI de Sovereign Empire. Noté que estaba interesado en cómo la IA puede ayudar a su negocio. ¿Es ahora un buen momento para discutir cómo la IA puede transformar sus operaciones?",
+          "language": "es"
+        },
+        {
+          "stage": "response",
+          "response": "Hola, sí tengo un momento."
+        },
+        {
+          "stage": "discovery",
+          "script": "¿Tiene un momento para hablar sobre cómo podemos ayudar a su negocio a crecer?",
+          "language": "es"
+        },
+        {
+          "stage": "response",
+          "response": "Pasamos demasiado tiempo en tareas manuales."
+        },
+        {
+          "stage": "value",
+          "script": "Basado en lo que compartió, podemos ayudarle a ahorrar 20+ horas por semana y aumentar los ingresos en un 40%.",
+          "language": "es"
+        },
+        {
+          "stage": "response",
+          "response": "Me gustaría saber más sobre eso."
+        },
+        {
+          "stage": "objection",
+          "script": "Cuanto antes comience, antes verá los beneficios.",
+          "language": "es"
+        },
+        {
+          "stage": "response",
+          "response": "Necesito consultarlo con mi equipo primero."
+        },
+        {
+          "stage": "closing",
+          "script": "Basado en nuestra conversación, le enviaré una propuesta en 24 horas.",
+          "language": "es"
+        },
+        {
+          "stage": "response",
+          "response": "Suena prometedor. Envíeme la propuesta."
+        },
+        {
+          "stage": "final_close",
+          "script": "¡Perfecto! Recibirá el contrato en 24 horas. Una vez firmado, nuestro equipo configurará todo.",
+          "language": "es"
+        }
+      ],
+      "languageUsed": "es"
+    },
+    {
+      "id": "lead_10",
+      "name": "Thomas Brown",
+      "company": "Nova Solutions",
+      "phone": "+1-555-0110",
+      "email": "thomas@novasolutions.com",
+      "industry": "Consulting",
+      "language": "en",
+      "lastCall": "2026-06-23T07:17:03.056Z",
+      "status": "not_interested",
+      "interestLevel": 25,
+      "callLog": [
+        {
+          "stage": "intro",
+          "script": "Hello, this is Sovereign AI Assistant. I'm calling because you expressed interest in our AI automation platform. Do you have a moment to chat about how we can help your business grow?",
+          "language": "en"
+        },
+        {
+          "stage": "response",
+          "response": "Yes, I'm interested in learning more."
+        },
+        {
+          "stage": "discovery",
+          "script": "Do you have a moment to chat about how we can help your business grow?",
+          "language": "en"
+        },
+        {
+          "stage": "response",
+          "response": "We're looking to scale but can't afford more headcount."
+        },
+        {
+          "stage": "value",
+          "script": "Other companies in your industry have seen ROI within 30 days using our platform.",
+          "language": "en"
+        },
+        {
+          "stage": "response",
+          "response": "I'd like to hear more about that."
+        },
+        {
+          "stage": "objection",
+          "script": "The sooner you start, the sooner you'll see the benefits.",
+          "language": "en"
+        },
+        {
+          "stage": "response",
+          "response": "We've tried AI before and it didn't work."
+        },
+        {
+          "stage": "closing",
+          "script": "Based on our conversation, I'll send you a proposal within 24 hours.",
+          "language": "en"
+        },
+        {
+          "stage": "response",
+          "response": "I think this could really work for us."
+        },
+        {
+          "stage": "final_close",
+          "script": "Perfect! You'll receive the contract within 24 hours. Once signed, our team will set everything up.",
+          "language": "en"
+        }
+      ],
+      "languageUsed": "en"
+    }
+  ],
+  "deals": [],
+  "revenue": 0,
+  "timestamp": "2026-07-01T01:21:42.782Z"
+}

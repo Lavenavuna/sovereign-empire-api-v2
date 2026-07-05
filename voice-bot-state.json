@@ -1,0 +1,587 @@
+{
+  "leads": [
+    {
+      "id": "lead_1",
+      "name": "Sarah Johnson",
+      "company": "TechFlow Solutions",
+      "phone": "+1-555-0101",
+      "email": "sarah@techflow.com",
+      "industry": "SaaS",
+      "lastCall": "2026-06-29T17:42:25.920Z",
+      "status": "rejected",
+      "interestLevel": 10,
+      "callLog": [
+        {
+          "stage": "intro",
+          "script": "Hi, I'm Sovereign AI Assistant calling from Sovereign Empire AI. I noticed you were interested in how AI can help your business. Do you have a moment to chat about how we can help your business?"
+        },
+        {
+          "stage": "response",
+          "response": "I'm a bit busy, but go ahead."
+        },
+        {
+          "stage": "discovery",
+          "script": "What specific challenges are you hoping to solve with AI automation?"
+        },
+        {
+          "stage": "response",
+          "response": "Our team is overwhelmed with repetitive tasks."
+        },
+        {
+          "stage": "value",
+          "script": "Based on what you've shared, we can help you save 20+ hours per week and generate 40% more revenue. That's like getting 3 free employees without the overhead."
+        },
+        {
+          "stage": "response",
+          "response": "That's exactly what we've been looking for."
+        },
+        {
+          "stage": "objection",
+          "script": "I understand your concern. We're fully transparent about our results and can provide references from clients in your industry."
+        },
+        {
+          "stage": "response",
+          "response": "I'm concerned about the cost."
+        },
+        {
+          "stage": "closing",
+          "script": "When would be a good time to follow up and review the proposal together?"
+        },
+        {
+          "stage": "response",
+          "response": "That sounds promising. Send me the proposal."
+        },
+        {
+          "stage": "final_close",
+          "script": "Outstanding! I'll send the proposal now. Would you like me to include a sample of what we can achieve for your company?"
+        }
+      ],
+      "followUpDate": null
+    },
+    {
+      "id": "lead_2",
+      "name": "Michael Chen",
+      "company": "DataSphere Inc",
+      "phone": "+1-555-0102",
+      "email": "michael@datasphere.com",
+      "industry": "Technology",
+      "lastCall": "2026-06-22T10:23:01.686Z",
+      "status": "rejected",
+      "interestLevel": 0,
+      "callLog": [
+        {
+          "stage": "intro",
+          "script": "Hi, I'm Sovereign AI Assistant calling from Sovereign Empire AI. I'm following up on your interest in our AI platform. Do you have 5 minutes?"
+        },
+        {
+          "stage": "response",
+          "response": "Hello, thanks for calling."
+        },
+        {
+          "stage": "discovery",
+          "script": "How much time does your team currently spend on manual tasks?"
+        },
+        {
+          "stage": "response",
+          "response": "I want to automate our customer support."
+        },
+        {
+          "stage": "value",
+          "script": "Other companies in your industry have seen ROI within 30 days using our platform."
+        },
+        {
+          "stage": "response",
+          "response": "How would that work for our industry?"
+        },
+        {
+          "stage": "objection",
+          "script": "I understand the price concern. Many of our clients initially felt the same way, but they saw ROI within the first month."
+        },
+        {
+          "stage": "response",
+          "response": "Our team might resist change."
+        },
+        {
+          "stage": "closing",
+          "script": "When would be a good time to follow up?"
+        },
+        {
+          "stage": "response",
+          "response": "I think this could work for us."
+        },
+        {
+          "stage": "final_close",
+          "script": "Perfect! You'll receive the contract within 24 hours. Once signed, our team will set everything up."
+        }
+      ],
+      "followUpDate": null
+    },
+    {
+      "id": "lead_3",
+      "name": "Emily Rodriguez",
+      "company": "CloudPioneer",
+      "phone": "+1-555-0103",
+      "email": "emily@cloudpioneer.com",
+      "industry": "Cloud Services",
+      "lastCall": "2026-06-22T10:23:03.695Z",
+      "status": "rejected",
+      "interestLevel": 0,
+      "callLog": [
+        {
+          "stage": "intro",
+          "script": "Hi, I'm Sovereign AI Assistant calling from Sovereign Empire AI. I'm calling because you expressed interest in our AI automation platform. Do you have a moment?"
+        },
+        {
+          "stage": "response",
+          "response": "I'm a bit busy, but go ahead."
+        },
+        {
+          "stage": "discovery",
+          "script": "How much time does your team currently spend on manual tasks?"
+        },
+        {
+          "stage": "response",
+          "response": "Our team is overwhelmed with repetitive tasks."
+        },
+        {
+          "stage": "value",
+          "script": "Based on what you've shared, we can help you save 20+ hours per week and generate 40% more revenue."
+        },
+        {
+          "stage": "response",
+          "response": "I'd like to hear more about that."
+        },
+        {
+          "stage": "objection",
+          "script": "We've helped over 50 companies in your industry achieve these results. Would you like to see a case study?"
+        },
+        {
+          "stage": "response",
+          "response": "I'm concerned about the cost."
+        },
+        {
+          "stage": "closing",
+          "script": "When would be a good time to follow up?"
+        },
+        {
+          "stage": "response",
+          "response": "Let me think about it and get back to you."
+        },
+        {
+          "stage": "final_close",
+          "script": "Great! I'll send the proposal to your email. Once you sign, we can start saving you time immediately."
+        }
+      ],
+      "followUpDate": null
+    },
+    {
+      "id": "lead_4",
+      "name": "James Wilson",
+      "company": "AI Innovations",
+      "phone": "+1-555-0104",
+      "email": "james@aiinnovations.com",
+      "industry": "AI",
+      "lastCall": "2026-06-22T10:23:05.705Z",
+      "status": "rejected",
+      "interestLevel": 0,
+      "callLog": [
+        {
+          "stage": "intro",
+          "script": "Good afternoon, this is Sovereign AI Assistant with Sovereign Empire AI. I'm following up on your interest in our AI platform. Do you have 5 minutes?"
+        },
+        {
+          "stage": "response",
+          "response": "Hello, thanks for calling."
+        },
+        {
+          "stage": "discovery",
+          "script": "What would it mean to your business to save 20+ hours per week?"
+        },
+        {
+          "stage": "response",
+          "response": "We're spending too much time on manual data entry."
+        },
+        {
+          "stage": "value",
+          "script": "Based on what you've shared, we can help you save 20+ hours per week and generate 40% more revenue."
+        },
+        {
+          "stage": "response",
+          "response": "I'd like to hear more about that."
+        },
+        {
+          "stage": "objection",
+          "script": "I understand the price concern. Many of our clients initially felt the same way, but they saw ROI within the first month."
+        },
+        {
+          "stage": "response",
+          "response": "Our team might resist change."
+        },
+        {
+          "stage": "closing",
+          "script": "I'll send you a proposal within 24 hours. Would you prefer email or WhatsApp?"
+        },
+        {
+          "stage": "response",
+          "response": "Let me think about it and get back to you."
+        },
+        {
+          "stage": "final_close",
+          "script": "Excellent! I'll send everything over. Let's schedule a follow-up call for next week to review."
+        }
+      ],
+      "followUpDate": null
+    },
+    {
+      "id": "lead_5",
+      "name": "Lisa Park",
+      "company": "Digital Transform",
+      "phone": "+1-555-0105",
+      "email": "lisa@digitaltransform.com",
+      "industry": "Digital Marketing",
+      "lastCall": "2026-06-22T10:23:07.719Z",
+      "status": "rejected",
+      "interestLevel": 20,
+      "callLog": [
+        {
+          "stage": "intro",
+          "script": "Hi, I'm Sovereign AI Assistant calling from Sovereign Empire AI. I'm following up on your interest in our AI platform. Do you have 5 minutes?"
+        },
+        {
+          "stage": "response",
+          "response": "Hi, yes I have a moment."
+        },
+        {
+          "stage": "discovery",
+          "script": "What would it mean to your business to save 20+ hours per week?"
+        },
+        {
+          "stage": "response",
+          "response": "Our team is overwhelmed with repetitive tasks."
+        },
+        {
+          "stage": "value",
+          "script": "Other companies in your industry have seen ROI within 30 days using our platform."
+        },
+        {
+          "stage": "response",
+          "response": "I'd like to hear more about that."
+        },
+        {
+          "stage": "objection",
+          "script": "Great question. Unlike other platforms, our agents work autonomously 24/7 and require no human oversight."
+        },
+        {
+          "stage": "response",
+          "response": "I'm concerned about the cost."
+        },
+        {
+          "stage": "closing",
+          "script": "Based on our conversation, I think we can help you save 20+ hours per week and generate $5,000-$15,000 in additional revenue."
+        },
+        {
+          "stage": "response",
+          "response": "Let me think about it and get back to you."
+        },
+        {
+          "stage": "final_close",
+          "script": "Great! I'll send the proposal to your email. Once you sign, we can start saving you time immediately."
+        }
+      ],
+      "followUpDate": null
+    },
+    {
+      "id": "lead_6",
+      "name": "Robert Kim",
+      "company": "Nexus Systems",
+      "phone": "+1-555-0106",
+      "email": "robert@nexus.com",
+      "industry": "Software",
+      "lastCall": "2026-06-25T12:03:58.288Z",
+      "status": "rejected",
+      "interestLevel": 0,
+      "callLog": [
+        {
+          "stage": "intro",
+          "script": "Hello, this is Sovereign AI Assistant from Sovereign Empire AI. I'm calling because you expressed interest in our AI automation platform. Do you have a moment to chat about how we can help your business?"
+        },
+        {
+          "stage": "response",
+          "response": "Hello, thanks for calling."
+        },
+        {
+          "stage": "discovery",
+          "script": "What's the biggest bottleneck in your current operations?"
+        },
+        {
+          "stage": "response",
+          "response": "Our team is overwhelmed with repetitive tasks."
+        },
+        {
+          "stage": "value",
+          "script": "We've helped over 50 companies in your industry achieve these results. The average client sees a 300% ROI in the first 90 days."
+        },
+        {
+          "stage": "response",
+          "response": "That's exactly what we've been looking for."
+        },
+        {
+          "stage": "objection",
+          "script": "We've helped over 50 companies in your industry achieve these results. Would you like to see a case study?"
+        },
+        {
+          "stage": "response",
+          "response": "I'm concerned about the cost."
+        },
+        {
+          "stage": "closing",
+          "script": "Based on our conversation, I think we can help you save 20+ hours per week and generate $5,000-$15,000 in additional revenue."
+        },
+        {
+          "stage": "response",
+          "response": "When could we start seeing results?"
+        },
+        {
+          "stage": "final_close",
+          "script": "Excellent! I'll send everything over. Let's schedule a follow-up call for next week to review the results."
+        }
+      ],
+      "followUpDate": null
+    },
+    {
+      "id": "lead_7",
+      "name": "Amanda Lee",
+      "company": "BrightCore",
+      "phone": "+1-555-0107",
+      "email": "amanda@brightcore.com",
+      "industry": "FinTech",
+      "lastCall": "2026-06-28T05:09:24.812Z",
+      "status": "maybe",
+      "interestLevel": 45,
+      "callLog": [
+        {
+          "stage": "intro",
+          "script": "Good afternoon, this is Sovereign AI Assistant with Sovereign Empire AI. I'm following up on your interest in our AI platform. Do you have a moment to chat about how we can help your business?"
+        },
+        {
+          "stage": "response",
+          "response": "Yes, I'm interested in learning more."
+        },
+        {
+          "stage": "discovery",
+          "script": "What would it mean to your business to save 20+ hours per week and increase revenue by 40%?"
+        },
+        {
+          "stage": "response",
+          "response": "I want to automate our customer support."
+        },
+        {
+          "stage": "value",
+          "script": "We've helped over 50 companies in your industry achieve these results. The average client sees a 300% ROI in the first 90 days."
+        },
+        {
+          "stage": "response",
+          "response": "That sounds very interesting."
+        },
+        {
+          "stage": "objection",
+          "script": "Great question. Unlike other platforms, our agents work autonomously 24/7 and require no human oversight."
+        },
+        {
+          "stage": "response",
+          "response": "I need to check with my team first."
+        },
+        {
+          "stage": "closing",
+          "script": "When would be a good time to follow up and review the proposal together? The sooner we start, the sooner you'll see results. We can have your agents running within 48 hours."
+        },
+        {
+          "stage": "response",
+          "response": "I think this could really work for us."
+        },
+        {
+          "stage": "final_close",
+          "script": "Great! I'll send the proposal to your email. Once you sign, we can start saving you time immediately."
+        }
+      ],
+      "followUpDate": "2026-07-01T05:09:24.803Z"
+    },
+    {
+      "id": "lead_8",
+      "name": "David Patel",
+      "company": "Quantum AI",
+      "phone": "+1-555-0108",
+      "email": "david@quantum.ai",
+      "industry": "AI/ML",
+      "lastCall": "2026-06-24T12:26:02.611Z",
+      "status": "rejected",
+      "interestLevel": 15,
+      "callLog": [
+        {
+          "stage": "intro",
+          "script": "Hi, I'm Sovereign AI Assistant calling from Sovereign Empire AI. I noticed you were interested in how AI can help your business. Is now a good time to discuss how AI can transform your operations?"
+        },
+        {
+          "stage": "response",
+          "response": "Yes, I'm interested in learning more."
+        },
+        {
+          "stage": "discovery",
+          "script": "What would it mean to your business to save 20+ hours per week and increase revenue by 40%?"
+        },
+        {
+          "stage": "response",
+          "response": "We're spending too much time on manual data entry."
+        },
+        {
+          "stage": "value",
+          "script": "We've helped over 50 companies in your industry achieve these results. The average client sees a 300% ROI in the first 90 days."
+        },
+        {
+          "stage": "response",
+          "response": "That's exactly what we've been looking for."
+        },
+        {
+          "stage": "objection",
+          "script": "Our track record speaks for itself. We've helped companies save over $10M in operational costs."
+        },
+        {
+          "stage": "response",
+          "response": "I'm concerned about the cost."
+        },
+        {
+          "stage": "closing",
+          "script": "Let me send you a personalized proposal that shows exactly how much you could save. The sooner we start, the sooner you'll see results. We can have your agents running within 48 hours."
+        },
+        {
+          "stage": "response",
+          "response": "I think this could really work for us."
+        },
+        {
+          "stage": "final_close",
+          "script": "Outstanding! I'll send the proposal now. Would you like me to include a sample of what we can achieve for your company?"
+        }
+      ],
+      "followUpDate": null
+    },
+    {
+      "id": "lead_9",
+      "name": "Maria Garcia",
+      "company": "EcoSphere",
+      "phone": "+1-555-0109",
+      "email": "maria@ecosphere.com",
+      "industry": "Sustainability",
+      "lastCall": "2026-06-28T05:09:26.835Z",
+      "status": "not_interested",
+      "interestLevel": 25,
+      "callLog": [
+        {
+          "stage": "intro",
+          "script": "Good afternoon, this is Sovereign AI Assistant with Sovereign Empire AI. I'm following up on your interest in our AI platform. Do you have a moment to chat about how we can help your business?"
+        },
+        {
+          "stage": "response",
+          "response": "Yes, I'm interested in learning more."
+        },
+        {
+          "stage": "discovery",
+          "script": "What specific challenges are you hoping to solve with AI automation?"
+        },
+        {
+          "stage": "response",
+          "response": "Our operations are inefficient and we need to optimize."
+        },
+        {
+          "stage": "value",
+          "script": "Based on what you've shared, we can help you save 20+ hours per week and generate 40% more revenue. That's like getting 3 free employees without the overhead."
+        },
+        {
+          "stage": "response",
+          "response": "That's exactly what we've been looking for."
+        },
+        {
+          "stage": "objection",
+          "script": "I completely understand. Would you be open to a small pilot program to test the results yourself?"
+        },
+        {
+          "stage": "response",
+          "response": "We've tried AI before and it didn't work."
+        },
+        {
+          "stage": "closing",
+          "script": "When would be a good time to follow up and review the proposal together? The sooner we start, the sooner you'll see results. We can have your agents running within 48 hours."
+        },
+        {
+          "stage": "response",
+          "response": "Let me think about it and get back to you."
+        },
+        {
+          "stage": "final_close",
+          "script": "Perfect! You'll receive the contract within 24 hours. Once signed, our team will set everything up."
+        }
+      ],
+      "followUpDate": "2026-07-03T05:09:26.834Z"
+    },
+    {
+      "id": "lead_10",
+      "name": "Thomas Brown",
+      "company": "Nova Solutions",
+      "phone": "+1-555-0110",
+      "email": "thomas@novasolutions.com",
+      "industry": "Consulting",
+      "lastCall": "2026-06-25T12:04:00.301Z",
+      "status": "rejected",
+      "interestLevel": 15,
+      "callLog": [
+        {
+          "stage": "intro",
+          "script": "Good morning, this is Sovereign AI Assistant with Sovereign Empire AI. I'm following up on your interest in our AI platform. Do you have a moment to chat about how we can help your business?"
+        },
+        {
+          "stage": "response",
+          "response": "Hello, thanks for calling."
+        },
+        {
+          "stage": "discovery",
+          "script": "What's the biggest bottleneck in your current operations?"
+        },
+        {
+          "stage": "response",
+          "response": "Our team is overwhelmed with repetitive tasks."
+        },
+        {
+          "stage": "value",
+          "script": "We've helped over 50 companies in your industry achieve these results. The average client sees a 300% ROI in the first 90 days. We recently helped a company in your industry automate their entire sales process, resulting in $50K additional monthly revenue."
+        },
+        {
+          "stage": "response",
+          "response": "That's exactly what we've been looking for."
+        },
+        {
+          "stage": "objection",
+          "script": "We've helped over 50 companies in your industry achieve these results. Would you like to see a case study?"
+        },
+        {
+          "stage": "response",
+          "response": "I need to check with my team first."
+        },
+        {
+          "stage": "closing",
+          "script": "I'll send you a proposal within 24 hours. Would you prefer email or WhatsApp?"
+        },
+        {
+          "stage": "response",
+          "response": "I'm interested. What are the next steps?"
+        },
+        {
+          "stage": "final_close",
+          "script": "Excellent! I'll send everything over. Let's schedule a follow-up call for next week to review the results."
+        }
+      ],
+      "followUpDate": null
+    }
+  ],
+  "deals": [],
+  "revenue": 0,
+  "timestamp": "2026-07-01T01:21:42.837Z"
+}

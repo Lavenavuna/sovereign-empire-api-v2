@@ -1,0 +1,77 @@
+{
+  "revenue": 40627,
+  "monthlyRevenue": 40627,
+  "clients": [
+    {
+      "id": "client_1782122615055",
+      "name": "TechFlow Solutions",
+      "email": "sarah@techflow.com",
+      "tier": "assist",
+      "price": 29,
+      "joined": "2026-06-22T10:03:35.055Z",
+      "revenue": 0
+    },
+    {
+      "id": "client_1782122615055",
+      "name": "DataSphere Inc",
+      "email": "michael@datasphere.com",
+      "tier": "suggest",
+      "price": 99,
+      "joined": "2026-06-22T10:03:35.055Z",
+      "revenue": 0
+    },
+    {
+      "id": "client_1782122615056",
+      "name": "CloudPioneer",
+      "email": "emily@cloudpioneer.com",
+      "tier": "act",
+      "price": 499,
+      "joined": "2026-06-22T10:03:35.056Z",
+      "revenue": 0
+    }
+  ],
+  "deals": [
+    {
+      "id": "deal_1782122615056",
+      "company": "AI Innovations",
+      "value": 25000,
+      "contact": "james@aiinnovations.com",
+      "status": "open",
+      "created": "2026-06-22T10:03:35.056Z"
+    },
+    {
+      "id": "deal_1782122615056",
+      "company": "Digital Transform",
+      "value": 15000,
+      "contact": "lisa@digitaltransform.com",
+      "status": "open",
+      "created": "2026-06-22T10:03:35.056Z"
+    }
+  ],
+  "transactions": [
+    {
+      "id": "tx_1782122615056",
+      "clientId": "client_1",
+      "amount": 29,
+      "type": "subscription",
+      "timestamp": "2026-06-22T10:03:35.056Z"
+    },
+    {
+      "id": "tx_1782122615056",
+      "clientId": "client_2",
+      "amount": 99,
+      "type": "subscription",
+      "timestamp": "2026-06-22T10:03:35.056Z"
+    },
+    {
+      "id": "tx_1782122615056",
+      "clientId": "client_3",
+      "amount": 499,
+      "type": "subscription",
+      "timestamp": "2026-06-22T10:03:35.056Z"
+    }
+  ],
+  "creators": [],
+  "agents": [],
+  "lastRun": "2026-07-01T01:21:42.833Z"
+}

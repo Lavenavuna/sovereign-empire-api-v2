@@ -305,7 +305,8 @@ class ApifyLeadIntegration {
         }
         
         // Enrich with emails
-        allLeads = await this.enrichWithEmails(allLeads);
+       // allLeads = await this.enrichWithEmails(allLeads);
+console.log('⚠️ Email enrichment disabled - using real emails only');
         
         var uniqueLeads = this.deduplicateLeads(allLeads);
         var qualified = this.qualifyLeads(uniqueLeads);

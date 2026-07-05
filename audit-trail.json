@@ -1,0 +1,47 @@
+[
+  {
+    "id": "AUDIT-2442722178",
+    "timestamp": "2026-06-26T02:58:42.178Z",
+    "action": "INVOICE_CREATED",
+    "reference": "INV-42722177-001",
+    "details": "Invoice created for John Smith",
+    "user": "Accounts Receivable Agent",
+    "ip": "N/A"
+  },
+  {
+    "id": "AUDIT-2442722180",
+    "timestamp": "2026-06-26T02:58:42.180Z",
+    "action": "PAYMENT_RECEIVED",
+    "reference": "INV-42722177-001",
+    "details": "Payment received from John Smith",
+    "user": "Accounts Receivable Agent",
+    "ip": "N/A"
+  },
+  {
+    "id": "AUDIT-2442722215",
+    "timestamp": "2026-06-26T02:58:42.215Z",
+    "action": "RECEIPT_COPY_GENERATED",
+    "reference": "INV-42722177-001",
+    "details": "Carbon copy generated for John Smith",
+    "user": "Accounts Receivable Agent",
+    "ip": "N/A"
+  },
+  {
+    "id": "AUDIT-2447540866",
+    "timestamp": "2026-06-26T04:19:00.866Z",
+    "action": "INVOICE_CREATED",
+    "reference": "INV-47540866-002",
+    "details": "Invoice created for Test Client",
+    "user": "Accounts Receivable Agent",
+    "ip": "N/A"
+  },
+  {
+    "id": "AUDIT-2447540870",
+    "timestamp": "2026-06-26T04:19:00.870Z",
+    "action": "PAYMENT_RECEIVED",
+    "reference": "INV-47540866-002",
+    "details": "Payment received from Test Client",
+    "user": "Accounts Receivable Agent",
+    "ip": "N/A"
+  }
+]

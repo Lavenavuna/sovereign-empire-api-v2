@@ -1,0 +1,68 @@
+[
+  {
+    "invoiceNumber": "INV-42722177-001",
+    "clientName": "John Smith",
+    "clientEmail": "john@techflow.com",
+    "clientPhone": "+6791234567",
+    "clientAddress": "N/A",
+    "clientTIN": "N/A",
+    "plan": "Business",
+    "amount": 99.99,
+    "vatRate": "15%",
+    "vatAmount": 14.998499999999998,
+    "totalAmount": 114.98849999999999,
+    "currency": "FJD",
+    "status": "paid",
+    "issuedDate": "2026-06-26T02:58:42.177Z",
+    "dueDate": "2026-07-26T02:58:42.177Z",
+    "paymentMethod": "PayPal",
+    "items": [
+      {
+        "description": "Business Tier - 18 AI Agents",
+        "quantity": 1,
+        "unitPrice": 99.99
+      }
+    ],
+    "notes": "Thank you for choosing Sovereign Empire AI",
+    "paymentReceived": true,
+    "paymentDate": "2026-06-26T02:58:42.180Z",
+    "receiptNumber": "REC-42722180",
+    "receiptGenerated": true,
+    "auditId": null,
+    "paymentReference": "PP-123456",
+    "paymentNotes": ""
+  },
+  {
+    "invoiceNumber": "INV-47540866-002",
+    "clientName": "Test Client",
+    "clientEmail": "test@example.com",
+    "clientPhone": "+6791234567",
+    "clientAddress": "N/A",
+    "clientTIN": "N/A",
+    "plan": "Business",
+    "amount": 99.99,
+    "vatRate": "12.5%",
+    "vatAmount": 12.49875,
+    "totalAmount": 112.48875,
+    "currency": "FJD",
+    "status": "paid",
+    "issuedDate": "2026-06-26T04:19:00.866Z",
+    "dueDate": "2026-07-26T04:19:00.866Z",
+    "paymentMethod": "PayPal",
+    "items": [
+      {
+        "description": "Business Tier - 18 AI Agents",
+        "quantity": 1,
+        "unitPrice": 99.99
+      }
+    ],
+    "notes": "Thank you for choosing Sovereign Empire AI",
+    "paymentReceived": true,
+    "paymentDate": "2026-06-26T04:19:00.870Z",
+    "receiptNumber": "REC-47540870",
+    "receiptGenerated": true,
+    "auditId": null,
+    "paymentReference": "TEST-123",
+    "paymentNotes": ""
+  }
+]

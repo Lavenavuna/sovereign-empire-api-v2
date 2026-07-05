@@ -1,0 +1,21 @@
+{
+  "summary": {
+    "totalDeals": 130,
+    "activeDeals": 130,
+    "wonDeals": 0,
+    "totalRevenue": 0,
+    "monthlyRevenue": 0,
+    "todayRevenue": 0,
+    "averageDealSize": 0,
+    "revenueGoal": 25000,
+    "goalProgress": "0.0%"
+  },
+  "pipeline": {
+    "new": 0,
+    "contacted": 130,
+    "proposal_ready": 0,
+    "proposal_sent": 0,
+    "closed_won": 0
+  },
+  "timestamp": "2026-06-27T02:00:00.728Z"
+}

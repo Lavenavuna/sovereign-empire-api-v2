@@ -1,0 +1,38 @@
+[
+  {
+    "receiptNumber": "REC-42722180",
+    "invoiceNumber": "INV-42722177-001",
+    "clientName": "John Smith",
+    "clientEmail": "john@techflow.com",
+    "clientPhone": "+6791234567",
+    "amount": 99.99,
+    "vatAmount": 14.998499999999998,
+    "totalAmount": 114.98849999999999,
+    "currency": "FJD",
+    "plan": "Business",
+    "paymentMethod": "PayPal",
+    "paymentDate": "2026-06-26T02:58:42.180Z",
+    "paymentReference": "PP-123456",
+    "status": "confirmed",
+    "generatedBy": "Accounts Receivable Agent",
+    "timestamp": "2026-06-26T02:58:42.180Z"
+  },
+  {
+    "receiptNumber": "REC-47540870",
+    "invoiceNumber": "INV-47540866-002",
+    "clientName": "Test Client",
+    "clientEmail": "test@example.com",
+    "clientPhone": "+6791234567",
+    "amount": 99.99,
+    "vatAmount": 12.49875,
+    "totalAmount": 112.48875,
+    "currency": "FJD",
+    "plan": "Business",
+    "paymentMethod": "PayPal",
+    "paymentDate": "2026-06-26T04:19:00.870Z",
+    "paymentReference": "TEST-123",
+    "status": "confirmed",
+    "generatedBy": "Accounts Receivable Agent",
+    "timestamp": "2026-06-26T04:19:00.870Z"
+  }
+]
