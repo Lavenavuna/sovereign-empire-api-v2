@@ -174,6 +174,47 @@
         .status-online { background: #10b981; color: #fff; }
         .status-degraded { background: #f59e0b; color: #fff; }
         .status-offline { background: #ef4444; color: #fff; }
+        .prompt-wrap {
+            background: #141c2b;
+            border-radius: 16px;
+            border: 1px solid #1e2a3a;
+            padding: 16px;
+        }
+        .prompt-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        .prompt-input {
+            width: 100%;
+            min-height: 90px;
+            border-radius: 10px;
+            border: 1px solid #2a3a4a;
+            background: #0f1726;
+            color: #e0e6f0;
+            padding: 10px;
+            font: inherit;
+            resize: vertical;
+        }
+        .prompt-select {
+            border-radius: 8px;
+            border: 1px solid #2a3a4a;
+            background: #0f1726;
+            color: #e0e6f0;
+            padding: 8px 10px;
+            min-width: 220px;
+        }
+        .prompt-result {
+            margin-top: 12px;
+            background: #0f1726;
+            border: 1px solid #223047;
+            border-radius: 10px;
+            padding: 12px;
+            white-space: pre-wrap;
+            color: #c8d0dc;
+            min-height: 48px;
+        }
 
         @media (max-width: 600px) {
             .grid { grid-template-columns: 1fr 1fr; }
@@ -283,19 +324,17 @@
         </table>
     </div>
 
-    <!-- Copilot Assistant Panel -->
-    <div class="section-title">🤖 Copilot Assistant <span class="last-updated" id="agentCount">(0)</span></div>
-    <div class="table-wrap">
-        <table>
-            <thead><tr>
-                <th>Agent</th>
-                <th>Description</th>
-                <th>Tier</th>
-            </tr></thead>
-            <tbody id="agentTableBody">
-                <tr><td colspan="3" class="empty-state">Loading copilot agents...</td></tr>
-            </tbody>
-        </table>
+    <!-- Copilot Assistant Prompt -->
+    <div class="section-title">🤖 Copilot Assistant Prompt</div>
+    <div class="prompt-wrap">
+        <div class="prompt-row">
+            <select id="agentSelect" class="prompt-select">
+                <option value="">Auto-select agent</option>
+            </select>
+            <button class="refresh-btn" onclick="runCopilotPrompt()">▶ Run Prompt</button>
+        </div>
+        <textarea id="copilotPrompt" class="prompt-input" placeholder="Type your instruction (e.g. Find investor matches for current DFW properties and draft next disposition action)."></textarea>
+        <div id="copilotResult" class="prompt-result">No prompt run yet.</div>
     </div>
 
 </div>
@@ -360,7 +399,11 @@
             if (agentsRes.ok) {
                 const agentData = await agentsRes.json();
                 agents = agentData.agents || [];
-                document.getElementById('agentCount').textContent = `(${agents.length})`;
+                const select = document.getElementById('agentSelect');
+                const selected = select.value;
+                select.innerHTML = '<option value="">Auto-select agent</option>' +
+                    agents.map(a => `<option value="${a.name}">${a.name} (${a.tier})</option>`).join('');
+                select.value = selected;
             }
 
             // ── Update KPI Cards ──
@@ -447,23 +490,6 @@
                 `).join('');
             }
 
-            // ── Render Copilot Agents ──
-            const agentBody = document.getElementById('agentTableBody');
-            if (!agents.length) {
-                agentBody.innerHTML = `<tr><td colspan="3" class="empty-state">No copilot agents available</td></tr>`;
-            } else {
-                agentBody.innerHTML = agents.map(agent => {
-                    const tierClass = (agent.tier || '').toLowerCase();
-                    return `
-                    <tr>
-                        <td><strong>${agent.name || 'N/A'}</strong></td>
-                        <td>${agent.description || 'N/A'}</td>
-                        <td><span class="badge ${tierClass}">${agent.tier || 'N/A'}</span></td>
-                    </tr>
-                `;
-                }).join('');
-            }
-
             // ── Update Overall Status ──
             const overall = document.getElementById('overallStatus');
             if (overall) {
@@ -494,6 +520,40 @@
     // ─────────────────────────────────────────────
     fetchAllData();
     setInterval(fetchAllData, 30000);
+
+    async function runCopilotPrompt() {
+        const promptEl = document.getElementById('copilotPrompt');
+        const resultEl = document.getElementById('copilotResult');
+        const agent = document.getElementById('agentSelect').value;
+        const query = (promptEl.value || '').trim();
+        if (!query) {
+            resultEl.textContent = 'Enter a prompt first.';
+            return;
+        }
+
+        resultEl.textContent = 'Running...';
+        try {
+            const payload = agent ? { agent, query } : { query };
+            const res = await fetch('/api/agent/execute', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (!res.ok || data.success === false) {
+                resultEl.textContent = `Error: ${data.error || 'Request failed'}`;
+                return;
+            }
+            if (data.gated) {
+                resultEl.textContent = `Queued for approval.\nApproval ID: ${data.approvalId}\n${data.message || ''}`;
+                fetchAllData();
+                return;
+            }
+            resultEl.textContent = data.result || '(No response text)';
+        } catch (error) {
+            resultEl.textContent = `Error: ${error.message}`;
+        }
+    }
 </script>
 </body>
 </html>
