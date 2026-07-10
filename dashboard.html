@@ -276,6 +276,7 @@
         <button class="refresh-btn" onclick="fetchAllData()">🔄 Refresh All Data</button>
         <button class="refresh-btn" onclick="runRevenueHunter()">⚡ Run Revenue Hunter</button>
         <button class="refresh-btn" onclick="window.open('/api/wholesale/overview','_blank')">🏘️ Wholesale Overview API</button>
+        <button class="refresh-btn" onclick="window.open('/api/wholesale/market/target-zips','_blank')">📍 View Target ZIP API</button>
         <button class="refresh-btn" onclick="window.open('/api/invoices','_blank')">📄 View Invoice API</button>
         <button class="refresh-btn" onclick="window.open('/api/approvals','_blank')">🛡️ View Approval Queue</button>
     </div>
@@ -364,6 +365,7 @@
         <table>
             <thead><tr>
                 <th>Deal</th>
+                <th>ZIP</th>
                 <th>Stage</th>
                 <th>Target Fee (USD)</th>
                 <th>Invoice</th>
@@ -371,7 +373,40 @@
                 <th>Action</th>
             </tr></thead>
             <tbody id="pipelineTableBody">
-                <tr><td colspan="6" class="empty-state">Syncing revenue pipeline...</td></tr>
+                <tr><td colspan="7" class="empty-state">Syncing revenue pipeline...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section-title">📍 ZIP / Area Performance <span class="last-updated" id="zipPerfCount">(0)</span></div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr>
+                <th>ZIP</th>
+                <th>Deals</th>
+                <th>Contracts</th>
+                <th>Closed</th>
+                <th>Revenue (USD)</th>
+                <th>Avg Fee (USD)</th>
+                <th>Top Channel</th>
+            </tr></thead>
+            <tbody id="zipPerformanceBody">
+                <tr><td colspan="7" class="empty-state">Calculating ZIP performance...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section-title">🎯 Monthly KPI Target vs Actual <span class="last-updated" id="kpiMonthLabel"></span></div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr>
+                <th>Metric</th>
+                <th>Target</th>
+                <th>Actual</th>
+                <th>Status</th>
+            </tr></thead>
+            <tbody id="kpiTargetBody">
+                <tr><td colspan="4" class="empty-state">Loading KPI targets...</td></tr>
             </tbody>
         </table>
     </div>
@@ -392,6 +427,26 @@
 </div>
 
 <script>
+    function toMonthKey(value) {
+        if (!value) return '';
+        const d = new Date(value);
+        if (isNaN(d.getTime())) return '';
+        return d.toISOString().slice(0, 7);
+    }
+
+    function toDate(value) {
+        if (!value) return null;
+        const d = new Date(value);
+        return isNaN(d.getTime()) ? null : d;
+    }
+
+    function hoursBetween(start, end) {
+        const s = toDate(start);
+        const e = toDate(end);
+        if (!s || !e) return null;
+        return (e.getTime() - s.getTime()) / 36e5;
+    }
+
     // ─────────────────────────────────────────────
     // 1. FETCH LIVE DATA FROM YOUR BACKEND
     // ─────────────────────────────────────────────
@@ -452,6 +507,15 @@
                 const pipelineData = await pipelineRes.json();
                 pipelineDeals = pipelineData.deals || [];
                 document.getElementById('pipelineCount').textContent = `(${pipelineDeals.length})`;
+            }
+
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            document.getElementById('kpiMonthLabel').textContent = `(${currentMonth})`;
+            let kpiTarget = null;
+            const kpiRes = await fetch(`/api/wholesale/kpi/targets?month=${currentMonth}`);
+            if (kpiRes.ok) {
+                const kpiData = await kpiRes.json();
+                kpiTarget = kpiData.target || null;
             }
 
             const agentsRes = await fetch('/api/agents');
@@ -559,12 +623,13 @@
             // ── Render Revenue Pipeline ──
             const pipelineBody = document.getElementById('pipelineTableBody');
             if (!pipelineDeals.length) {
-                pipelineBody.innerHTML = `<tr><td colspan="6" class="empty-state">No deals in pipeline</td></tr>`;
+                pipelineBody.innerHTML = `<tr><td colspan="7" class="empty-state">No deals in pipeline</td></tr>`;
             } else {
                 pipelineBody.innerHTML = pipelineDeals.map(d => {
                     const fee = Number(d.assignmentFeeTarget || d.assignmentPotential || 0).toFixed(2);
                     const invoice = d.invoiceNumber || '-';
                     const payment = d.invoiceStatus || '-';
+                    const zip = d.sourceEconomics?.zip || '-';
                     let actionHtml = '';
                     if (d.invoiceNumber && d.invoiceStatus !== 'paid') {
                         actionHtml = `<button class="mini-btn approve" onclick="markDealPaid('${d.id}')">Mark Paid</button>`;
@@ -576,6 +641,7 @@
                     return `
                     <tr>
                         <td><strong>${d.id}</strong></td>
+                        <td>${zip}</td>
                         <td>${d.stage || '-'}</td>
                         <td>$${fee}</td>
                         <td>${invoice}</td>
@@ -583,6 +649,118 @@
                         <td>${actionHtml}</td>
                     </tr>
                 `;
+                }).join('');
+            }
+
+            // ── Render ZIP Performance ──
+            const zipBody = document.getElementById('zipPerformanceBody');
+            const perfMap = {};
+            for (const d of deals) {
+                const zip = (d.sourceEconomics?.zip || '').trim() || 'Unknown';
+                if (!perfMap[zip]) {
+                    perfMap[zip] = {
+                        zip,
+                        deals: 0,
+                        contracts: 0,
+                        closed: 0,
+                        revenue: 0,
+                        channels: {}
+                    };
+                }
+                const row = perfMap[zip];
+                row.deals += 1;
+                const outcome = (d.sourceEconomics?.outcome || '').toLowerCase();
+                if (outcome === 'contract' || outcome === 'closed' || d.invoiceNumber) row.contracts += 1;
+                if (outcome === 'closed' || d.status === 'closed' || d.stage === 'paid') row.closed += 1;
+                const fee = Number(d.sourceEconomics?.feeActual || d.revenueAmountUsd || 0);
+                row.revenue += Number.isFinite(fee) ? fee : 0;
+                const ch = (d.sourceEconomics?.channel || 'unknown').toLowerCase();
+                row.channels[ch] = (row.channels[ch] || 0) + 1;
+            }
+            const zipRows = Object.values(perfMap).sort((a, b) => b.revenue - a.revenue || b.closed - a.closed || b.deals - a.deals);
+            document.getElementById('zipPerfCount').textContent = `(${zipRows.length})`;
+            if (!zipRows.length) {
+                zipBody.innerHTML = `<tr><td colspan="7" class="empty-state">No ZIP performance data yet.</td></tr>`;
+            } else {
+                zipBody.innerHTML = zipRows.map(r => {
+                    let topChannel = 'unknown';
+                    let topCount = 0;
+                    for (const [key, count] of Object.entries(r.channels)) {
+                        if (count > topCount) {
+                            topChannel = key;
+                            topCount = count;
+                        }
+                    }
+                    const avgFee = r.closed > 0 ? (r.revenue / r.closed) : 0;
+                    return `
+                        <tr>
+                            <td><strong>${r.zip}</strong></td>
+                            <td>${r.deals}</td>
+                            <td>${r.contracts}</td>
+                            <td>${r.closed}</td>
+                            <td>$${r.revenue.toFixed(2)}</td>
+                            <td>$${avgFee.toFixed(2)}</td>
+                            <td>${topChannel}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            // ── Render KPI Target vs Actual ──
+            const kpiBody = document.getElementById('kpiTargetBody');
+            if (!kpiTarget) {
+                kpiBody.innerHTML = `<tr><td colspan="4" class="empty-state">No KPI target set for ${currentMonth}. Use PUT /api/wholesale/kpi/targets/${currentMonth}</td></tr>`;
+            } else {
+                const monthDeals = deals.filter(d => {
+                    const contractMonth = toMonthKey(d.sourceEconomics?.contractDate);
+                    const leadMonth = toMonthKey(d.sourceEconomics?.leadDate);
+                    const closeMonth = toMonthKey(d.sourceEconomics?.closeDate || d.paidAt);
+                    return contractMonth === currentMonth || leadMonth === currentMonth || closeMonth === currentMonth;
+                });
+                const actualRevenue = invoices
+                    .filter(i => (i.status || '').toLowerCase() === 'paid' && toMonthKey(i.paymentDate || i.paidAt || i.updatedAt) === currentMonth)
+                    .reduce((sum, i) => sum + Number(i.totalUsd || 0), 0);
+                const actualCloses = monthDeals.filter(d => (d.status === 'closed' || d.stage === 'paid' || (d.sourceEconomics?.outcome || '').toLowerCase() === 'closed')).length;
+                const actualContracts = monthDeals.filter(d => {
+                    const out = (d.sourceEconomics?.outcome || '').toLowerCase();
+                    return out === 'contract' || out === 'closed' || Boolean(d.sourceEconomics?.contractDate) || Boolean(d.invoiceNumber);
+                }).length;
+                const actualLeads = monthDeals.filter(d => toMonthKey(d.sourceEconomics?.leadDate) === currentMonth).length;
+                const closeDurations = monthDeals
+                    .map(d => hoursBetween(d.sourceEconomics?.contractDate || d.dispositionTimeline?.contractSignedAt, d.sourceEconomics?.closeDate || d.dispositionTimeline?.closeDate || d.paidAt))
+                    .filter(v => v !== null)
+                    .map(v => v / 24);
+                const avgDaysToClose = closeDurations.length
+                    ? closeDurations.reduce((a, b) => a + b, 0) / closeDurations.length
+                    : 0;
+
+                const rows = [
+                    ['Revenue (USD)', Number(kpiTarget.revenueTarget || 0), actualRevenue, true],
+                    ['Avg Fee/Deal (USD)', Number(kpiTarget.avgFeeTarget || 0), actualCloses ? actualRevenue / actualCloses : 0, true],
+                    ['Closes', Number(kpiTarget.closesTarget || 0), actualCloses, true],
+                    ['Contracts', Number(kpiTarget.contractsTarget || 0), actualContracts, true],
+                    ['Leads', Number(kpiTarget.leadsTarget || 0), actualLeads, true],
+                    ['Days to Close', Number(kpiTarget.daysToCloseTarget || 0), avgDaysToClose, false]
+                ];
+
+                kpiBody.innerHTML = rows.map(([label, target, actual, higherIsBetter]) => {
+                    const t = Number(target || 0);
+                    const a = Number(actual || 0);
+                    let hit = false;
+                    if (t <= 0) {
+                        hit = true;
+                    } else {
+                        hit = higherIsBetter ? (a >= t) : (a <= t);
+                    }
+                    const badge = hit ? '<span class="badge won">On track</span>' : '<span class="badge pending">Behind</span>';
+                    return `
+                        <tr>
+                            <td><strong>${label}</strong></td>
+                            <td>${label.includes('(USD)') ? '$' : ''}${t.toFixed(label.includes('Days') ? 1 : 2).replace(/\.00$/, '')}</td>
+                            <td>${label.includes('(USD)') ? '$' : ''}${a.toFixed(label.includes('Days') ? 1 : 2).replace(/\.00$/, '')}</td>
+                            <td>${badge}</td>
+                        </tr>
+                    `;
                 }).join('');
             }
 
