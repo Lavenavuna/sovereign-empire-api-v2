@@ -1,29 +1,11 @@
-﻿import express from 'express';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import express from 'express';
+import { createInvoice, listInvoices, listReceipts, recordInvoicePayment } from '../lib/revenueOps.js';
 
 const router = express.Router();
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const invoicesFilePath = path.join(__dirname, '..', 'invoices.json');
-
-function loadInvoices() {
-  try {
-    if (!fs.existsSync(invoicesFilePath)) return [];
-    const parsed = JSON.parse(fs.readFileSync(invoicesFilePath, 'utf8'));
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveInvoices(invoices) {
-  fs.writeFileSync(invoicesFilePath, JSON.stringify(invoices, null, 2));
-}
 
 // GET all invoices
 router.get('/', (req, res) => {
-  const invoices = loadInvoices();
+  const invoices = listInvoices();
   res.json({ 
     success: true, 
     message: 'VAT system ready!',
@@ -37,7 +19,7 @@ router.get('/', (req, res) => {
 // POST generate invoice with VAT
 router.post('/generate', (req, res) => {
   try {
-    const { productName, priceUsd, customerEmail, paypalTransactionId } = req.body;
+    const { productName, priceUsd, customerName, customerEmail, customerPhone, paymentMethod, dueInDays } = req.body;
     
     if (!productName || !priceUsd) {
       return res.status(400).json({ 
@@ -46,47 +28,28 @@ router.post('/generate', (req, res) => {
       });
     }
 
-    // Fixed exchange rate (you can make this dynamic later)
-    const exchangeRate = 2.25; // FJD per USD
-    const vatRate = 12.5; // Fiji VAT %
-    
-    const priceFjd = priceUsd * exchangeRate;
-    const vatFjd = priceFjd * (vatRate / 100);
-    const vatUsd = vatFjd / exchangeRate;
-    const totalUsd = priceUsd + vatUsd;
-    
-    const invoice = {
-      invoiceNumber: `INV-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    const invoice = createInvoice({
       productName,
-      priceUsd: parseFloat(priceUsd.toFixed(2)),
-      exchangeRate: parseFloat(exchangeRate.toFixed(4)),
-      priceFjd: parseFloat(priceFjd.toFixed(2)),
-      vatRate: vatRate,
-      vatFjd: parseFloat(vatFjd.toFixed(2)),
-      vatUsd: parseFloat(vatUsd.toFixed(2)),
-      totalUsd: parseFloat(totalUsd.toFixed(2)),
-      customerEmail: customerEmail || 'N/A',
-      paypalTransactionId: paypalTransactionId || 'N/A',
-      createdAt: new Date().toISOString(),
-      status: 'paid'
-    };
-
-    const invoices = loadInvoices();
-    invoices.push(invoice);
-    saveInvoices(invoices);
+      priceUsd,
+      customerName,
+      customerEmail,
+      customerPhone,
+      paymentMethod: paymentMethod || 'Wire Transfer',
+      dueInDays: Number(dueInDays) || 7
+    });
     
     res.json({ 
       success: true, 
       message: 'Invoice generated successfully',
       invoice: invoice,
       vatBreakdown: {
-        basePriceUsd: parseFloat(priceUsd.toFixed(2)),
-        exchangeRate: parseFloat(exchangeRate.toFixed(4)),
-        priceFjd: parseFloat(priceFjd.toFixed(2)),
-        vatRate: vatRate + '%',
-        vatFjd: parseFloat(vatFjd.toFixed(2)),
-        vatUsd: parseFloat(vatUsd.toFixed(2)),
-        totalUsd: parseFloat(totalUsd.toFixed(2))
+        basePriceUsd: invoice.priceUsd,
+        exchangeRate: invoice.exchangeRate,
+        priceFjd: invoice.priceFjd,
+        vatRate: invoice.vatRate + '%',
+        vatFjd: invoice.vatFjd,
+        vatUsd: invoice.vatUsd,
+        totalUsd: invoice.totalUsd
       }
     });
   } catch (error) {
@@ -95,6 +58,25 @@ router.post('/generate', (req, res) => {
       error: error.message 
     });
   }
+});
+
+router.post('/:invoiceNumber/pay', (req, res) => {
+  const payment = recordInvoicePayment({
+    invoiceNumber: req.params.invoiceNumber,
+    paymentMethod: req.body?.paymentMethod,
+    paymentReference: req.body?.paymentReference,
+    paymentNotes: req.body?.paymentNotes,
+    paidAt: req.body?.paidAt
+  });
+  if (!payment.success) {
+    return res.status(404).json(payment);
+  }
+  res.json(payment);
+});
+
+router.get('/receipts', (req, res) => {
+  const receipts = listReceipts();
+  res.json({ success: true, count: receipts.length, receipts });
 });
 
 export default router;

@@ -1,5 +1,6 @@
 import express from 'express';
 import { createId, loadWholesaleState, saveWholesaleState } from '../lib/wholesaleStore.js';
+import { createInvoice, recordInvoicePayment, listInvoices } from '../lib/revenueOps.js';
 
 const router = express.Router();
 
@@ -76,6 +77,16 @@ function ensureDeal(state, propertyId) {
       assignmentFeeTarget: 0,
       assignmentPotential: 0,
       investorMatches: [],
+      followUps: [],
+      calls: [],
+      contacts: {
+        sellerName: '',
+        sellerEmail: '',
+        sellerPhone: '',
+        buyerName: '',
+        buyerEmail: '',
+        buyerPhone: ''
+      },
       notes: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -96,6 +107,13 @@ router.get('/overview', (req, res) => {
         ).toFixed(2)
       )
     : 0;
+  const invoices = listInvoices().filter(i => i.dealId);
+  const recognizedRevenueUsd = invoices
+    .filter(i => i.status === 'paid')
+    .reduce((sum, i) => sum + asNumber(i.totalUsd, 0), 0);
+  const pendingRevenueUsd = invoices
+    .filter(i => i.status !== 'paid')
+    .reduce((sum, i) => sum + asNumber(i.totalUsd, 0), 0);
 
   res.json({
     success: true,
@@ -106,7 +124,9 @@ router.get('/overview', (req, res) => {
       pendingProperties,
       investors: state.investors.length,
       deals: state.deals.length,
-      avgAssignmentPotential
+      avgAssignmentPotential,
+      recognizedRevenueUsd: Number(recognizedRevenueUsd.toFixed(2)),
+      pendingRevenueUsd: Number(pendingRevenueUsd.toFixed(2))
     }
   });
 });
@@ -276,6 +296,9 @@ router.post('/properties/:id/match-investors', (req, res) => {
   const deal = ensureDeal(state, property.id);
   deal.investorMatches = matches;
   deal.stage = matches.length ? 'matched' : deal.stage;
+  deal.contacts.sellerName = property.seller?.name || deal.contacts.sellerName;
+  deal.contacts.sellerEmail = property.seller?.email || deal.contacts.sellerEmail;
+  deal.contacts.sellerPhone = property.seller?.phone || deal.contacts.sellerPhone;
   deal.updatedAt = new Date().toISOString();
 
   property.analysis = {
@@ -312,5 +335,152 @@ router.patch('/deals/:id/status', (req, res) => {
   res.json({ success: true, deal });
 });
 
-export default router;
+router.post('/deals/:id/follow-up', (req, res) => {
+  const state = loadWholesaleState();
+  const deal = state.deals.find(d => d.id === req.params.id);
+  if (!deal) return res.status(404).json({ success: false, error: 'Deal not found' });
 
+  const followUp = {
+    id: createId('followup'),
+    channel: req.body?.channel || 'email',
+    message: req.body?.message || '',
+    outcome: req.body?.outcome || 'sent',
+    contactType: req.body?.contactType || 'seller',
+    contactName: req.body?.contactName || '',
+    email: req.body?.email || '',
+    phone: req.body?.phone || '',
+    nextStepAt: req.body?.nextStepAt || null,
+    timestamp: new Date().toISOString()
+  };
+
+  deal.followUps = Array.isArray(deal.followUps) ? deal.followUps : [];
+  deal.followUps.push(followUp);
+  if (followUp.contactType === 'seller') {
+    deal.contacts.sellerName = followUp.contactName || deal.contacts.sellerName;
+    deal.contacts.sellerEmail = followUp.email || deal.contacts.sellerEmail;
+    deal.contacts.sellerPhone = followUp.phone || deal.contacts.sellerPhone;
+  } else if (followUp.contactType === 'buyer') {
+    deal.contacts.buyerName = followUp.contactName || deal.contacts.buyerName;
+    deal.contacts.buyerEmail = followUp.email || deal.contacts.buyerEmail;
+    deal.contacts.buyerPhone = followUp.phone || deal.contacts.buyerPhone;
+  }
+  if (deal.stage === 'matched') deal.stage = 'followup';
+  deal.updatedAt = new Date().toISOString();
+
+  saveWholesaleState(state);
+  res.json({ success: true, deal, followUp });
+});
+
+router.post('/deals/:id/call', (req, res) => {
+  const state = loadWholesaleState();
+  const deal = state.deals.find(d => d.id === req.params.id);
+  if (!deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+
+  const call = {
+    id: createId('call'),
+    contactType: req.body?.contactType || 'seller',
+    contactName: req.body?.contactName || '',
+    phone: req.body?.phone || '',
+    durationSeconds: asNumber(req.body?.durationSeconds, 0),
+    outcome: req.body?.outcome || 'connected',
+    notes: req.body?.notes || '',
+    timestamp: new Date().toISOString()
+  };
+
+  deal.calls = Array.isArray(deal.calls) ? deal.calls : [];
+  deal.calls.push(call);
+  if (call.contactType === 'seller') {
+    deal.contacts.sellerName = call.contactName || deal.contacts.sellerName;
+    deal.contacts.sellerPhone = call.phone || deal.contacts.sellerPhone;
+  } else if (call.contactType === 'buyer') {
+    deal.contacts.buyerName = call.contactName || deal.contacts.buyerName;
+    deal.contacts.buyerPhone = call.phone || deal.contacts.buyerPhone;
+  }
+  if (deal.stage === 'followup' || deal.stage === 'matched') deal.stage = 'negotiation';
+  deal.updatedAt = new Date().toISOString();
+
+  saveWholesaleState(state);
+  res.json({ success: true, deal, call });
+});
+
+router.post('/deals/:id/close', (req, res) => {
+  const state = loadWholesaleState();
+  const deal = state.deals.find(d => d.id === req.params.id);
+  if (!deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+
+  const property = state.properties.find(p => p.id === deal.propertyId);
+  const investor = req.body?.investorId
+    ? state.investors.find(i => i.id === req.body.investorId)
+    : null;
+
+  const assignmentFeeUsd = asNumber(req.body?.assignmentFeeUsd, deal.assignmentFeeTarget || deal.assignmentPotential || 0);
+  if (assignmentFeeUsd <= 0) {
+    return res.status(400).json({ success: false, error: 'assignmentFeeUsd must be greater than 0' });
+  }
+
+  const customerName = investor?.name || req.body?.buyerName || deal.contacts?.buyerName || 'Investor Buyer';
+  const customerEmail = investor?.email || req.body?.buyerEmail || deal.contacts?.buyerEmail || 'N/A';
+  const customerPhone = investor?.phone || req.body?.buyerPhone || deal.contacts?.buyerPhone || 'N/A';
+
+  const invoice = createInvoice({
+    productName: `Assignment fee - ${property?.address || deal.propertyId}`,
+    priceUsd: assignmentFeeUsd,
+    customerName,
+    customerEmail,
+    customerPhone,
+    dealId: deal.id,
+    paymentMethod: req.body?.paymentMethod || 'Wire Transfer',
+    dueInDays: asNumber(req.body?.dueInDays, 7)
+  });
+
+  deal.status = 'awaiting_payment';
+  deal.stage = 'closed_pending_payment';
+  deal.assignmentFeeUsd = assignmentFeeUsd;
+  deal.invoiceNumber = invoice.invoiceNumber;
+  deal.contacts.buyerName = customerName;
+  deal.contacts.buyerEmail = customerEmail;
+  deal.contacts.buyerPhone = customerPhone;
+  deal.closedAt = new Date().toISOString();
+  deal.updatedAt = new Date().toISOString();
+  property && (property.status = 'under_contract');
+  property && (property.updatedAt = new Date().toISOString());
+
+  saveWholesaleState(state);
+  res.json({ success: true, deal, invoice });
+});
+
+router.post('/deals/:id/revenue-received', (req, res) => {
+  const state = loadWholesaleState();
+  const deal = state.deals.find(d => d.id === req.params.id);
+  if (!deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+  if (!deal.invoiceNumber) {
+    return res.status(400).json({ success: false, error: 'Deal has no invoice. Close the deal first.' });
+  }
+
+  const payment = recordInvoicePayment({
+    invoiceNumber: deal.invoiceNumber,
+    paymentMethod: req.body?.paymentMethod || 'Wire Transfer',
+    paymentReference: req.body?.paymentReference || '',
+    paymentNotes: req.body?.paymentNotes || '',
+    paidAt: req.body?.paidAt
+  });
+  if (!payment.success) return res.status(404).json(payment);
+
+  const property = state.properties.find(p => p.id === deal.propertyId);
+  deal.status = 'closed';
+  deal.stage = 'paid';
+  deal.revenueRecognized = true;
+  deal.revenueAmountUsd = asNumber(payment.invoice?.totalUsd, 0);
+  deal.receiptNumber = payment.receipt?.receiptNumber || deal.receiptNumber || null;
+  deal.paidAt = payment.invoice?.paymentDate || new Date().toISOString();
+  deal.updatedAt = new Date().toISOString();
+  if (property) {
+    property.status = 'closed';
+    property.updatedAt = new Date().toISOString();
+  }
+
+  saveWholesaleState(state);
+  res.json({ success: true, deal, invoice: payment.invoice, receipt: payment.receipt });
+});
+
+export default router;

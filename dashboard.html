@@ -236,6 +236,12 @@
             border-color: #7a1f2b;
             color: #f78b9e;
         }
+        .section-actions {
+            display: inline-flex;
+            gap: 8px;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
 
         @media (max-width: 600px) {
             .grid { grid-template-columns: 1fr 1fr; }
@@ -294,8 +300,13 @@
     </div>
 
     <!-- Leads / Properties Table -->
-    <div class="section-title">🏘️ Distressed Property Intake <span class="last-updated" id="leadsCount">(0)</span></div>
-    <div class="table-wrap">
+    <div class="section-title">
+        🏘️ Distressed Property Intake <span class="last-updated" id="leadsCount">(0)</span>
+        <span class="section-actions">
+            <button id="distressedToggleBtn" class="mini-btn" onclick="toggleDistressedIntake()">Minimize</button>
+        </span>
+    </div>
+    <div id="distressedIntakeSection" class="table-wrap">
         <table>
             <thead><tr>
                 <th>Property</th>
@@ -548,6 +559,23 @@
     // ─────────────────────────────────────────────
     fetchAllData();
     setInterval(fetchAllData, 30000);
+
+    function setDistressedIntakeCollapsed(collapsed) {
+        const section = document.getElementById('distressedIntakeSection');
+        const button = document.getElementById('distressedToggleBtn');
+        if (!section || !button) return;
+        section.style.display = collapsed ? 'none' : '';
+        button.textContent = collapsed ? 'Expand' : 'Minimize';
+        localStorage.setItem('distressedIntakeCollapsed', collapsed ? '1' : '0');
+    }
+
+    function toggleDistressedIntake() {
+        const section = document.getElementById('distressedIntakeSection');
+        const isCollapsed = section && section.style.display === 'none';
+        setDistressedIntakeCollapsed(!isCollapsed);
+    }
+
+    setDistressedIntakeCollapsed(localStorage.getItem('distressedIntakeCollapsed') === '1');
 
     async function runCopilotPrompt() {
         const promptEl = document.getElementById('copilotPrompt');
