@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "sovereign-empire-ai-platform",
   "version": "2.0.0",
   "description": "Sovereign Empire AI Agent Platform",
@@ -6,7 +6,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "agent": "node orchestrator.js",
+    "agent": "node scheduler.js",
+    "agent:legacy": "node orchestrator.js",
     "revenue": "node revenue-engine.js"
   },
   "dependencies": {
