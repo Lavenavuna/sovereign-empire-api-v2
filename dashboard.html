@@ -215,6 +215,27 @@
             color: #c8d0dc;
             min-height: 48px;
         }
+        .mini-btn {
+            border-radius: 8px;
+            border: 1px solid #2a3a4a;
+            background: #1e2a3a;
+            color: #e0e6f0;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 6px;
+        }
+        .mini-btn:hover {
+            background: #2a3a4a;
+        }
+        .mini-btn.approve {
+            border-color: #1f7a44;
+            color: #7fdb9a;
+        }
+        .mini-btn.reject {
+            border-color: #7a1f2b;
+            color: #f78b9e;
+        }
 
         @media (max-width: 600px) {
             .grid { grid-template-columns: 1fr 1fr; }
@@ -317,9 +338,10 @@
                 <th>Tier</th>
                 <th>Status</th>
                 <th>Created</th>
+                <th>Action</th>
             </tr></thead>
             <tbody id="approvalTableBody">
-                <tr><td colspan="5" class="empty-state">Loading approvals...</td></tr>
+                <tr><td colspan="6" class="empty-state">Loading approvals...</td></tr>
             </tbody>
         </table>
     </div>
@@ -477,7 +499,7 @@
             // ── Render Approval Queue ──
             const approvalBody = document.getElementById('approvalTableBody');
             if (!approvals.length) {
-                approvalBody.innerHTML = `<tr><td colspan="5" class="empty-state">No pending approvals</td></tr>`;
+                approvalBody.innerHTML = `<tr><td colspan="6" class="empty-state">No pending approvals</td></tr>`;
             } else {
                 approvalBody.innerHTML = approvals.map(a => `
                     <tr>
@@ -486,6 +508,12 @@
                         <td>${a.tier || 'N/A'}</td>
                         <td><span class="badge ${a.status === 'pending' ? 'pending_approval' : a.status}">${a.status || 'pending'}</span></td>
                         <td>${a.createdAt ? new Date(a.createdAt).toLocaleString() : 'N/A'}</td>
+                        <td>
+                            ${a.status === 'pending'
+                                ? `<button class="mini-btn approve" onclick="approveItem('${a.id}')">Approve</button>
+                                   <button class="mini-btn reject" onclick="rejectItem('${a.id}')">Reject</button>`
+                                : '<span class="last-updated">Completed</span>'}
+                        </td>
                     </tr>
                 `).join('');
             }
@@ -552,6 +580,46 @@
             resultEl.textContent = data.result || '(No response text)';
         } catch (error) {
             resultEl.textContent = `Error: ${error.message}`;
+        }
+    }
+
+    async function approveItem(id) {
+        const resultEl = document.getElementById('copilotResult');
+        try {
+            const res = await fetch(`/api/approvals/${id}/approve`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: '{}'
+            });
+            const data = await res.json();
+            if (!res.ok || data.success === false) {
+                resultEl.textContent = `Approval failed: ${data.error || 'Request failed'}`;
+                return;
+            }
+            resultEl.textContent = `Approved: ${id}`;
+            fetchAllData();
+        } catch (error) {
+            resultEl.textContent = `Approval failed: ${error.message}`;
+        }
+    }
+
+    async function rejectItem(id) {
+        const resultEl = document.getElementById('copilotResult');
+        try {
+            const res = await fetch(`/api/approvals/${id}/reject`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ note: 'Rejected from dashboard' })
+            });
+            const data = await res.json();
+            if (!res.ok || data.success === false) {
+                resultEl.textContent = `Reject failed: ${data.error || 'Request failed'}`;
+                return;
+            }
+            resultEl.textContent = `Rejected: ${id}`;
+            fetchAllData();
+        } catch (error) {
+            resultEl.textContent = `Reject failed: ${error.message}`;
         }
     }
 </script>
