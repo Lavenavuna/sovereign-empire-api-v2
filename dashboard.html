@@ -274,6 +274,7 @@
     <!-- Actions -->
     <div style="margin-bottom: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
         <button class="refresh-btn" onclick="fetchAllData()">🔄 Refresh All Data</button>
+        <button class="refresh-btn" onclick="runRevenueHunter()">⚡ Run Revenue Hunter</button>
         <button class="refresh-btn" onclick="window.open('/api/wholesale/overview','_blank')">🏘️ Wholesale Overview API</button>
         <button class="refresh-btn" onclick="window.open('/api/invoices','_blank')">📄 View Invoice API</button>
         <button class="refresh-btn" onclick="window.open('/api/approvals','_blank')">🛡️ View Approval Queue</button>
@@ -357,6 +358,24 @@
         </table>
     </div>
 
+    <!-- Revenue Pipeline -->
+    <div class="section-title">💸 Revenue Pipeline <span class="last-updated" id="pipelineCount">(0)</span></div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr>
+                <th>Deal</th>
+                <th>Stage</th>
+                <th>Target Fee (USD)</th>
+                <th>Invoice</th>
+                <th>Payment</th>
+                <th>Action</th>
+            </tr></thead>
+            <tbody id="pipelineTableBody">
+                <tr><td colspan="6" class="empty-state">Loading revenue pipeline...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
     <!-- Copilot Assistant Prompt -->
     <div class="section-title">🤖 Copilot Assistant Prompt</div>
     <div class="prompt-wrap">
@@ -425,6 +444,14 @@
                 const approvalData = await approvalsRes.json();
                 approvals = approvalData.approvals || [];
                 document.getElementById('approvalCount').textContent = `(${approvals.length})`;
+            }
+
+            const pipelineRes = await fetch('/api/wholesale/pipeline');
+            let pipelineDeals = [];
+            if (pipelineRes.ok) {
+                const pipelineData = await pipelineRes.json();
+                pipelineDeals = pipelineData.deals || [];
+                document.getElementById('pipelineCount').textContent = `(${pipelineDeals.length})`;
             }
 
             const agentsRes = await fetch('/api/agents');
@@ -529,15 +556,45 @@
                 `).join('');
             }
 
+            // ── Render Revenue Pipeline ──
+            const pipelineBody = document.getElementById('pipelineTableBody');
+            if (!pipelineDeals.length) {
+                pipelineBody.innerHTML = `<tr><td colspan="6" class="empty-state">No deals in pipeline</td></tr>`;
+            } else {
+                pipelineBody.innerHTML = pipelineDeals.map(d => {
+                    const fee = Number(d.assignmentFeeTarget || d.assignmentPotential || 0).toFixed(2);
+                    const invoice = d.invoiceNumber || '-';
+                    const payment = d.invoiceStatus || '-';
+                    let actionHtml = '';
+                    if (d.invoiceNumber && d.invoiceStatus !== 'paid') {
+                        actionHtml = `<button class="mini-btn approve" onclick="markDealPaid('${d.id}')">Mark Paid</button>`;
+                    } else if (!d.invoiceNumber) {
+                        actionHtml = `<button class="mini-btn" onclick="requestDealCloseApproval('${d.id}', ${Number(d.assignmentFeeTarget || d.assignmentPotential || 0)})">Request Close Approval</button>`;
+                    } else {
+                        actionHtml = `<span class="last-updated">Complete</span>`;
+                    }
+                    return `
+                    <tr>
+                        <td><strong>${d.id}</strong></td>
+                        <td>${d.stage || 'N/A'}</td>
+                        <td>$${fee}</td>
+                        <td>${invoice}</td>
+                        <td><span class="badge ${payment === 'paid' ? 'approved_and_executed' : 'pending'}">${payment}</span></td>
+                        <td>${actionHtml}</td>
+                    </tr>
+                `;
+                }).join('');
+            }
+
             // ── Update Overall Status ──
             const overall = document.getElementById('overallStatus');
             if (overall) {
-                if (invRes.ok && leadsRes.ok && overviewRes.ok && investorsRes.ok && approvalsRes.ok && agentsRes.ok) {
+                if (invRes.ok && leadsRes.ok && overviewRes.ok && investorsRes.ok && approvalsRes.ok && agentsRes.ok && pipelineRes.ok) {
                     overall.textContent = pendingApprovals > 0
                         ? `Operational · ${pendingApprovals} approval(s) waiting`
                         : 'All Systems Operational';
                     overall.className = 'status-badge status-online';
-                } else if (!invRes.ok || !leadsRes.ok || !overviewRes.ok || !investorsRes.ok || !approvalsRes.ok || !agentsRes.ok) {
+                } else if (!invRes.ok || !leadsRes.ok || !overviewRes.ok || !investorsRes.ok || !approvalsRes.ok || !agentsRes.ok || !pipelineRes.ok) {
                     overall.textContent = 'Some Systems Degraded';
                     overall.className = 'status-badge status-degraded';
                 } else {
@@ -648,6 +705,66 @@
             fetchAllData();
         } catch (error) {
             resultEl.textContent = `Reject failed: ${error.message}`;
+        }
+    }
+
+    async function runRevenueHunter() {
+        const resultEl = document.getElementById('copilotResult');
+        try {
+            const res = await fetch('/api/wholesale/autopilot/hunt', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: '{}'
+            });
+            const data = await res.json();
+            if (!res.ok || data.success === false) {
+                resultEl.textContent = `Revenue hunter failed: ${data.error || 'Request failed'}`;
+                return;
+            }
+            resultEl.textContent = `Revenue hunter run complete:\n${JSON.stringify(data.summary || {}, null, 2)}`;
+            fetchAllData();
+        } catch (error) {
+            resultEl.textContent = `Revenue hunter failed: ${error.message}`;
+        }
+    }
+
+    async function requestDealCloseApproval(dealId, assignmentFeeUsd) {
+        const resultEl = document.getElementById('copilotResult');
+        try {
+            const res = await fetch(`/api/wholesale/deals/${dealId}/request-close-approval`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ assignmentFeeUsd })
+            });
+            const data = await res.json();
+            if (!res.ok || data.success === false) {
+                resultEl.textContent = `Close approval failed: ${data.error || 'Request failed'}`;
+                return;
+            }
+            resultEl.textContent = `Close approval queued for ${dealId}.\nApproval ID: ${data.approvalId}`;
+            fetchAllData();
+        } catch (error) {
+            resultEl.textContent = `Close approval failed: ${error.message}`;
+        }
+    }
+
+    async function markDealPaid(dealId) {
+        const resultEl = document.getElementById('copilotResult');
+        try {
+            const res = await fetch(`/api/wholesale/deals/${dealId}/revenue-received`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ paymentMethod: 'Wire Transfer' })
+            });
+            const data = await res.json();
+            if (!res.ok || data.success === false) {
+                resultEl.textContent = `Mark paid failed: ${data.error || 'Request failed'}`;
+                return;
+            }
+            resultEl.textContent = `Revenue received for ${dealId}.\nReceipt: ${data.receipt?.receiptNumber || 'N/A'}`;
+            fetchAllData();
+        } catch (error) {
+            resultEl.textContent = `Mark paid failed: ${error.message}`;
         }
     }
 </script>

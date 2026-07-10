@@ -1,6 +1,7 @@
 import express from 'express';
 import { createId, loadWholesaleState, saveWholesaleState } from '../lib/wholesaleStore.js';
 import { createInvoice, recordInvoicePayment, listInvoices } from '../lib/revenueOps.js';
+import { loadPendingApprovals, savePendingApprovals, logAction } from '../lib/auditLog.js';
 
 const router = express.Router();
 
@@ -94,6 +95,38 @@ function ensureDeal(state, propertyId) {
     state.deals.push(deal);
   }
   return deal;
+}
+
+function hasPendingCloseApproval(dealId) {
+  const approvals = loadPendingApprovals();
+  return approvals.some(
+    a => a.status === 'pending' && a.actionType === 'close-deal' && a.payload?.dealId === dealId
+  );
+}
+
+function queueCloseDealApproval({ deal, payload, source }) {
+  const approvals = loadPendingApprovals();
+  const existing = approvals.find(
+    a => a.status === 'pending' && a.actionType === 'close-deal' && a.payload?.dealId === deal.id
+  );
+  if (existing) return existing;
+
+  const approvalId = createId('appr');
+  const approval = {
+    id: approvalId,
+    agent: 'deal-closer',
+    tier: 'T2',
+    actionType: 'close-deal',
+    query: 'Close deal requires approval',
+    payload,
+    status: 'pending',
+    createdAt: new Date().toISOString(),
+    source
+  };
+  approvals.push(approval);
+  savePendingApprovals(approvals);
+  logAction({ agent: 'deal-closer', tier: 'T2', action: 'escalated', approvalId, source });
+  return approval;
 }
 
 router.get('/overview', (req, res) => {
@@ -316,6 +349,35 @@ router.get('/deals', (req, res) => {
   res.json({ success: true, count: state.deals.length, deals: state.deals });
 });
 
+router.get('/pipeline', (req, res) => {
+  const state = loadWholesaleState();
+  const invoices = listInvoices();
+  const approvals = loadPendingApprovals();
+  const items = state.deals.map(deal => {
+    const invoice = invoices.find(i => i.dealId === deal.id || i.invoiceNumber === deal.invoiceNumber);
+    const pendingClose = approvals.find(
+      a => a.status === 'pending' && a.actionType === 'close-deal' && a.payload?.dealId === deal.id
+    );
+    return {
+      id: deal.id,
+      propertyId: deal.propertyId,
+      stage: deal.stage,
+      status: deal.status,
+      assignmentFeeTarget: deal.assignmentFeeTarget || 0,
+      assignmentPotential: deal.assignmentPotential || 0,
+      buyerName: deal.contacts?.buyerName || '',
+      buyerEmail: deal.contacts?.buyerEmail || '',
+      buyerPhone: deal.contacts?.buyerPhone || '',
+      invoiceNumber: deal.invoiceNumber || invoice?.invoiceNumber || null,
+      invoiceStatus: invoice?.status || null,
+      totalUsd: invoice?.totalUsd || null,
+      pendingCloseApprovalId: pendingClose?.id || null,
+      updatedAt: deal.updatedAt
+    };
+  });
+  res.json({ success: true, count: items.length, deals: items });
+});
+
 router.patch('/deals/:id/status', (req, res) => {
   const state = loadWholesaleState();
   const deal = state.deals.find(d => d.id === req.params.id);
@@ -408,6 +470,30 @@ router.post('/deals/:id/close', (req, res) => {
   const deal = state.deals.find(d => d.id === req.params.id);
   if (!deal) return res.status(404).json({ success: false, error: 'Deal not found' });
 
+  const requireApproval = req.body?.requireApproval !== false;
+  if (requireApproval) {
+    const payload = {
+      dealId: deal.id,
+      investorId: req.body?.investorId || null,
+      buyerName: req.body?.buyerName || deal.contacts?.buyerName || '',
+      buyerEmail: req.body?.buyerEmail || deal.contacts?.buyerEmail || '',
+      buyerPhone: req.body?.buyerPhone || deal.contacts?.buyerPhone || '',
+      assignmentFeeUsd: asNumber(req.body?.assignmentFeeUsd, deal.assignmentFeeTarget || deal.assignmentPotential || 0),
+      paymentMethod: req.body?.paymentMethod || 'Wire Transfer',
+      dueInDays: asNumber(req.body?.dueInDays, 7)
+    };
+    const approval = queueCloseDealApproval({ deal, payload, source: 'wholesale-close-request' });
+    deal.stage = 'approval_pending';
+    deal.updatedAt = new Date().toISOString();
+    saveWholesaleState(state);
+    return res.json({
+      success: true,
+      gated: true,
+      approvalId: approval.id,
+      message: 'Close request queued for approval.'
+    });
+  }
+
   const property = state.properties.find(p => p.id === deal.propertyId);
   const investor = req.body?.investorId
     ? state.investors.find(i => i.id === req.body.investorId)
@@ -447,6 +533,97 @@ router.post('/deals/:id/close', (req, res) => {
 
   saveWholesaleState(state);
   res.json({ success: true, deal, invoice });
+});
+
+router.post('/deals/:id/request-close-approval', (req, res) => {
+  const state = loadWholesaleState();
+  const deal = state.deals.find(d => d.id === req.params.id);
+  if (!deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+
+  const payload = {
+    dealId: deal.id,
+    investorId: req.body?.investorId || null,
+    buyerName: req.body?.buyerName || deal.contacts?.buyerName || '',
+    buyerEmail: req.body?.buyerEmail || deal.contacts?.buyerEmail || '',
+    buyerPhone: req.body?.buyerPhone || deal.contacts?.buyerPhone || '',
+    assignmentFeeUsd: asNumber(req.body?.assignmentFeeUsd, deal.assignmentFeeTarget || deal.assignmentPotential || 0),
+    paymentMethod: req.body?.paymentMethod || 'Wire Transfer',
+    dueInDays: asNumber(req.body?.dueInDays, 7)
+  };
+
+  if (payload.assignmentFeeUsd <= 0) {
+    return res.status(400).json({ success: false, error: 'assignmentFeeUsd must be greater than 0' });
+  }
+
+  const approval = queueCloseDealApproval({ deal, payload, source: 'wholesale-manual-approval' });
+  deal.stage = 'approval_pending';
+  deal.updatedAt = new Date().toISOString();
+  saveWholesaleState(state);
+
+  res.json({ success: true, approvalId: approval.id, deal });
+});
+
+router.post('/autopilot/hunt', (req, res) => {
+  const state = loadWholesaleState();
+  let followUpsDrafted = 0;
+  let approvalsQueued = 0;
+  let dealsMarkedForApproval = 0;
+
+  for (const deal of state.deals) {
+    if (deal.status !== 'active' && deal.status !== 'awaiting_payment') continue;
+    if (deal.invoiceNumber || deal.status === 'closed') continue;
+
+    const hasMatches = Array.isArray(deal.investorMatches) && deal.investorMatches.length > 0;
+    if (hasMatches && (!deal.followUps || deal.followUps.length === 0)) {
+      deal.followUps = deal.followUps || [];
+      deal.followUps.push({
+        id: createId('followup'),
+        channel: 'email',
+        message: 'Auto-drafted investor disposition outreach',
+        outcome: 'drafted',
+        contactType: 'buyer',
+        contactName: deal.contacts?.buyerName || '',
+        email: deal.contacts?.buyerEmail || '',
+        phone: deal.contacts?.buyerPhone || '',
+        timestamp: new Date().toISOString()
+      });
+      deal.stage = deal.stage === 'matched' ? 'followup' : deal.stage;
+      followUpsDrafted++;
+    }
+
+    const closeReady = hasMatches && ['matched', 'followup', 'negotiation', 'approval_pending'].includes(deal.stage);
+    if (closeReady && !hasPendingCloseApproval(deal.id)) {
+      const approval = queueCloseDealApproval({
+        deal,
+        payload: {
+          dealId: deal.id,
+          investorId: deal.investorMatches?.[0]?.investorId || null,
+          buyerName: deal.contacts?.buyerName || '',
+          buyerEmail: deal.contacts?.buyerEmail || '',
+          buyerPhone: deal.contacts?.buyerPhone || '',
+          assignmentFeeUsd: asNumber(deal.assignmentFeeTarget || deal.assignmentPotential || 0),
+          paymentMethod: 'Wire Transfer',
+          dueInDays: 7
+        },
+        source: 'wholesale-autopilot'
+      });
+      if (approval?.id) approvalsQueued++;
+      deal.stage = 'approval_pending';
+      dealsMarkedForApproval++;
+    }
+
+    deal.updatedAt = new Date().toISOString();
+  }
+
+  saveWholesaleState(state);
+  res.json({
+    success: true,
+    summary: {
+      followUpsDrafted,
+      approvalsQueued,
+      dealsMarkedForApproval
+    }
+  });
 });
 
 router.post('/deals/:id/revenue-received', (req, res) => {
