@@ -121,6 +121,13 @@
         .badge.negotiation { background: #1a2a4a; color: #6ab0f7; }
         .badge.proposal { background: #2a1a4a; color: #b07cf7; }
         .badge.discovery { background: #1a3a3a; color: #5cd4c8; }
+        .badge.active { background: #1a2a4a; color: #6ab0f7; }
+        .badge.matched { background: #2a1a4a; color: #b07cf7; }
+        .badge.analyzed { background: #1a3a3a; color: #5cd4c8; }
+        .badge.sourced { background: #2a2a1a; color: #f5a623; }
+        .badge.approved_and_executed { background: #1a3a2a; color: #7fdb9a; }
+        .badge.rejected { background: #3a1a1a; color: #f78b9e; }
+        .badge.pending_approval { background: #2a1a4a; color: #b07cf7; }
 
         .refresh-btn {
             background: #1e2a3a;
@@ -176,7 +183,7 @@
 
     <!-- Header -->
     <div class="header">
-        <h1>⚡ Sovereign Empire · Live Dashboard</h1>
+        <h1>⚡ Sovereign Empire · Wholesaling Dashboard</h1>
         <div>
             <span id="overallStatus" class="status-badge status-online">All Systems Operational</span>
             <span class="last-updated" id="lastUpdated">Updating...</span>
@@ -185,19 +192,20 @@
 
     <!-- KPI Cards -->
     <div class="grid" id="kpiGrid">
-        <div class="card"><div class="label">💰 Total Revenue (USD)</div><div class="value gold" id="totalRevenue">$0</div></div>
-        <div class="card"><div class="label">📋 Total Invoices</div><div class="value white" id="totalInvoices">0</div></div>
-        <div class="card"><div class="label">🧾 VAT Collected (FJD)</div><div class="value green" id="totalVatFjd">$0</div></div>
-        <div class="card"><div class="label">📈 Deals Won</div><div class="value blue" id="dealsWon">0</div></div>
-        <div class="card"><div class="label">⏳ Deals Open</div><div class="value pink" id="dealsOpen">0</div></div>
-        <div class="card"><div class="label">📊 Total Leads</div><div class="value white" id="totalLeads">0</div></div>
+        <div class="card"><div class="label">💰 Revenue Booked (USD)</div><div class="value gold" id="totalRevenue">$0</div></div>
+        <div class="card"><div class="label">🏘️ Distressed Properties</div><div class="value white" id="totalProperties">0</div></div>
+        <div class="card"><div class="label">🤝 Investor Network</div><div class="value green" id="totalInvestors">0</div></div>
+        <div class="card"><div class="label">📈 Active Deals</div><div class="value blue" id="dealsOpen">0</div></div>
+        <div class="card"><div class="label">✅ Closed Deals</div><div class="value pink" id="dealsClosed">0</div></div>
+        <div class="card"><div class="label">🛡️ Pending Approvals</div><div class="value white" id="pendingApprovals">0</div></div>
     </div>
 
     <!-- Actions -->
     <div style="margin-bottom: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
         <button class="refresh-btn" onclick="fetchAllData()">🔄 Refresh All Data</button>
+        <button class="refresh-btn" onclick="window.open('/api/wholesale/overview','_blank')">🏘️ Wholesale Overview API</button>
         <button class="refresh-btn" onclick="window.open('/api/invoices','_blank')">📄 View Invoice API</button>
-        <button class="refresh-btn" onclick="window.open('/api/leads','_blank')">📊 View Leads API</button>
+        <button class="refresh-btn" onclick="window.open('/api/approvals','_blank')">🛡️ View Approval Queue</button>
     </div>
 
     <!-- Invoices Table (LIVE from /api/invoices) -->
@@ -220,13 +228,13 @@
         </table>
     </div>
 
-    <!-- Leads / Deals Table (LIVE from /api/leads) -->
-    <div class="section-title">📈 Leads & Deals Pipeline <span class="last-updated" id="leadsCount">(0)</span></div>
+    <!-- Leads / Properties Table -->
+    <div class="section-title">🏘️ Distressed Property Intake <span class="last-updated" id="leadsCount">(0)</span></div>
     <div class="table-wrap">
         <table>
             <thead><tr>
-                <th>Lead / Deal</th>
-                <th>Value (USD)</th>
+                <th>Property</th>
+                <th>Assignment Potential (USD)</th>
                 <th>Stage</th>
                 <th>Source</th>
                 <th>Status</th>
@@ -234,6 +242,40 @@
             </tr></thead>
             <tbody id="leadsTableBody">
                 <tr><td colspan="6" class="empty-state">Loading leads...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Investors Table -->
+    <div class="section-title">🤝 Investor Network <span class="last-updated" id="investorCount">(0)</span></div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr>
+                <th>Investor</th>
+                <th>Strategy</th>
+                <th>Buy Box (USD)</th>
+                <th>Zip Focus</th>
+                <th>Status</th>
+            </tr></thead>
+            <tbody id="investorTableBody">
+                <tr><td colspan="5" class="empty-state">Loading investors...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Approval Queue -->
+    <div class="section-title">🛡️ Human Approval Queue (Revenue-Critical Actions) <span class="last-updated" id="approvalCount">(0)</span></div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr>
+                <th>Approval ID</th>
+                <th>Agent</th>
+                <th>Tier</th>
+                <th>Status</th>
+                <th>Created</th>
+            </tr></thead>
+            <tbody id="approvalTableBody">
+                <tr><td colspan="5" class="empty-state">Loading approvals...</td></tr>
             </tbody>
         </table>
     </div>
@@ -255,7 +297,7 @@
                 document.getElementById('invoiceCount').textContent = `(${invoices.length})`;
             }
 
-            // ── Fetch LIVE Leads from /api/leads ──
+            // ── Fetch LIVE Leads/Properties from /api/leads ──
             const leadsRes = await fetch('/api/leads');
             let leads = [];
             if (leadsRes.ok) {
@@ -264,19 +306,51 @@
                 document.getElementById('leadsCount').textContent = `(${leads.length})`;
             }
 
+            // ── Fetch wholesaling overview/deals/investors ──
+            const overviewRes = await fetch('/api/wholesale/overview');
+            let overview = null;
+            if (overviewRes.ok) {
+                const overviewData = await overviewRes.json();
+                overview = overviewData.summary || null;
+            }
+
+            const dealsRes = await fetch('/api/wholesale/deals');
+            let deals = [];
+            if (dealsRes.ok) {
+                const dealsData = await dealsRes.json();
+                deals = dealsData.deals || [];
+            }
+
+            const investorsRes = await fetch('/api/wholesale/investors');
+            let investors = [];
+            if (investorsRes.ok) {
+                const investorData = await investorsRes.json();
+                investors = investorData.investors || [];
+                document.getElementById('investorCount').textContent = `(${investors.length})`;
+            }
+
+            const approvalsRes = await fetch('/api/approvals');
+            let approvals = [];
+            if (approvalsRes.ok) {
+                const approvalData = await approvalsRes.json();
+                approvals = approvalData.approvals || [];
+                document.getElementById('approvalCount').textContent = `(${approvals.length})`;
+            }
+
             // ── Update KPI Cards ──
             const totalRevenue = invoices.reduce((sum, inv) => sum + parseFloat(inv.totalUsd || 0), 0);
-            const totalVatFjd = invoices.reduce((sum, inv) => sum + parseFloat(inv.vatFjd || 0), 0);
-            const dealsWon = leads.filter(l => l.status === 'won' || l.status === 'closed_won').length;
-            const dealsOpen = leads.filter(l => l.status === 'open' || l.status === 'pending' || l.status === 'negotiation').length;
-            const totalLeads = leads.length;
+            const dealsClosed = deals.filter(d => d.status === 'closed' || d.stage === 'closed_won').length;
+            const dealsOpen = deals.filter(d => d.status !== 'closed' && d.status !== 'rejected').length;
+            const totalProperties = overview?.properties ?? leads.length;
+            const totalInvestors = overview?.investors ?? investors.length;
+            const pendingApprovals = approvals.filter(a => a.status === 'pending').length;
 
             document.getElementById('totalRevenue').textContent = `$${totalRevenue.toFixed(2)}`;
-            document.getElementById('totalInvoices').textContent = invoices.length;
-            document.getElementById('totalVatFjd').textContent = `$${totalVatFjd.toFixed(2)}`;
-            document.getElementById('dealsWon').textContent = dealsWon;
+            document.getElementById('totalProperties').textContent = totalProperties;
+            document.getElementById('totalInvestors').textContent = totalInvestors;
             document.getElementById('dealsOpen').textContent = dealsOpen;
-            document.getElementById('totalLeads').textContent = totalLeads;
+            document.getElementById('dealsClosed').textContent = dealsClosed;
+            document.getElementById('pendingApprovals').textContent = pendingApprovals;
             document.getElementById('lastUpdated').textContent = `Updated: ${new Date().toLocaleString()}`;
 
             // ── Render Invoices Table ──
@@ -301,7 +375,7 @@
             // ── Render Leads Table ──
             const leadsBody = document.getElementById('leadsTableBody');
             if (!leads.length) {
-                leadsBody.innerHTML = `<tr><td colspan="6" class="empty-state">No leads yet — they'll appear here when your AI finds them</td></tr>`;
+                leadsBody.innerHTML = `<tr><td colspan="6" class="empty-state">No properties yet — add one via POST /api/wholesale/properties</td></tr>`;
             } else {
                 leadsBody.innerHTML = leads.map(lead => `
                     <tr>
@@ -315,13 +389,47 @@
                 `).join('');
             }
 
+            // ── Render Investors Table ──
+            const investorBody = document.getElementById('investorTableBody');
+            if (!investors.length) {
+                investorBody.innerHTML = `<tr><td colspan="5" class="empty-state">No investors yet — add one via POST /api/wholesale/investors</td></tr>`;
+            } else {
+                investorBody.innerHTML = investors.map(inv => `
+                    <tr>
+                        <td><strong>${inv.name || 'N/A'}</strong></td>
+                        <td>${inv.strategy || 'N/A'}</td>
+                        <td>$${parseFloat(inv.minPrice || 0).toFixed(0)} - $${parseFloat(inv.maxPrice || 0).toFixed(0)}</td>
+                        <td>${(inv.zipCodes || []).join(', ') || 'Any'}</td>
+                        <td><span class="badge ${inv.status || 'active'}">${inv.status || 'active'}</span></td>
+                    </tr>
+                `).join('');
+            }
+
+            // ── Render Approval Queue ──
+            const approvalBody = document.getElementById('approvalTableBody');
+            if (!approvals.length) {
+                approvalBody.innerHTML = `<tr><td colspan="5" class="empty-state">No pending approvals</td></tr>`;
+            } else {
+                approvalBody.innerHTML = approvals.map(a => `
+                    <tr>
+                        <td><strong>${a.id || 'N/A'}</strong></td>
+                        <td>${a.agent || 'N/A'}</td>
+                        <td>${a.tier || 'N/A'}</td>
+                        <td><span class="badge ${a.status === 'pending' ? 'pending_approval' : a.status}">${a.status || 'pending'}</span></td>
+                        <td>${a.createdAt ? new Date(a.createdAt).toLocaleString() : 'N/A'}</td>
+                    </tr>
+                `).join('');
+            }
+
             // ── Update Overall Status ──
             const overall = document.getElementById('overallStatus');
             if (overall) {
-                if (invRes.ok && leadsRes.ok) {
-                    overall.textContent = 'All Systems Operational';
+                if (invRes.ok && leadsRes.ok && overviewRes.ok && investorsRes.ok && approvalsRes.ok) {
+                    overall.textContent = pendingApprovals > 0
+                        ? `Operational · ${pendingApprovals} approval(s) waiting`
+                        : 'All Systems Operational';
                     overall.className = 'status-badge status-online';
-                } else if (!invRes.ok || !leadsRes.ok) {
+                } else if (!invRes.ok || !leadsRes.ok || !overviewRes.ok || !investorsRes.ok || !approvalsRes.ok) {
                     overall.textContent = 'Some Systems Degraded';
                     overall.className = 'status-badge status-degraded';
                 } else {

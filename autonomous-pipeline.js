@@ -25,7 +25,7 @@ const CONFIG = {
     dealSize: 5000,
     revenueGoal: 25000,
     apiUrl: 'https://sovereign-empire-api-v2-production.up.railway.app',
-    dealCloserEndpoint: '/api/agent/deal-closer'
+    dealCloserEndpoint: '/api/agent/execute'
 };
 
 // ============================================
@@ -228,20 +228,20 @@ class AutonomousPipeline {
         const content = `
 Hi ${deal.leadName},
 
-Thank you for your interest in Sovereign Empire AI! I'm excited to show you how our AI automation platform can help ${deal.company}.
+Thank you for connecting with Sovereign Empire Wholesaling. I'm excited to show you how we can move your off-market opportunity with qualified cash buyers.
 
 Over the next few days, I'll share:
-- How other companies in your industry are using AI
-- Specific ways our platform can help you
-- A personalized proposal for your business
+- A quick underwriting snapshot (ARV, rehab range, spread)
+- Buyer-match options from our investor network
+- A disposition plan to close fast
 
 Best regards,
-The Sovereign Empire AI Team
+The Sovereign Empire Dispositions Team
         `;
         
         deal.activities.push({
             type: 'email',
-            subject: 'Welcome to Sovereign Empire AI',
+            subject: 'Welcome to Sovereign Empire Wholesaling',
             sent: new Date().toISOString(),
             content: content
         });
@@ -260,25 +260,25 @@ The Sovereign Empire AI Team
             follow_up: `
 Hi ${deal.leadName},
 
-Just following up to see if you had any questions about our AI platform for ${deal.company}.
+Just following up to see if you had questions about our wholesaling plan for ${deal.company}.
 
-Many companies in your industry are saving 20+ hours per week. Would you be open to a quick call?
+If useful, we can review pricing, rehab assumptions, and likely buyer fit on a quick call.
 
 Best regards,
-The Sovereign Empire AI Team
+The Sovereign Empire Dispositions Team
             `,
             value_proposition: `
 Hi ${deal.leadName},
 
-Other ${deal.industry} companies using our AI platform:
-✅ Save 20+ hours/week
-✅ 40% revenue increase
-✅ 90% customer satisfaction
+Comparable wholesale dispositions in similar markets typically improve:
+✅ Buyer response speed
+✅ Assignment clarity
+✅ Time-to-close consistency
 
-I've put together a case study showing these results. Would you like me to send it?
+I've put together a brief disposition snapshot for your opportunity. Would you like me to send it?
 
 Best regards,
-The Sovereign Empire AI Team
+The Sovereign Empire Dispositions Team
             `
         };
         

@@ -1,12 +1,34 @@
 ﻿import express from 'express';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const router = express.Router();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const invoicesFilePath = path.join(__dirname, '..', 'invoices.json');
+
+function loadInvoices() {
+  try {
+    if (!fs.existsSync(invoicesFilePath)) return [];
+    const parsed = JSON.parse(fs.readFileSync(invoicesFilePath, 'utf8'));
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveInvoices(invoices) {
+  fs.writeFileSync(invoicesFilePath, JSON.stringify(invoices, null, 2));
+}
 
 // GET all invoices
 router.get('/', (req, res) => {
+  const invoices = loadInvoices();
   res.json({ 
     success: true, 
     message: 'VAT system ready!',
+    invoices,
+    count: invoices.length,
     vat_rate: '12.5%',
     currency: 'FJD'
   });
@@ -48,6 +70,10 @@ router.post('/generate', (req, res) => {
       createdAt: new Date().toISOString(),
       status: 'paid'
     };
+
+    const invoices = loadInvoices();
+    invoices.push(invoice);
+    saveInvoices(invoices);
     
     res.json({ 
       success: true, 
