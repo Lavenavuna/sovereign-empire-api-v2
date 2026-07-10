@@ -3,9 +3,31 @@ import { createInvoice, listInvoices, listReceipts, recordInvoicePayment } from 
 
 const router = express.Router();
 
+function asNumber(value, fallback = 0) {
+  const n = Number(value);
+  return Number.isFinite(n) ? Number(n.toFixed(2)) : fallback;
+}
+
+function normalizeInvoice(raw) {
+  const priceUsd = asNumber(raw.priceUsd, asNumber(raw.amount, 0));
+  const vatUsd = asNumber(raw.vatUsd, asNumber(raw.vatAmount, 0));
+  const totalUsd = asNumber(raw.totalUsd, asNumber(raw.totalAmount, priceUsd + vatUsd));
+  return {
+    ...raw,
+    productName: raw.productName || raw.plan || 'N/A',
+    priceUsd,
+    vatUsd,
+    totalUsd,
+    customerEmail: raw.customerEmail || raw.clientEmail || 'N/A',
+    customerPhone: raw.customerPhone || raw.clientPhone || 'N/A',
+    createdAt: raw.createdAt || raw.issuedDate || raw.paymentDate || null,
+    status: raw.status || (raw.paymentReceived ? 'paid' : 'pending')
+  };
+}
+
 // GET all invoices
 router.get('/', (req, res) => {
-  const invoices = listInvoices();
+  const invoices = listInvoices().map(normalizeInvoice);
   res.json({ 
     success: true, 
     message: 'VAT system ready!',
