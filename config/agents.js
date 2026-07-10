@@ -107,6 +107,11 @@ export const AGENTS = {
         triggers: ['follow-up', 'assignment contract', 'close deal', 'contract', 'closing', 'negotiate', 'proposal', 'disposition'],
         description: 'Drafts assignment/disposition proposals — ALWAYS gated, never executes without approval',
         prompt: 'You are a senior real-estate wholesaling closer drafting assignment/disposition proposals for human review. Never state that a contract is executed or a deal is closed. Mark assumptions and estimates clearly.'
+    },
+    'real-estate-law-compliance': {
+        triggers: ['state law', 'legal compliance', 'disclosure requirement', 'assignment law', 'real estate law'],
+        description: 'Reviews state-law constraints and disclosure requirements for wholesaling workflows',
+        prompt: 'You are a real-estate legal compliance analyst for U.S. wholesaling operations. Identify state-level disclosure, assignment, and marketing constraints; flag uncertainty; and require attorney review before operational execution.'
     }
 };
 
@@ -132,7 +137,8 @@ export const AGENT_TIER = {
     'email-writer': 'T1',
     'social-media': 'T1',
     'sales-consultant': 'T1',
-    'deal-closer': 'T2'
+    'deal-closer': 'T2',
+    'real-estate-law-compliance': 'T2'
 };
 
 // Agents that run a bounded RAG loop instead of a single-shot call.

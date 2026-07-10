@@ -2,12 +2,119 @@ import express from 'express';
 import { createId, loadWholesaleState, saveWholesaleState } from '../lib/wholesaleStore.js';
 import { createInvoice, recordInvoicePayment, listInvoices } from '../lib/revenueOps.js';
 import { loadPendingApprovals, savePendingApprovals, logAction } from '../lib/auditLog.js';
+import {
+  applyComplianceSettings,
+  evaluateDealCompliance,
+  getDisclosureClause,
+  getCompliancePlaybook,
+  normalizePropertyState
+} from '../lib/legalPlaybook.js';
 
 const router = express.Router();
+const DEFAULT_DFW_TARGET_ZIPS = [
+  '76179', '76104', '76105', '76115', '76103', '76060',
+  '75210', '75215', '75216', '75217', '75224', '75232', '75241', '75212'
+];
+const DEAL_SOURCE_CHANNELS = ['propstream', 'batch', 'county', 'dfd', 'referral', 'manual'];
+const DEAL_OUTCOMES = ['lead', 'dead', 'contract', 'closed'];
+const CONFIDENCE_LEVELS = ['high', 'medium', 'low'];
+const FOLLOWUP_OUTCOMES = [
+  'not_interested',
+  'wrong_number',
+  'already_sold',
+  'no_motivation',
+  'no_response',
+  'callback_requested',
+  'contract_signed',
+  'drafted',
+  'sent'
+];
+const CLOSE_PATHS = ['assignment', 'double_close'];
 
 function asNumber(value, fallback = 0) {
   const n = Number(value);
   return Number.isFinite(n) ? n : fallback;
+}
+
+function asIsoTimestamp(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+function monthKey(value) {
+  const date = value ? new Date(value) : new Date();
+  if (Number.isNaN(date.getTime())) return null;
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  return `${date.getUTCFullYear()}-${month}`;
+}
+
+function hoursDiff(start, end) {
+  const s = asIsoTimestamp(start);
+  const e = asIsoTimestamp(end);
+  if (!s || !e) return null;
+  return (new Date(e).getTime() - new Date(s).getTime()) / 36e5;
+}
+
+function getKpiTargets(state) {
+  return Array.isArray(state.meta?.kpiTargets) ? state.meta.kpiTargets : [];
+}
+
+function findKpiTarget(state, month) {
+  const key = monthKey(month);
+  if (!key) return null;
+  return getKpiTargets(state).find(t => t.month === key) || null;
+}
+
+function computeSlaBreaches(deal, state) {
+  const t = deal.dispositionTimeline || {};
+  const breaches = [];
+  const contractToBlastHrs = hoursDiff(t.contractSignedAt, t.firstBlastSentAt);
+  if (contractToBlastHrs !== null && contractToBlastHrs > 4) breaches.push('contract_to_first_blast_over_4h');
+  const blastToResponseHrs = hoursDiff(t.firstBlastSentAt, t.firstResponseAt);
+  if (blastToResponseHrs !== null && blastToResponseHrs > 24) breaches.push('blast_to_first_response_over_24h');
+  const responseToEmdHrs = hoursDiff(t.firstResponseAt, t.emdReceivedAt);
+  if (responseToEmdHrs !== null && responseToEmdHrs > 72) breaches.push('response_to_emd_over_72h');
+  const emdToCloseHrs = hoursDiff(t.emdReceivedAt, t.closeDate);
+  if (emdToCloseHrs !== null && emdToCloseHrs > 120) breaches.push('emd_to_close_over_5_business_days');
+
+  const closeMonth = monthKey(t.closeDate || t.contractSignedAt || deal.updatedAt);
+  const target = closeMonth ? findKpiTarget(state, closeMonth) : null;
+  const targetDays = asNumber(target?.daysToCloseTarget, 0);
+  if (targetDays > 0) {
+    const contractToCloseHrs = hoursDiff(t.contractSignedAt, t.closeDate);
+    if (contractToCloseHrs !== null && contractToCloseHrs > targetDays * 24) {
+      breaches.push(`contract_to_close_over_${targetDays}_days`);
+    }
+  }
+
+  return breaches;
+}
+
+function ensureOpsReadyForClose(deal) {
+  const errors = [];
+  const offer = deal.offerConfidence || {};
+  const closePath = deal.closePath || {};
+  const lowConfidence = [offer.arvConfidence, offer.rehabConfidence].includes('low');
+
+  if (lowConfidence && !offer.manualOverrideApproved) {
+    errors.push('Low-confidence offer requires manual override approval before close');
+  }
+
+  if (!closePath.path || !CLOSE_PATHS.includes(closePath.path)) {
+    errors.push('closePath.path must be tagged as assignment or double_close');
+  }
+  if (!closePath.taggedBeforeBlast) {
+    errors.push('closePath.taggedBeforeBlast must be true before closing');
+  }
+  if (closePath.path === 'double_close' && !closePath.fundingSourceConfirmed) {
+    errors.push('double_close requires fundingSourceConfirmed=true');
+  }
+
+  return {
+    ok: errors.length === 0,
+    errors
+  };
 }
 
 function calculateDealMetrics(property) {
@@ -34,6 +141,10 @@ function calculateDealMetrics(property) {
 }
 
 function scoreInvestor(investor, property, metrics) {
+  if (investor.qualificationStatus === 'rejected') {
+    return { score: 0, reasons: ['qualification-rejected'] };
+  }
+
   let score = 0;
   const reasons = [];
 
@@ -64,6 +175,14 @@ function scoreInvestor(investor, property, metrics) {
     reasons.push('arv-fit');
   }
 
+  if (investor.proofOfFundsStatus === 'verified') {
+    score += 10;
+    reasons.push('proof-of-funds-verified');
+  } else {
+    score = Math.max(0, score - 15);
+    reasons.push('proof-of-funds-pending');
+  }
+
   return { score, reasons };
 }
 
@@ -80,6 +199,42 @@ function ensureDeal(state, propertyId) {
       investorMatches: [],
       followUps: [],
       calls: [],
+      sourceEconomics: {
+        channel: 'manual',
+        channelCostAllocated: 0,
+        zip: '',
+        leadDate: new Date().toISOString(),
+        contractDate: null,
+        closeDate: null,
+        outcome: 'lead',
+        feeActual: 0
+      },
+      offerConfidence: {
+        arvConfidence: 'low',
+        arvSource: '',
+        rehabConfidence: 'low',
+        rehabSource: '',
+        rentComp: 0,
+        rentCompSource: '',
+        manualOverrideApproved: false,
+        manualOverrideNote: '',
+        manualOverrideApprovedAt: null
+      },
+      dispositionTimeline: {
+        contractSignedAt: null,
+        firstBlastSentAt: null,
+        firstResponseAt: null,
+        emdReceivedAt: null,
+        closeDate: null,
+        slaBreachFlags: []
+      },
+      closePath: {
+        path: 'assignment',
+        fundingSourceConfirmed: false,
+        fundingSourceName: '',
+        doubleCloseCostBudgeted: 0,
+        taggedBeforeBlast: false
+      },
       contacts: {
         sellerName: '',
         sellerEmail: '',
@@ -127,6 +282,76 @@ function queueCloseDealApproval({ deal, payload, source }) {
   savePendingApprovals(approvals);
   logAction({ agent: 'deal-closer', tier: 'T2', action: 'escalated', approvalId, source });
   return approval;
+}
+
+function ensureComplianceReady(state, deal) {
+  const compliance = evaluateDealCompliance(state, deal);
+  if (!compliance.ok) {
+    return {
+      success: false,
+      error: 'Compliance gate blocked close action',
+      compliance
+    };
+  }
+  return { success: true, compliance };
+}
+
+function normalizeZipCode(value) {
+  return String(value || '').trim().slice(0, 5);
+}
+
+function normalizeZipCodes(values) {
+  if (!Array.isArray(values)) return [];
+  return [...new Set(values.map(normalizeZipCode).filter(v => /^\d{5}$/.test(v)))];
+}
+
+function deriveQualificationStatus(investor) {
+  if (investor.proofOfFundsStatus === 'rejected') return 'rejected';
+  const q = investor.qualification || {};
+  const hasTargetAreas = Array.isArray(q.targetAreas) && q.targetAreas.length > 0;
+  const hasFunding = Boolean(String(q.fundingSource || '').trim());
+  const hasDealType = Boolean(String(q.preferredDealType || '').trim());
+  if (investor.proofOfFundsStatus === 'verified' && hasTargetAreas && hasFunding && hasDealType) {
+    return 'qualified';
+  }
+  return 'pending';
+}
+
+function createInvestorRecord(payload) {
+  const investor = {
+    id: createId('inv'),
+    name: payload.name,
+    strategy: payload.strategy,
+    email: payload.email || '',
+    phone: payload.phone || '',
+    minPrice: asNumber(payload.minPrice, 0),
+    maxPrice: asNumber(payload.maxPrice, 1_000_000_000),
+    minArv: asNumber(payload.minArv, 0),
+    maxArv: asNumber(payload.maxArv, 1_000_000_000),
+    maxRehab: asNumber(payload.maxRehab, 1_000_000_000),
+    zipCodes: normalizeZipCodes(payload.zipCodes),
+    preferredPropertyTypes: Array.isArray(payload.preferredPropertyTypes) ? payload.preferredPropertyTypes : [],
+    conditionTolerance: payload.conditionTolerance || 'any',
+    proofOfFundsStatus: payload.proofOfFundsStatus || 'unverified',
+    proofOfFundsDocumentUrl: payload.proofOfFundsDocumentUrl || '',
+    proofOfFundsVerifiedAt: payload.proofOfFundsVerifiedAt || null,
+    qualification: {
+      fundingSource: payload.fundingSource || '',
+      lender: payload.lender || '',
+      lastClosingTimelineDays: asNumber(payload.lastClosingTimelineDays, 0),
+      targetAreas: normalizeZipCodes(payload.targetAreas || payload.zipCodes || []),
+      preferredDealType: payload.preferredDealType || '',
+      titleReference: payload.titleReference || ''
+    },
+    channels: Array.isArray(payload.channels) ? payload.channels.map(v => String(v).trim()).filter(Boolean) : [],
+    sourcePlatform: payload.sourcePlatform ? String(payload.sourcePlatform).trim() : '',
+    qualificationStatus: 'pending',
+    status: 'active',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  investor.qualificationStatus = deriveQualificationStatus(investor);
+  return investor;
 }
 
 router.get('/overview', (req, res) => {
@@ -182,7 +407,7 @@ router.post('/properties', (req, res) => {
     id: createId('prop'),
     address,
     city,
-    state: stateCode,
+    state: normalizePropertyState(stateCode),
     zipCode: zipCode || '',
     market: req.body.market || state.meta.market || 'DFW',
     source: req.body.source || 'manual',
@@ -201,7 +426,11 @@ router.post('/properties', (req, res) => {
   };
 
   state.properties.push(property);
-  ensureDeal(state, property.id);
+  const deal = ensureDeal(state, property.id);
+  deal.sourceEconomics = deal.sourceEconomics || {};
+  deal.sourceEconomics.zip = property.zipCode || '';
+  deal.sourceEconomics.channel = property.source || deal.sourceEconomics.channel || 'manual';
+  deal.updatedAt = new Date().toISOString();
   saveWholesaleState(state);
 
   res.status(201).json({ success: true, property });
@@ -215,6 +444,7 @@ router.patch('/properties/:id', (req, res) => {
   }
 
   const allowed = [
+    'state',
     'source',
     'sourceLists',
     'distressSignals',
@@ -228,7 +458,9 @@ router.patch('/properties/:id', (req, res) => {
     'status'
   ];
   for (const key of allowed) {
-    if (req.body[key] !== undefined) property[key] = req.body[key];
+    if (req.body[key] !== undefined) {
+      property[key] = key === 'state' ? normalizePropertyState(req.body[key]) : req.body[key];
+    }
   }
   property.updatedAt = new Date().toISOString();
 
@@ -274,6 +506,22 @@ router.get('/investors', (req, res) => {
   res.json({ success: true, count: state.investors.length, investors: state.investors });
 });
 
+router.post('/buyers/intake', (req, res) => {
+  const { name, strategy } = req.body || {};
+  if (!name || !strategy) {
+    return res.status(400).json({ success: false, error: 'name and strategy are required' });
+  }
+
+  const state = loadWholesaleState();
+  const investor = createInvestorRecord({
+    ...req.body,
+    proofOfFundsStatus: req.body?.proofOfFundsProvided ? 'pending_verification' : 'unverified'
+  });
+  state.investors.push(investor);
+  saveWholesaleState(state);
+  res.status(201).json({ success: true, buyer: investor });
+});
+
 router.post('/investors', (req, res) => {
   const { name, strategy } = req.body || {};
   if (!name || !strategy) {
@@ -281,27 +529,60 @@ router.post('/investors', (req, res) => {
   }
 
   const state = loadWholesaleState();
-  const investor = {
-    id: createId('inv'),
-    name,
-    strategy,
-    email: req.body.email || '',
-    phone: req.body.phone || '',
-    minPrice: asNumber(req.body.minPrice, 0),
-    maxPrice: asNumber(req.body.maxPrice, 1_000_000_000),
-    minArv: asNumber(req.body.minArv, 0),
-    maxArv: asNumber(req.body.maxArv, 1_000_000_000),
-    maxRehab: asNumber(req.body.maxRehab, 1_000_000_000),
-    zipCodes: Array.isArray(req.body.zipCodes) ? req.body.zipCodes : [],
-    preferredPropertyTypes: Array.isArray(req.body.preferredPropertyTypes) ? req.body.preferredPropertyTypes : [],
-    status: 'active',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
+  const investor = createInvestorRecord(req.body);
 
   state.investors.push(investor);
   saveWholesaleState(state);
   res.status(201).json({ success: true, investor });
+});
+
+router.patch('/investors/:id/verify', (req, res) => {
+  const state = loadWholesaleState();
+  const investor = state.investors.find(i => i.id === req.params.id);
+  if (!investor) {
+    return res.status(404).json({ success: false, error: 'Investor not found' });
+  }
+
+  const status = String(req.body?.proofOfFundsStatus || '').trim();
+  const allowed = ['verified', 'rejected', 'pending_verification', 'unverified'];
+  if (!allowed.includes(status)) {
+    return res.status(400).json({ success: false, error: `proofOfFundsStatus must be one of: ${allowed.join(', ')}` });
+  }
+
+  investor.proofOfFundsStatus = status;
+  if (req.body?.proofOfFundsDocumentUrl !== undefined) {
+    investor.proofOfFundsDocumentUrl = String(req.body.proofOfFundsDocumentUrl || '').trim();
+  }
+  if (req.body?.fundingSource !== undefined) {
+    investor.qualification = investor.qualification || {};
+    investor.qualification.fundingSource = String(req.body.fundingSource || '').trim();
+  }
+  if (req.body?.lender !== undefined) {
+    investor.qualification = investor.qualification || {};
+    investor.qualification.lender = String(req.body.lender || '').trim();
+  }
+  if (req.body?.lastClosingTimelineDays !== undefined) {
+    investor.qualification = investor.qualification || {};
+    investor.qualification.lastClosingTimelineDays = asNumber(req.body.lastClosingTimelineDays, 0);
+  }
+  if (req.body?.targetAreas !== undefined) {
+    investor.qualification = investor.qualification || {};
+    investor.qualification.targetAreas = normalizeZipCodes(req.body.targetAreas);
+  }
+  if (req.body?.preferredDealType !== undefined) {
+    investor.qualification = investor.qualification || {};
+    investor.qualification.preferredDealType = String(req.body.preferredDealType || '').trim();
+  }
+  if (req.body?.titleReference !== undefined) {
+    investor.qualification = investor.qualification || {};
+    investor.qualification.titleReference = String(req.body.titleReference || '').trim();
+  }
+
+  investor.proofOfFundsVerifiedAt = status === 'verified' ? new Date().toISOString() : null;
+  investor.qualificationStatus = deriveQualificationStatus(investor);
+  investor.updatedAt = new Date().toISOString();
+  saveWholesaleState(state);
+  res.json({ success: true, investor });
 });
 
 router.post('/properties/:id/match-investors', (req, res) => {
@@ -349,6 +630,271 @@ router.get('/deals', (req, res) => {
   res.json({ success: true, count: state.deals.length, deals: state.deals });
 });
 
+router.get('/kpi/targets', (req, res) => {
+  const state = loadWholesaleState();
+  const month = req.query.month;
+  if (!month) {
+    return res.json({ success: true, count: getKpiTargets(state).length, targets: getKpiTargets(state) });
+  }
+  const target = findKpiTarget(state, month);
+  if (!target) return res.status(404).json({ success: false, error: 'KPI target not found for month' });
+  res.json({ success: true, target });
+});
+
+router.put('/kpi/targets/:month', (req, res) => {
+  const state = loadWholesaleState();
+  const key = monthKey(req.params.month);
+  if (!key) return res.status(400).json({ success: false, error: 'month must be YYYY-MM' });
+
+  const payload = {
+    month: key,
+    revenueTarget: asNumber(req.body?.revenueTarget, 0),
+    avgFeeTarget: asNumber(req.body?.avgFeeTarget, 0),
+    closesTarget: asNumber(req.body?.closesTarget, 0),
+    contractsTarget: asNumber(req.body?.contractsTarget, 0),
+    leadsTarget: asNumber(req.body?.leadsTarget, 0),
+    daysToCloseTarget: asNumber(req.body?.daysToCloseTarget, 0),
+    updatedAt: new Date().toISOString()
+  };
+
+  state.meta = state.meta || {};
+  state.meta.kpiTargets = getKpiTargets(state);
+  const existing = state.meta.kpiTargets.find(t => t.month === key);
+  if (existing) {
+    Object.assign(existing, payload);
+  } else {
+    state.meta.kpiTargets.push(payload);
+  }
+
+  saveWholesaleState(state);
+  res.json({ success: true, target: payload });
+});
+
+router.patch('/deals/:id/source-economics', (req, res) => {
+  const state = loadWholesaleState();
+  const deal = state.deals.find(d => d.id === req.params.id);
+  if (!deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+  deal.sourceEconomics = deal.sourceEconomics || {};
+
+  if (req.body?.channel !== undefined) {
+    const channel = String(req.body.channel || '').trim().toLowerCase();
+    if (!DEAL_SOURCE_CHANNELS.includes(channel)) {
+      return res.status(400).json({ success: false, error: `channel must be one of: ${DEAL_SOURCE_CHANNELS.join(', ')}` });
+    }
+    deal.sourceEconomics.channel = channel;
+  }
+  if (req.body?.channelCostAllocated !== undefined) {
+    deal.sourceEconomics.channelCostAllocated = asNumber(req.body.channelCostAllocated, 0);
+  }
+  if (req.body?.zip !== undefined) {
+    deal.sourceEconomics.zip = normalizeZipCode(req.body.zip);
+  }
+  if (req.body?.leadDate !== undefined) {
+    const leadDate = asIsoTimestamp(req.body.leadDate);
+    if (!leadDate) return res.status(400).json({ success: false, error: 'leadDate must be a valid ISO timestamp' });
+    deal.sourceEconomics.leadDate = leadDate;
+  }
+  if (req.body?.contractDate !== undefined) {
+    const contractDate = asIsoTimestamp(req.body.contractDate);
+    if (!contractDate) return res.status(400).json({ success: false, error: 'contractDate must be a valid ISO timestamp' });
+    deal.sourceEconomics.contractDate = contractDate;
+  }
+  if (req.body?.closeDate !== undefined) {
+    const closeDate = asIsoTimestamp(req.body.closeDate);
+    if (!closeDate) return res.status(400).json({ success: false, error: 'closeDate must be a valid ISO timestamp' });
+    deal.sourceEconomics.closeDate = closeDate;
+  }
+  if (req.body?.outcome !== undefined) {
+    const outcome = String(req.body.outcome || '').trim().toLowerCase();
+    if (!DEAL_OUTCOMES.includes(outcome)) {
+      return res.status(400).json({ success: false, error: `outcome must be one of: ${DEAL_OUTCOMES.join(', ')}` });
+    }
+    deal.sourceEconomics.outcome = outcome;
+  }
+  if (req.body?.feeActual !== undefined) {
+    deal.sourceEconomics.feeActual = asNumber(req.body.feeActual, 0);
+  }
+
+  deal.updatedAt = new Date().toISOString();
+  saveWholesaleState(state);
+  res.json({ success: true, sourceEconomics: deal.sourceEconomics, deal });
+});
+
+router.patch('/deals/:id/offer-confidence', (req, res) => {
+  const state = loadWholesaleState();
+  const deal = state.deals.find(d => d.id === req.params.id);
+  if (!deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+  deal.offerConfidence = deal.offerConfidence || {};
+
+  if (req.body?.arvConfidence !== undefined) {
+    const value = String(req.body.arvConfidence || '').trim().toLowerCase();
+    if (!CONFIDENCE_LEVELS.includes(value)) {
+      return res.status(400).json({ success: false, error: `arvConfidence must be one of: ${CONFIDENCE_LEVELS.join(', ')}` });
+    }
+    deal.offerConfidence.arvConfidence = value;
+  }
+  if (req.body?.rehabConfidence !== undefined) {
+    const value = String(req.body.rehabConfidence || '').trim().toLowerCase();
+    if (!CONFIDENCE_LEVELS.includes(value)) {
+      return res.status(400).json({ success: false, error: `rehabConfidence must be one of: ${CONFIDENCE_LEVELS.join(', ')}` });
+    }
+    deal.offerConfidence.rehabConfidence = value;
+  }
+  if (req.body?.arvSource !== undefined) deal.offerConfidence.arvSource = String(req.body.arvSource || '').trim();
+  if (req.body?.rehabSource !== undefined) deal.offerConfidence.rehabSource = String(req.body.rehabSource || '').trim();
+  if (req.body?.rentComp !== undefined) deal.offerConfidence.rentComp = asNumber(req.body.rentComp, 0);
+  if (req.body?.rentCompSource !== undefined) {
+    deal.offerConfidence.rentCompSource = String(req.body.rentCompSource || '').trim();
+  }
+  if (req.body?.manualOverrideApproved !== undefined) {
+    deal.offerConfidence.manualOverrideApproved = Boolean(req.body.manualOverrideApproved);
+    deal.offerConfidence.manualOverrideApprovedAt = deal.offerConfidence.manualOverrideApproved
+      ? new Date().toISOString()
+      : null;
+  }
+  if (req.body?.manualOverrideNote !== undefined) {
+    deal.offerConfidence.manualOverrideNote = String(req.body.manualOverrideNote || '').trim();
+  }
+
+  deal.updatedAt = new Date().toISOString();
+  saveWholesaleState(state);
+  res.json({ success: true, offerConfidence: deal.offerConfidence, deal });
+});
+
+router.patch('/deals/:id/close-path', (req, res) => {
+  const state = loadWholesaleState();
+  const deal = state.deals.find(d => d.id === req.params.id);
+  if (!deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+  deal.closePath = deal.closePath || {};
+
+  if (req.body?.path !== undefined) {
+    const pathValue = String(req.body.path || '').trim().toLowerCase();
+    if (!CLOSE_PATHS.includes(pathValue)) {
+      return res.status(400).json({ success: false, error: `path must be one of: ${CLOSE_PATHS.join(', ')}` });
+    }
+    deal.closePath.path = pathValue;
+  }
+  if (req.body?.fundingSourceConfirmed !== undefined) {
+    deal.closePath.fundingSourceConfirmed = Boolean(req.body.fundingSourceConfirmed);
+  }
+  if (req.body?.fundingSourceName !== undefined) {
+    deal.closePath.fundingSourceName = String(req.body.fundingSourceName || '').trim();
+  }
+  if (req.body?.doubleCloseCostBudgeted !== undefined) {
+    deal.closePath.doubleCloseCostBudgeted = asNumber(req.body.doubleCloseCostBudgeted, 0);
+  }
+  if (req.body?.taggedBeforeBlast !== undefined) {
+    deal.closePath.taggedBeforeBlast = Boolean(req.body.taggedBeforeBlast);
+  }
+
+  deal.updatedAt = new Date().toISOString();
+  saveWholesaleState(state);
+  res.json({ success: true, closePath: deal.closePath, deal });
+});
+
+router.patch('/deals/:id/disposition-timeline', (req, res) => {
+  const state = loadWholesaleState();
+  const deal = state.deals.find(d => d.id === req.params.id);
+  if (!deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+  deal.dispositionTimeline = deal.dispositionTimeline || {};
+
+  const fields = ['contractSignedAt', 'firstBlastSentAt', 'firstResponseAt', 'emdReceivedAt', 'closeDate'];
+  for (const field of fields) {
+    if (req.body?.[field] === undefined) continue;
+    const value = asIsoTimestamp(req.body[field]);
+    if (!value) return res.status(400).json({ success: false, error: `${field} must be a valid ISO timestamp` });
+    if (field === 'firstBlastSentAt' && !(deal.closePath?.taggedBeforeBlast)) {
+      return res.status(400).json({ success: false, error: 'closePath.taggedBeforeBlast must be true before firstBlastSentAt' });
+    }
+    deal.dispositionTimeline[field] = value;
+  }
+
+  deal.dispositionTimeline.slaBreachFlags = computeSlaBreaches(deal, state);
+  deal.updatedAt = new Date().toISOString();
+  saveWholesaleState(state);
+  res.json({ success: true, dispositionTimeline: deal.dispositionTimeline, deal });
+});
+
+router.get('/compliance/playbook', (req, res) => {
+  const state = loadWholesaleState();
+  res.json({ success: true, playbook: getCompliancePlaybook(state) });
+});
+
+router.get('/market/target-zips', (req, res) => {
+  const state = loadWholesaleState();
+  const configured = state.meta?.acquisition?.targetZipCodes;
+  const targetZipCodes = Array.isArray(configured) && configured.length
+    ? configured
+    : DEFAULT_DFW_TARGET_ZIPS;
+  res.json({
+    success: true,
+    market: state.meta?.market || 'DFW',
+    source: Array.isArray(configured) && configured.length ? 'configured' : 'default-dfw-hypothesis',
+    targetZipCodes
+  });
+});
+
+router.patch('/market/target-zips', (req, res) => {
+  const state = loadWholesaleState();
+  const targetZipCodes = normalizeZipCodes(req.body?.targetZipCodes);
+  if (!targetZipCodes.length) {
+    return res.status(400).json({ success: false, error: 'targetZipCodes must include at least one valid 5-digit ZIP' });
+  }
+  state.meta = state.meta || {};
+  state.meta.acquisition = state.meta.acquisition || {};
+  state.meta.acquisition.targetZipCodes = targetZipCodes;
+  state.meta.acquisition.updatedAt = new Date().toISOString();
+  saveWholesaleState(state);
+  res.json({ success: true, targetZipCodes });
+});
+
+router.patch('/compliance/settings', (req, res) => {
+  const state = loadWholesaleState();
+  const result = applyComplianceSettings(state, req.body || {});
+  if (!result.success) {
+    return res.status(400).json({ success: false, error: result.error });
+  }
+  saveWholesaleState(state);
+  res.json({ success: true, targetStateCodes: result.targetStateCodes });
+});
+
+router.post('/deals/:id/compliance/disclosures', (req, res) => {
+  const state = loadWholesaleState();
+  const deal = state.deals.find(d => d.id === req.params.id);
+  if (!deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+
+  deal.legal = deal.legal || {};
+  if (req.body?.sellerDisclosureProvidedAt) {
+    deal.legal.sellerDisclosureProvidedAt = req.body.sellerDisclosureProvidedAt;
+  } else if (req.body?.sellerDisclosureProvided === true && !deal.legal.sellerDisclosureProvidedAt) {
+    deal.legal.sellerDisclosureProvidedAt = new Date().toISOString();
+  }
+
+  if (req.body?.buyerDisclosureProvidedAt) {
+    deal.legal.buyerDisclosureProvidedAt = req.body.buyerDisclosureProvidedAt;
+  } else if (req.body?.buyerDisclosureProvided === true && !deal.legal.buyerDisclosureProvidedAt) {
+    deal.legal.buyerDisclosureProvidedAt = new Date().toISOString();
+  }
+
+  if (req.body?.disclosureVersion !== undefined) {
+    deal.legal.disclosureVersion = String(req.body.disclosureVersion || '').trim();
+  }
+  if (req.body?.attorneyReviewedTemplate !== undefined) {
+    deal.legal.attorneyReviewedTemplate = Boolean(req.body.attorneyReviewedTemplate);
+  }
+  if (req.body?.marketingMode !== undefined) {
+    deal.legal.marketingMode = String(req.body.marketingMode || '').trim() || 'contract_only';
+  }
+  if (req.body?.notes !== undefined) {
+    deal.legal.notes = String(req.body.notes || '').trim();
+  }
+
+  deal.updatedAt = new Date().toISOString();
+  const compliance = evaluateDealCompliance(state, deal);
+  saveWholesaleState(state);
+  res.json({ success: true, deal, compliance });
+});
+
 router.get('/pipeline', (req, res) => {
   const state = loadWholesaleState();
   const invoices = listInvoices();
@@ -358,6 +904,7 @@ router.get('/pipeline', (req, res) => {
     const pendingClose = approvals.find(
       a => a.status === 'pending' && a.actionType === 'close-deal' && a.payload?.dealId === deal.id
     );
+    const compliance = evaluateDealCompliance(state, deal);
     return {
       id: deal.id,
       propertyId: deal.propertyId,
@@ -372,6 +919,13 @@ router.get('/pipeline', (req, res) => {
       invoiceStatus: invoice?.status || null,
       totalUsd: invoice?.totalUsd || null,
       pendingCloseApprovalId: pendingClose?.id || null,
+      complianceReady: compliance.ok,
+      complianceErrors: compliance.errors,
+      offerConfidence: deal.offerConfidence || null,
+      closePath: deal.closePath || null,
+      sourceEconomics: deal.sourceEconomics || null,
+      dispositionTimeline: deal.dispositionTimeline || null,
+      targetState: compliance.stateCode || '',
       updatedAt: deal.updatedAt
     };
   });
@@ -401,12 +955,19 @@ router.post('/deals/:id/follow-up', (req, res) => {
   const state = loadWholesaleState();
   const deal = state.deals.find(d => d.id === req.params.id);
   if (!deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+  const outcome = String(req.body?.outcome || '').trim().toLowerCase();
+  if (!outcome || !FOLLOWUP_OUTCOMES.includes(outcome)) {
+    return res.status(400).json({
+      success: false,
+      error: `outcome is required and must be one of: ${FOLLOWUP_OUTCOMES.join(', ')}`
+    });
+  }
 
   const followUp = {
     id: createId('followup'),
     channel: req.body?.channel || 'email',
     message: req.body?.message || '',
-    outcome: req.body?.outcome || 'sent',
+    outcome,
     contactType: req.body?.contactType || 'seller',
     contactName: req.body?.contactName || '',
     email: req.body?.email || '',
@@ -431,6 +992,54 @@ router.post('/deals/:id/follow-up', (req, res) => {
 
   saveWholesaleState(state);
   res.json({ success: true, deal, followUp });
+});
+
+router.post('/deals/:id/outreach-draft', (req, res) => {
+  const state = loadWholesaleState();
+  const deal = state.deals.find(d => d.id === req.params.id);
+  if (!deal) return res.status(404).json({ success: false, error: 'Deal not found' });
+  const property = state.properties.find(p => p.id === deal.propertyId);
+  if (!property) return res.status(404).json({ success: false, error: 'Property not found for deal' });
+
+  const channel = String(req.body?.channel || 'sms').trim().toLowerCase();
+  const audience = String(req.body?.audience || 'seller').trim().toLowerCase();
+  const supportedChannels = ['sms', 'email', 'call'];
+  const supportedAudiences = ['seller', 'buyer'];
+  if (!supportedChannels.includes(channel)) {
+    return res.status(400).json({ success: false, error: `channel must be one of: ${supportedChannels.join(', ')}` });
+  }
+  if (!supportedAudiences.includes(audience)) {
+    return res.status(400).json({ success: false, error: `audience must be one of: ${supportedAudiences.join(', ')}` });
+  }
+
+  const stateCode = normalizePropertyState(property.state);
+  const disclosureClause = getDisclosureClause(stateCode);
+  const addressLine = `${property.address}, ${property.city}, ${property.state} ${property.zipCode || ''}`.trim();
+  const assignmentPotential = asNumber(deal.assignmentPotential, 0);
+  const feeTarget = asNumber(deal.assignmentFeeTarget, assignmentPotential);
+
+  const sellerDraft = {
+    sms: `Hi ${deal.contacts?.sellerName || 'there'}, this is a quick follow-up on ${addressLine}. We are seeking a direct purchase agreement and may assign contractual interest to a qualified end buyer depending on closing path. ${disclosureClause}`,
+    email: `Subject: Purchase follow-up for ${addressLine}\n\nHello ${deal.contacts?.sellerName || ''},\n\nWe are ready to discuss terms for ${addressLine}. Our process may include assignment of contractual interest to a qualified end buyer where allowed.\n\n${disclosureClause}\n\nRegards,\nSovereign Empire`,
+    call: `Call script: confirm motivation, timeline, and condition for ${addressLine}. State clearly that your team may assign contractual interest and read disclosure: "${disclosureClause}"`
+  };
+
+  const buyerDraft = {
+    sms: `Assignable contract opportunity in ${property.zipCode || property.city}: ${addressLine}. ARV/rehab available on request. Target assignment fee: $${feeTarget.toFixed(2)}. ${disclosureClause}`,
+    email: `Subject: Assignable contract opportunity — ${property.city} ${property.zipCode || ''}\n\nDeal snapshot:\n- Address: ${addressLine}\n- Target assignment fee: $${feeTarget.toFixed(2)}\n- Distress signals: ${(property.distressSignals || []).join(', ') || 'N/A'}\n\nThis is an assignable contractual interest opportunity.\n${disclosureClause}\n\nReply with proof of funds and close timeline.`,
+    call: `Buyer call script: present deal metrics, confirm buy-box fit and proof of funds, and state this is an assignable contract opportunity. Disclosure: "${disclosureClause}"`
+  };
+
+  const draft = audience === 'seller' ? sellerDraft[channel] : buyerDraft[channel];
+  res.json({
+    success: true,
+    dealId: deal.id,
+    audience,
+    channel,
+    draft,
+    disclosureClause,
+    note: 'Draft only. Dispatch remains human-approved.'
+  });
 });
 
 router.post('/deals/:id/call', (req, res) => {
@@ -471,6 +1080,23 @@ router.post('/deals/:id/close', (req, res) => {
   if (!deal) return res.status(404).json({ success: false, error: 'Deal not found' });
 
   const requireApproval = req.body?.requireApproval !== false;
+  const complianceResult = ensureComplianceReady(state, deal);
+  if (!complianceResult.success) {
+    return res.status(400).json({
+      success: false,
+      error: complianceResult.error,
+      compliance: complianceResult.compliance
+    });
+  }
+  const opsReady = ensureOpsReadyForClose(deal);
+  if (!opsReady.ok) {
+    return res.status(400).json({
+      success: false,
+      error: 'Revenue ops gate blocked close action',
+      opsErrors: opsReady.errors
+    });
+  }
+
   if (requireApproval) {
     const payload = {
       dealId: deal.id,
@@ -480,7 +1106,8 @@ router.post('/deals/:id/close', (req, res) => {
       buyerPhone: req.body?.buyerPhone || deal.contacts?.buyerPhone || '',
       assignmentFeeUsd: asNumber(req.body?.assignmentFeeUsd, deal.assignmentFeeTarget || deal.assignmentPotential || 0),
       paymentMethod: req.body?.paymentMethod || 'Wire Transfer',
-      dueInDays: asNumber(req.body?.dueInDays, 7)
+      dueInDays: asNumber(req.body?.dueInDays, 7),
+      legal: deal.legal || {}
     };
     const approval = queueCloseDealApproval({ deal, payload, source: 'wholesale-close-request' });
     deal.stage = 'approval_pending';
@@ -527,6 +1154,11 @@ router.post('/deals/:id/close', (req, res) => {
   deal.contacts.buyerEmail = customerEmail;
   deal.contacts.buyerPhone = customerPhone;
   deal.closedAt = new Date().toISOString();
+  deal.sourceEconomics = deal.sourceEconomics || {};
+  deal.sourceEconomics.outcome = 'contract';
+  deal.sourceEconomics.contractDate = deal.sourceEconomics.contractDate || deal.closedAt;
+  deal.dispositionTimeline = deal.dispositionTimeline || {};
+  deal.dispositionTimeline.contractSignedAt = deal.dispositionTimeline.contractSignedAt || deal.closedAt;
   deal.updatedAt = new Date().toISOString();
   property && (property.status = 'under_contract');
   property && (property.updatedAt = new Date().toISOString());
@@ -548,11 +1180,29 @@ router.post('/deals/:id/request-close-approval', (req, res) => {
     buyerPhone: req.body?.buyerPhone || deal.contacts?.buyerPhone || '',
     assignmentFeeUsd: asNumber(req.body?.assignmentFeeUsd, deal.assignmentFeeTarget || deal.assignmentPotential || 0),
     paymentMethod: req.body?.paymentMethod || 'Wire Transfer',
-    dueInDays: asNumber(req.body?.dueInDays, 7)
+    dueInDays: asNumber(req.body?.dueInDays, 7),
+    legal: deal.legal || {}
   };
 
   if (payload.assignmentFeeUsd <= 0) {
     return res.status(400).json({ success: false, error: 'assignmentFeeUsd must be greater than 0' });
+  }
+
+  const complianceResult = ensureComplianceReady(state, deal);
+  if (!complianceResult.success) {
+    return res.status(400).json({
+      success: false,
+      error: complianceResult.error,
+      compliance: complianceResult.compliance
+    });
+  }
+  const opsReady = ensureOpsReadyForClose(deal);
+  if (!opsReady.ok) {
+    return res.status(400).json({
+      success: false,
+      error: 'Revenue ops gate blocked close approval request',
+      opsErrors: opsReady.errors
+    });
   }
 
   const approval = queueCloseDealApproval({ deal, payload, source: 'wholesale-manual-approval' });
@@ -568,6 +1218,8 @@ router.post('/autopilot/hunt', (req, res) => {
   let followUpsDrafted = 0;
   let approvalsQueued = 0;
   let dealsMarkedForApproval = 0;
+  let complianceBlockedDeals = 0;
+  let opsBlockedDeals = 0;
 
   for (const deal of state.deals) {
     if (deal.status !== 'active' && deal.status !== 'awaiting_payment') continue;
@@ -593,6 +1245,29 @@ router.post('/autopilot/hunt', (req, res) => {
 
     const closeReady = hasMatches && ['matched', 'followup', 'negotiation', 'approval_pending'].includes(deal.stage);
     if (closeReady && !hasPendingCloseApproval(deal.id)) {
+      const complianceResult = ensureComplianceReady(state, deal);
+      if (!complianceResult.success) {
+        complianceBlockedDeals++;
+        deal.notes = Array.isArray(deal.notes) ? deal.notes : [];
+        deal.notes.push({
+          note: `Compliance blocked close queue: ${complianceResult.compliance.errors.join('; ')}`,
+          timestamp: new Date().toISOString()
+        });
+        deal.updatedAt = new Date().toISOString();
+        continue;
+      }
+      const opsReady = ensureOpsReadyForClose(deal);
+      if (!opsReady.ok) {
+        opsBlockedDeals++;
+        deal.notes = Array.isArray(deal.notes) ? deal.notes : [];
+        deal.notes.push({
+          note: `Ops gate blocked close queue: ${opsReady.errors.join('; ')}`,
+          timestamp: new Date().toISOString()
+        });
+        deal.updatedAt = new Date().toISOString();
+        continue;
+      }
+
       const approval = queueCloseDealApproval({
         deal,
         payload: {
@@ -603,7 +1278,8 @@ router.post('/autopilot/hunt', (req, res) => {
           buyerPhone: deal.contacts?.buyerPhone || '',
           assignmentFeeUsd: asNumber(deal.assignmentFeeTarget || deal.assignmentPotential || 0),
           paymentMethod: 'Wire Transfer',
-          dueInDays: 7
+          dueInDays: 7,
+          legal: deal.legal || {}
         },
         source: 'wholesale-autopilot'
       });
@@ -621,7 +1297,9 @@ router.post('/autopilot/hunt', (req, res) => {
     summary: {
       followUpsDrafted,
       approvalsQueued,
-      dealsMarkedForApproval
+      dealsMarkedForApproval,
+      complianceBlockedDeals,
+      opsBlockedDeals
     }
   });
 });
@@ -650,6 +1328,15 @@ router.post('/deals/:id/revenue-received', (req, res) => {
   deal.revenueAmountUsd = asNumber(payment.invoice?.totalUsd, 0);
   deal.receiptNumber = payment.receipt?.receiptNumber || deal.receiptNumber || null;
   deal.paidAt = payment.invoice?.paymentDate || new Date().toISOString();
+  deal.sourceEconomics = deal.sourceEconomics || {};
+  deal.sourceEconomics.outcome = 'closed';
+  deal.sourceEconomics.feeActual = deal.revenueAmountUsd;
+  deal.sourceEconomics.closeDate = deal.paidAt;
+  deal.dispositionTimeline = deal.dispositionTimeline || {};
+  if (!deal.dispositionTimeline.closeDate) {
+    deal.dispositionTimeline.closeDate = deal.paidAt;
+  }
+  deal.dispositionTimeline.slaBreachFlags = computeSlaBreaches(deal, state);
   deal.updatedAt = new Date().toISOString();
   if (property) {
     property.status = 'closed';
