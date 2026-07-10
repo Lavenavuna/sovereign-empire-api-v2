@@ -12,6 +12,7 @@ import wholesaleRoutes from './routes/wholesale.js';
 import { AGENTS, getTier, getPrompt, selectAgent, getDnaVersion } from './config/agents.js';
 import { logAction, loadAuditLog, loadPendingApprovals, savePendingApprovals } from './lib/auditLog.js';
 import { buildTrustReport } from './lib/trustReport.js';
+import { executeApprovedAction } from './lib/approvalActions.js';
 import {
     listProposals, applyProposal, rejectProposal, getChangelog, analyzeAndPropose
 } from './lib/dnaEvolution.js';
@@ -136,11 +137,19 @@ app.post('/api/approvals/:id/approve', async (req, res) => {
         return res.status(400).json({ success: false, error: 'Already ' + approval.status });
     }
 
-    // This is the ONLY code path allowed to execute a T2 agent.
-    const result = await executeAgent(approval.agent, approval.query || approval.draftResult || '');
+    let result;
+    if (approval.actionType) {
+        result = await executeApprovedAction(approval);
+        if (!result.success) {
+            return res.status(400).json({ success: false, error: result.error || 'Approval action failed' });
+        }
+    } else {
+        // This is the ONLY code path allowed to execute a T2 agent.
+        result = await executeAgent(approval.agent, approval.query || approval.draftResult || '');
+    }
     approval.status = 'approved_and_executed';
     approval.approvedAt = new Date().toISOString();
-    approval.result = result.result;
+    approval.result = result.result || result.message || result;
     savePendingApprovals(approvals);
     logAction({ agent: approval.agent, tier: approval.tier, action: 'approved_and_executed', approvalId: approval.id });
 

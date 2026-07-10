@@ -21,11 +21,14 @@ Base path: `/api/wholesale`
 - `POST /investors` — register investor buy box
 - `POST /properties/:id/match-investors` — rank investor matches
 - `GET /deals` — list active deal records
+- `GET /pipeline` — revenue pipeline view (deal + invoice + payment status)
 - `PATCH /deals/:id/status` — update stage/status/notes
 - `POST /deals/:id/follow-up` — log follow-up actions (email/SMS/WhatsApp/call prep)
 - `POST /deals/:id/call` — log call outcomes and call notes
 - `POST /deals/:id/close` — move deal to closed-pending-payment and auto-create invoice
+- `POST /deals/:id/request-close-approval` — queue a T2 approval for deal close
 - `POST /deals/:id/revenue-received` — mark payment received and auto-generate receipt
+- `POST /autopilot/hunt` — run high-velocity revenue hunter pass (draft follow-ups + queue close approvals)
 
 State is persisted in `wholesale-state.json`.
 
