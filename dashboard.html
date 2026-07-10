@@ -295,7 +295,7 @@
                 <th>Status</th>
             </tr></thead>
             <tbody id="invoiceTableBody">
-                <tr><td colspan="8" class="empty-state">Loading invoices...</td></tr>
+                <tr><td colspan="8" class="empty-state">Syncing invoices...</td></tr>
             </tbody>
         </table>
     </div>
@@ -318,7 +318,7 @@
                 <th>Updated</th>
             </tr></thead>
             <tbody id="leadsTableBody">
-                <tr><td colspan="6" class="empty-state">Loading leads...</td></tr>
+                <tr><td colspan="6" class="empty-state">Syncing properties...</td></tr>
             </tbody>
         </table>
     </div>
@@ -335,7 +335,7 @@
                 <th>Status</th>
             </tr></thead>
             <tbody id="investorTableBody">
-                <tr><td colspan="5" class="empty-state">Loading investors...</td></tr>
+                <tr><td colspan="5" class="empty-state">Syncing investors...</td></tr>
             </tbody>
         </table>
     </div>
@@ -353,7 +353,7 @@
                 <th>Action</th>
             </tr></thead>
             <tbody id="approvalTableBody">
-                <tr><td colspan="6" class="empty-state">Loading approvals...</td></tr>
+                <tr><td colspan="6" class="empty-state">Syncing approvals...</td></tr>
             </tbody>
         </table>
     </div>
@@ -371,7 +371,7 @@
                 <th>Action</th>
             </tr></thead>
             <tbody id="pipelineTableBody">
-                <tr><td colspan="6" class="empty-state">Loading revenue pipeline...</td></tr>
+                <tr><td colspan="6" class="empty-state">Syncing revenue pipeline...</td></tr>
             </tbody>
         </table>
     </div>
@@ -385,8 +385,8 @@
             </select>
             <button class="refresh-btn" onclick="runCopilotPrompt()">▶ Run Prompt</button>
         </div>
-        <textarea id="copilotPrompt" class="prompt-input" placeholder="Type your instruction (e.g. Find investor matches for current DFW properties and draft next disposition action)."></textarea>
-        <div id="copilotResult" class="prompt-result">No prompt run yet.</div>
+        <textarea id="copilotPrompt" class="prompt-input" placeholder="Type your instruction for the copilot assistant."></textarea>
+        <div id="copilotResult" class="prompt-result">Ready.</div>
     </div>
 
 </div>
@@ -485,17 +485,17 @@
             // ── Render Invoices Table ──
             const invBody = document.getElementById('invoiceTableBody');
             if (!invoices.length) {
-                invBody.innerHTML = `<tr><td colspan="8" class="empty-state">No invoices yet — create one via POST /api/invoices/generate</td></tr>`;
+                invBody.innerHTML = `<tr><td colspan="8" class="empty-state">No invoices recorded.</td></tr>`;
             } else {
                 invBody.innerHTML = invoices.map(inv => `
                     <tr>
-                        <td><strong>${inv.invoiceNumber || 'N/A'}</strong></td>
-                        <td>${inv.productName || 'N/A'}</td>
+                        <td><strong>${inv.invoiceNumber || '-'}</strong></td>
+                        <td>${inv.productName || '-'}</td>
                         <td>$${parseFloat(inv.priceUsd || 0).toFixed(2)}</td>
                         <td>$${parseFloat(inv.vatUsd || 0).toFixed(2)}</td>
                         <td><strong>$${parseFloat(inv.totalUsd || 0).toFixed(2)}</strong></td>
-                        <td>${inv.customerEmail || 'N/A'}</td>
-                        <td>${inv.createdAt ? new Date(inv.createdAt).toLocaleDateString() : 'N/A'}</td>
+                        <td>${inv.customerEmail || '-'}</td>
+                        <td>${inv.createdAt ? new Date(inv.createdAt).toLocaleDateString() : '-'}</td>
                         <td><span class="badge ${inv.status === 'paid' ? 'won' : 'pending'}">${inv.status || 'paid'}</span></td>
                     </tr>
                 `).join('');
@@ -504,16 +504,16 @@
             // ── Render Leads Table ──
             const leadsBody = document.getElementById('leadsTableBody');
             if (!leads.length) {
-                leadsBody.innerHTML = `<tr><td colspan="6" class="empty-state">No properties yet — add one via POST /api/wholesale/properties</td></tr>`;
+                leadsBody.innerHTML = `<tr><td colspan="6" class="empty-state">No properties recorded.</td></tr>`;
             } else {
                 leadsBody.innerHTML = leads.map(lead => `
                     <tr>
-                        <td><strong>${lead.name || lead.company || 'N/A'}</strong></td>
+                        <td><strong>${lead.name || lead.company || '-'}</strong></td>
                         <td>$${parseFloat(lead.value || lead.amount || 0).toFixed(2)}</td>
-                        <td>${lead.stage || 'N/A'}</td>
-                        <td>${lead.source || 'N/A'}</td>
+                        <td>${lead.stage || '-'}</td>
+                        <td>${lead.source || '-'}</td>
                         <td><span class="badge ${lead.status || 'open'}">${lead.status || 'open'}</span></td>
-                        <td>${lead.updated || lead.updatedAt ? new Date(lead.updated || lead.updatedAt).toLocaleDateString() : 'N/A'}</td>
+                        <td>${lead.updated || lead.updatedAt ? new Date(lead.updated || lead.updatedAt).toLocaleDateString() : '-'}</td>
                     </tr>
                 `).join('');
             }
@@ -521,12 +521,12 @@
             // ── Render Investors Table ──
             const investorBody = document.getElementById('investorTableBody');
             if (!investors.length) {
-                investorBody.innerHTML = `<tr><td colspan="5" class="empty-state">No investors yet — add one via POST /api/wholesale/investors</td></tr>`;
+                investorBody.innerHTML = `<tr><td colspan="5" class="empty-state">No investors recorded.</td></tr>`;
             } else {
                 investorBody.innerHTML = investors.map(inv => `
                     <tr>
-                        <td><strong>${inv.name || 'N/A'}</strong></td>
-                        <td>${inv.strategy || 'N/A'}</td>
+                        <td><strong>${inv.name || '-'}</strong></td>
+                        <td>${inv.strategy || '-'}</td>
                         <td>$${parseFloat(inv.minPrice || 0).toFixed(0)} - $${parseFloat(inv.maxPrice || 0).toFixed(0)}</td>
                         <td>${(inv.zipCodes || []).join(', ') || 'Any'}</td>
                         <td><span class="badge ${inv.status || 'active'}">${inv.status || 'active'}</span></td>
@@ -541,11 +541,11 @@
             } else {
                 approvalBody.innerHTML = approvals.map(a => `
                     <tr>
-                        <td><strong>${a.id || 'N/A'}</strong></td>
-                        <td>${a.agent || 'N/A'}</td>
-                        <td>${a.tier || 'N/A'}</td>
+                        <td><strong>${a.id || '-'}</strong></td>
+                        <td>${a.agent || '-'}</td>
+                        <td>${a.tier || '-'}</td>
                         <td><span class="badge ${a.status === 'pending' ? 'pending_approval' : a.status}">${a.status || 'pending'}</span></td>
-                        <td>${a.createdAt ? new Date(a.createdAt).toLocaleString() : 'N/A'}</td>
+                        <td>${a.createdAt ? new Date(a.createdAt).toLocaleString() : '-'}</td>
                         <td>
                             ${a.status === 'pending'
                                 ? `<button class="mini-btn approve" onclick="approveItem('${a.id}')">Approve</button>
@@ -576,7 +576,7 @@
                     return `
                     <tr>
                         <td><strong>${d.id}</strong></td>
-                        <td>${d.stage || 'N/A'}</td>
+                        <td>${d.stage || '-'}</td>
                         <td>$${fee}</td>
                         <td>${invoice}</td>
                         <td><span class="badge ${payment === 'paid' ? 'approved_and_executed' : 'pending'}">${payment}</span></td>
@@ -662,7 +662,7 @@
                 fetchAllData();
                 return;
             }
-            resultEl.textContent = data.result || '(No response text)';
+            resultEl.textContent = data.result || 'Completed.';
         } catch (error) {
             resultEl.textContent = `Error: ${error.message}`;
         }
@@ -761,7 +761,7 @@
                 resultEl.textContent = `Mark paid failed: ${data.error || 'Request failed'}`;
                 return;
             }
-            resultEl.textContent = `Revenue received for ${dealId}.\nReceipt: ${data.receipt?.receiptNumber || 'N/A'}`;
+            resultEl.textContent = `Revenue received for ${dealId}.\nReceipt: ${data.receipt?.receiptNumber || '-'}`;
             fetchAllData();
         } catch (error) {
             resultEl.textContent = `Mark paid failed: ${error.message}`;
