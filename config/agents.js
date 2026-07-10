@@ -19,94 +19,94 @@ const OVERRIDES_PATH = path.join(__dirname, 'dna-overrides.json');
 
 export const AGENTS = {
     'competitor-analyzer': {
-        triggers: ['competitor', 'market research', 'analyze competition'],
-        description: 'Analyzes competitors',
-        prompt: 'You are a competitor analysis expert. Analyze competitors and provide strategic insights.'
+        triggers: ['competitor', 'wholesaling platforms', 'cash buyer network', 'disposition competitor'],
+        description: 'Analyzes competitor wholesalers, buyers lists, and market positioning',
+        prompt: 'You are a real-estate wholesaling competitor analyst. Compare competitor offer models, disposition speed, buyer network strength, and workflow gaps. Avoid unsourced claims.'
     },
     'content-generator': {
-        triggers: ['write blog', 'generate content', 'create article'],
-        description: 'Generates blog posts',
-        prompt: 'You are a professional content writer. Create engaging, well-structured blog posts.'
+        triggers: ['deal summary', 'seller summary', 'investor summary'],
+        description: 'Generates concise wholesaling deal summaries',
+        prompt: 'You write concise, factual wholesaling deal summaries for internal team use. Include property basics, distress signals, numbers, and next action.'
     },
     'email-writer': {
-        triggers: ['write email', 'draft email', 'email campaign'],
-        description: 'Writes emails',
-        prompt: 'You are a professional email writer. Draft clear, persuasive emails.'
+        triggers: ['write email', 'seller follow-up', 'investor blast', 'draft email'],
+        description: 'Writes seller and investor outreach messages',
+        prompt: 'You are a real-estate wholesaling outreach writer. Draft clear, compliant seller and investor messages with urgency but no false claims.'
     },
     'headline-generator': {
-        triggers: ['headline', 'title', 'catchy title'],
-        description: 'Creates headlines',
-        prompt: 'You are a headline expert. Create catchy, click-worthy headlines.'
+        triggers: ['headline', 'deal title', 'listing title'],
+        description: 'Creates deal-listing headlines',
+        prompt: 'You create concise real-estate deal listing headlines focused on ARV, spread, location, and investor angle.'
     },
     'keyword-researcher': {
-        triggers: ['keyword research', 'seo keywords'],
-        description: 'Researches keywords',
-        prompt: 'You are an SEO expert. Research and suggest valuable keywords.'
+        triggers: ['keyword research', 'motivated seller keywords', 'cash buyer keywords'],
+        description: 'Researches acquisition and disposition keywords',
+        prompt: 'You are an acquisition marketing strategist for real-estate wholesaling. Suggest high-intent keywords for seller leads and buyer disposition.'
     },
     'performance-optimizer': {
-        triggers: ['optimize performance', 'speed up'],
-        description: 'Optimizes performance',
-        prompt: 'You are a performance optimization expert. Suggest improvements for speed and efficiency.'
+        triggers: ['optimize performance', 'speed up', 'pipeline bottleneck'],
+        description: 'Optimizes wholesaling pipeline throughput',
+        prompt: 'You optimize wholesaling funnel performance: lead intake, analysis cycle time, buyer match speed, and close-rate bottlenecks.'
     },
     'podcast-script': {
-        triggers: ['podcast script', 'podcast episode'],
-        description: 'Writes podcast scripts',
-        prompt: 'You are a podcast script writer. Create engaging, well-structured podcast scripts.'
+        triggers: ['podcast script', 'investor podcast'],
+        description: 'Writes investor education scripts',
+        prompt: 'You write short investor education scripts focused on wholesaling deals, underwriting, and market insights.'
     },
     'revenue-tracker': {
-        triggers: ['revenue', 'income', 'sales report'],
-        description: 'Tracks revenue',
-        prompt: 'You are a financial analyst. Track and report revenue metrics.'
+        triggers: ['assignment fees', 'revenue', 'income', 'sales report'],
+        description: 'Tracks assignment fee and deal revenue',
+        prompt: 'You are a wholesaling revenue analyst. Track assignment fees, conversion rate, cycle time, and per-channel close performance.'
     },
     'seo-optimizer': {
-        triggers: ['seo optimize', 'search engine optimize'],
-        description: 'Optimizes for SEO',
-        prompt: 'You are an SEO expert. Optimize content for search engines.'
+        triggers: ['seo optimize', 'search engine optimize', 'seller seo'],
+        description: 'Optimizes seller acquisition content for SEO',
+        prompt: 'You optimize motivated-seller pages and investor acquisition content for search performance and conversion.'
     },
     'social-media': {
-        triggers: ['social media', 'social post', 'twitter'],
-        description: 'Creates social posts',
-        prompt: 'You are a social media expert. Create engaging posts for various platforms.'
+        triggers: ['social media', 'social post', 'investor post'],
+        description: 'Creates social posts for buyers and sellers',
+        prompt: 'You create real-estate wholesaling social posts targeting cash buyers, landlords, and motivated sellers.'
     },
     'trend-analyzer': {
-        triggers: ['trend', 'market trend'],
-        description: 'Analyzes trends',
-        prompt: 'You are a market trend analyst. Identify and analyze emerging trends.'
+        triggers: ['trend', 'market trend', 'distress trend', 'foreclosure trend'],
+        description: 'Analyzes local distress and pricing trends',
+        prompt: 'You analyze foreclosure pressure, tax-default trends, DOM shifts, and investor demand patterns relevant to wholesaling.'
     },
     'video-script': {
-        triggers: ['video script', 'youtube script'],
-        description: 'Writes video scripts',
-        prompt: 'You are a video script writer. Create compelling video content scripts.'
+        triggers: ['video script', 'youtube script', 'deal walkthrough'],
+        description: 'Writes deal walkthrough scripts',
+        prompt: 'You write concise video scripts for property deal walkthroughs and investor briefs.'
     },
     'business-strategist': {
-        triggers: ['business strategy', 'strategic planning', 'business growth'],
-        description: 'Provides business strategy advice',
-        prompt: 'You are a business strategy expert. Provide strategic advice for business growth and planning.'
+        triggers: ['business strategy', 'strategic planning', 'vertical integration', 'property management expansion'],
+        description: 'Provides strategy for wholesaling-led vertical integration',
+        prompt: 'You are a strategic advisor for a wholesaling business expanding into property management and marketplace operations. Prioritize defensibility and speed to close.'
     },
     'market-researcher': {
-        triggers: ['market research', 'market analysis', 'industry research'],
-        description: 'Conducts market research (RAG-loop grounded)',
-        prompt: 'You are a market research expert. Conduct thorough market analysis and provide insights.'
+        triggers: ['market research', 'market analysis', 'dfw comps', 'distressed inventory'],
+        description: 'Researches wholesaling market signals (RAG-loop grounded)',
+        prompt: 'You are a real-estate wholesaling market researcher. Focus on distressed inventory, buyer demand, comp movement, and time-to-close dynamics.'
     },
     'customer-feedback': {
-        triggers: ['customer feedback', 'feedback analysis', 'customer sentiment'],
-        description: 'Analyzes customer feedback',
-        prompt: 'You are a customer experience expert. Analyze feedback and provide actionable insights.'
+        triggers: ['seller feedback', 'investor feedback', 'customer feedback', 'feedback analysis'],
+        description: 'Analyzes seller/investor feedback for workflow improvements',
+        prompt: 'You analyze seller and investor feedback to improve conversion speed, trust, and close consistency in a wholesaling pipeline.'
     },
     'sales-consultant': {
-        triggers: ['sales strategy', 'sales pitch', 'sales advice'],
-        description: 'Provides sales consulting',
-        prompt: 'You are a sales expert. Provide sales strategies and advice to improve conversions.'
+        triggers: ['disposition strategy', 'sales strategy', 'investor outreach strategy', 'sales advice'],
+        description: 'Provides wholesaling disposition strategy',
+        prompt: 'You are a disposition strategist for real-estate wholesaling. Recommend next best action to move a deal from analysis to assignment in 7-14 days.'
     },
     'product-analyzer': {
-        triggers: ['product analysis', 'product review', 'product improvement'],
-        description: 'Analyzes products and suggests improvements',
-        prompt: 'You are a product management expert. Analyze products and suggest improvements.'
+        triggers: ['workflow analysis', 'product analysis', 'crm workflow'],
+        description: 'Analyzes wholesaling workflow and tooling improvements',
+        prompt: 'You analyze wholesaling workflow friction across lead sourcing, underwriting, investor matching, and disposition.'
     },
     'deal-closer': {
-        triggers: ['follow-up', 'schedule call', 'close deal', 'contract', 'closing', 'negotiate', 'proposal', 'deal'],
-        description: 'Drafts deal proposals — ALWAYS gated, never executes without approval',
-        prompt: 'You are a senior sales closer drafting a proposal for human review. Draft personalized follow-up emails, call scripts, and proposals. Never claim a deal is confirmed or closed — you are drafting for approval, not executing.'
+        triggers: ['follow-up', 'assignment contract', 'close deal', 'contract', 'closing', 'negotiate', 'proposal', 'disposition'],
+        description: 'Drafts assignment/disposition proposals — ALWAYS gated, never executes without approval',
+        prompt: 'You are a senior real-estate wholesaling closer drafting assignment/disposition proposals for human review. Never state that a contract is executed or a deal is closed. Mark assumptions and estimates clearly.'
     }
 };
 
@@ -190,4 +190,3 @@ export function selectAgent(query) {
     }
     return best || 'content-generator';
 }
-

@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 // ── Routes (existing) ──
 import invoiceRoutes from './routes/invoice.js';
 import leadsRoutes from './routes/leads.js';
+import wholesaleRoutes from './routes/wholesale.js';
 
 // ── DNA layer (previously built, never wired — wired in now) ──
 import { AGENTS, getTier, getPrompt, selectAgent, getDnaVersion } from './config/agents.js';
@@ -30,6 +31,7 @@ app.use(express.static('.'));
 // ── Existing routes ──
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/leads', leadsRoutes);
+app.use('/api/wholesale', wholesaleRoutes);
 
 // ── Health Check (must respond fast for Railway) ──
 app.get('/health', (req, res) => {
@@ -205,6 +207,8 @@ app.get('/', (req, res) => {
     endpoints: {
       invoices: '/api/invoices',
       leads: '/api/leads',
+      wholesale: '/api/wholesale',
+      wholesaleOverview: '/api/wholesale/overview',
       agents: '/api/agents',
       agentExecute: 'POST /api/agent/execute',
       approvals: '/api/approvals',

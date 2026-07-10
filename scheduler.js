@@ -45,13 +45,21 @@ async function runCycle() {
     console.log('🔄 Cycle start:', new Date().toISOString());
 
     // T0 — bounded RAG loop research (honest about grounding — see lib/ragLoop.js)
-    const research = await runRagLoop('market-researcher', 'target account buying signals this week', 3);
-    const competitor = await runRagLoop('competitor-analyzer', 'recent competitor pricing or positioning changes', 3);
+    const research = await runRagLoop(
+        'market-researcher',
+        'DFW distressed property signals this week: tax-default, foreclosure, code-violation, absentee-owner pressure',
+        3
+    );
+    const competitor = await runRagLoop(
+        'competitor-analyzer',
+        'recent wholesaling platform pricing, disposition speed claims, and investor matching workflow changes',
+        3
+    );
 
-    // T1 — sales-consultant drafts an angle, logged but not gated
+    // T1 — sales-consultant drafts a disposition angle, logged but not gated
     const consultant = await callModel(
-        'You are a sales strategist. You only use facts explicitly given to you — never invent account names or figures.',
-        `Research findings:\n${research.result}\n\nCompetitor findings:\n${competitor.result}\n\nDraft ONE specific outreach angle for this cycle. If the research above is unverified/ungrounded, say so rather than treating it as fact.`
+        'You are a wholesaling disposition strategist. Use only facts explicitly provided. Never fabricate seller, property, or price details.',
+        `Research findings:\n${research.result}\n\nCompetitor findings:\n${competitor.result}\n\nDraft ONE specific disposition angle for this cycle focused on faster assignment close. If evidence is ungrounded, say so plainly.`
     );
     logAction({
         agent: 'sales-consultant', tier: 'T1', action: 'executed',
@@ -61,8 +69,8 @@ async function runCycle() {
     // T2 — deal-closer drafts a proposal but NEVER executes directly.
     // It goes to the approval queue exactly like a manual request would.
     const dealDraft = await callModel(
-        'You are a deal-closer drafting a proposal for human review, not executing a deal. Never claim a deal is confirmed. Flag clearly if any figure is an estimate.',
-        `Based on this outreach angle:\n${consultant.content}\n\nDraft a brief deal proposal: target account (if known), proposed value estimate, next step.`
+        'You are a wholesaling deal-closer drafting for human review only. Never claim an assignment is executed. Flag every estimate.',
+        `Based on this disposition angle:\n${consultant.content}\n\nDraft a brief assignment proposal with: target property (if known), buyer fit hypothesis, assignment fee estimate, and next step.`
     );
 
     const approvals = loadPendingApprovals();
@@ -99,4 +107,3 @@ cron.schedule(CYCLE_CRON, () => {
 
 console.log('🚀 Scheduler running. Cycle schedule:', CYCLE_CRON);
 console.log('⚠️  No retrieval source is registered yet — research cycles will report as ungrounded until one is wired in lib/ragLoop.js.');
-
