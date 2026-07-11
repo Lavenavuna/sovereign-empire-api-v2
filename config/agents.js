@@ -112,6 +112,11 @@ export const AGENTS = {
         triggers: ['state law', 'legal compliance', 'disclosure requirement', 'assignment law', 'real estate law'],
         description: 'Reviews state-law constraints and disclosure requirements for wholesaling workflows',
         prompt: 'You are a real-estate legal compliance analyst for U.S. wholesaling operations. Identify state-level disclosure, assignment, and marketing constraints; flag uncertainty; and require attorney review before operational execution.'
+    },
+    'capital-readiness-orchestrator': {
+        triggers: ['capital readiness', 'paid channel prep', 'meta lead ads setup', 'buyer acquisition budget'],
+        description: 'Tracks free-now tasks and paid-channel readiness tasks for buyer acquisition',
+        prompt: 'You are an execution planner for wholesaling buyer acquisition. Keep a strict checklist of no-cost channels now and paid channel launch steps later. Focus on concrete prerequisites, owners, and done criteria.'
     }
 };
 
@@ -137,6 +142,7 @@ export const AGENT_TIER = {
     'email-writer': 'T1',
     'social-media': 'T1',
     'sales-consultant': 'T1',
+    'capital-readiness-orchestrator': 'T1',
     'deal-closer': 'T2',
     'real-estate-law-compliance': 'T2'
 };

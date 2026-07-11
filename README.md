@@ -23,7 +23,10 @@ Base path: `/api/wholesale`
 - `GET /investors` — list cash buyers/investors
 - `POST /investors` — register investor buy box
 - `POST /buyers/intake` — intake buyers with proof-of-funds and qualification fields
+- `POST /buyers/webhook/free-intake` — free-form/webhook buyer intake (Google Form/Typeform/Zapier payloads) routed through SB17 + tiering
 - `POST /buyers/import-csv` — bulk import buyer/investor rows from CSV text (includes SB17 screening fields)
+- `GET /buyers/capital-readiness-todos` — list no-cost-now + paid-later buyer acquisition execution checklist
+- `PATCH /buyers/capital-readiness-todos/:id` — update checklist status (`pending|in_progress|done|blocked`) and notes
 - `PATCH /investors/:id/verify` — update proof-of-funds verification and buyer qualification status
 - `PATCH /investors/:id/foreign-screening` — screen/update foreign buyer profile for SB17 compliance
 - `POST /properties/:id/match-investors` — rank investor matches
