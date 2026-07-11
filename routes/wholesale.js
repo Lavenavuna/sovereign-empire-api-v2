@@ -32,6 +32,25 @@ const FOLLOWUP_OUTCOMES = [
   'sent'
 ];
 const CLOSE_PATHS = ['assignment', 'double_close'];
+const IMPORT_SOURCE_CHANNELS = ['tax', 'foreclosure', 'probate', 'divorce', 'code_enforcement', 'deed_lien'];
+const DEFAULT_SIGNAL_BY_SOURCE = {
+  tax: 'tax_delinquent',
+  foreclosure: 'foreclosure_notice',
+  probate: 'probate_filing',
+  divorce: 'divorce_filing',
+  code_enforcement: 'code_violation',
+  deed_lien: 'lien_or_transfer_signal'
+};
+const SIGNAL_WEIGHTS = {
+  tax_delinquent: 2,
+  foreclosure_notice: 3,
+  probate_filing: 3,
+  divorce_filing: 2,
+  code_violation: 1,
+  lien_or_transfer_signal: 1,
+  absentee_owner: 2,
+  vacant: 2
+};
 
 function asNumber(value, fallback = 0) {
   const n = Number(value);
@@ -42,6 +61,10 @@ function asIsoTimestamp(value) {
   if (!value) return null;
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+function asString(value) {
+  return String(value || '').trim();
 }
 
 function monthKey(value) {
@@ -310,6 +333,87 @@ function normalizeZipCodes(values) {
   return [...new Set(values.map(normalizeZipCode).filter(v => /^\d{5}$/.test(v)))];
 }
 
+function splitCsvLine(line) {
+  const out = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i += 1) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+    if (ch === ',' && !inQuotes) {
+      out.push(current);
+      current = '';
+      continue;
+    }
+    current += ch;
+  }
+  out.push(current);
+  return out.map(v => v.trim());
+}
+
+function parseCsvText(csvText) {
+  const lines = String(csvText || '')
+    .split(/\r?\n/)
+    .map(l => l.trim())
+    .filter(Boolean);
+  if (lines.length < 2) return [];
+  const headers = splitCsvLine(lines[0]).map(h => h.toLowerCase());
+  return lines.slice(1).map(line => {
+    const values = splitCsvLine(line);
+    const row = {};
+    headers.forEach((h, idx) => {
+      row[h] = values[idx] ?? '';
+    });
+    return row;
+  });
+}
+
+function parseSignalList(value) {
+  const raw = asString(value);
+  if (!raw) return [];
+  return [...new Set(raw.split(/[|;,]/).map(v => v.trim().toLowerCase()).filter(Boolean))];
+}
+
+function mapSourceToDealChannel(sourceChannel) {
+  if (sourceChannel === 'tax' || sourceChannel === 'code_enforcement' || sourceChannel === 'deed_lien') {
+    return 'county';
+  }
+  return sourceChannel === 'manual' ? 'manual' : 'referral';
+}
+
+function normalizeAddressKey(address, city, stateCode, zipCode) {
+  const norm = (v) => asString(v).toLowerCase().replace(/[^a-z0-9]/g, '');
+  return `${norm(address)}|${norm(city)}|${norm(stateCode)}|${norm(zipCode)}`;
+}
+
+function findPropertyByAddress(state, address, city, stateCode, zipCode) {
+  const key = normalizeAddressKey(address, city, stateCode, zipCode);
+  return state.properties.find((p) =>
+    normalizeAddressKey(p.address, p.city, p.state, p.zipCode) === key
+  );
+}
+
+function computeMergedDistress(property) {
+  const signals = Array.isArray(property.distressSignals) ? property.distressSignals : [];
+  const weighted = signals.reduce((sum, sig) => sum + asNumber(SIGNAL_WEIGHTS[sig], 0), 0);
+  const sourceLists = Array.isArray(property.sourceLists) ? property.sourceLists : [];
+  const sourceBoost = sourceLists.length >= 2 ? 2 + Math.max(0, sourceLists.length - 2) : 0;
+  const mergedDistressScore = weighted + sourceBoost;
+  return {
+    mergedDistressScore,
+    mergedSignals: signals,
+    sourceCount: sourceLists.length
+  };
+}
+
 function normalizeCountryCodes(values) {
   if (!Array.isArray(values)) return [];
   return [...new Set(values.map(v => String(v || '').trim().toUpperCase()).filter(Boolean))];
@@ -536,6 +640,155 @@ router.patch('/properties/:id', (req, res) => {
 
   saveWholesaleState(state);
   res.json({ success: true, property });
+});
+
+router.post('/ingestion/import-csv', (req, res) => {
+  const sourceChannel = asString(req.body?.sourceChannel).toLowerCase();
+  if (!IMPORT_SOURCE_CHANNELS.includes(sourceChannel)) {
+    return res.status(400).json({
+      success: false,
+      error: `sourceChannel must be one of: ${IMPORT_SOURCE_CHANNELS.join(', ')}`
+    });
+  }
+  if (!asString(req.body?.csvText)) {
+    return res.status(400).json({ success: false, error: 'csvText is required' });
+  }
+
+  const rows = parseCsvText(req.body.csvText);
+  if (!rows.length) {
+    return res.status(400).json({ success: false, error: 'No data rows found in csvText' });
+  }
+
+  const state = loadWholesaleState();
+  let inserted = 0;
+  let updated = 0;
+  let skipped = 0;
+
+  for (const row of rows) {
+    const address = asString(row.address || row.situs_address || row.property_address || row.street);
+    const city = asString(row.city || row.situs_city || req.body?.defaultCity || 'Fort Worth');
+    const stateCode = normalizePropertyState(row.state || row.situs_state || req.body?.defaultState || 'TX');
+    const zipCode = normalizeZipCode(row.zip || row.zipcode || row.situs_zip || row.postal_code);
+    if (!address || !city || !stateCode) {
+      skipped += 1;
+      continue;
+    }
+
+    const importedSignals = parseSignalList(row.distress_signals || row.signals || row.distress_signal);
+    const defaultSignal = DEFAULT_SIGNAL_BY_SOURCE[sourceChannel];
+    const distressSignals = [...new Set([defaultSignal, ...importedSignals].filter(Boolean))];
+
+    let property = findPropertyByAddress(state, address, city, stateCode, zipCode);
+    if (!property) {
+      property = {
+        id: createId('prop'),
+        address,
+        city,
+        state: stateCode,
+        zipCode,
+        market: asString(req.body?.market || state.meta?.market || 'DFW'),
+        source: sourceChannel,
+        sourceLists: [sourceChannel],
+        distressSignals,
+        propertyType: asString(row.property_type || req.body?.defaultPropertyType || 'single-family'),
+        purchasePrice: asNumber(row.purchase_price || row.ask_price, 0),
+        askPrice: asNumber(row.ask_price || row.purchase_price, 0),
+        arv: asNumber(row.arv || row.total_appraised_value, 0),
+        rehabEstimate: asNumber(row.rehab_estimate || 0, 0),
+        closingCosts: asNumber(row.closing_costs || 5000, 5000),
+        status: asString(row.status || 'sourced').toLowerCase(),
+        pipelineStatus: 'new',
+        seller: {
+          name: asString(row.owner_name || row.seller_name),
+          email: asString(row.seller_email),
+          phone: asString(row.seller_phone)
+        },
+        importMeta: {
+          sourceChannel,
+          externalRecordId: asString(row.record_id || row.account_id || row.case_id),
+          importedAt: new Date().toISOString()
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      const merged = computeMergedDistress(property);
+      property.analysis = {
+        ...(property.analysis || {}),
+        mergedDistressScore: merged.mergedDistressScore,
+        mergedSignals: merged.mergedSignals,
+        sourceCount: merged.sourceCount,
+        scoredAt: new Date().toISOString()
+      };
+      state.properties.push(property);
+      inserted += 1;
+    } else {
+      property.sourceLists = [...new Set([...(property.sourceLists || []), sourceChannel])];
+      property.distressSignals = [...new Set([...(property.distressSignals || []), ...distressSignals])];
+      property.source = property.source || sourceChannel;
+      property.pipelineStatus = 'new';
+      property.updatedAt = new Date().toISOString();
+      property.importMeta = {
+        ...(property.importMeta || {}),
+        sourceChannel,
+        externalRecordId: asString(row.record_id || row.account_id || row.case_id || property.importMeta?.externalRecordId),
+        importedAt: new Date().toISOString()
+      };
+      const merged = computeMergedDistress(property);
+      property.analysis = {
+        ...(property.analysis || {}),
+        mergedDistressScore: merged.mergedDistressScore,
+        mergedSignals: merged.mergedSignals,
+        sourceCount: merged.sourceCount,
+        scoredAt: new Date().toISOString()
+      };
+      updated += 1;
+    }
+
+    const deal = ensureDeal(state, property.id);
+    deal.sourceEconomics = deal.sourceEconomics || {};
+    deal.sourceEconomics.channel = mapSourceToDealChannel(sourceChannel);
+    deal.sourceEconomics.zip = zipCode || deal.sourceEconomics.zip || '';
+    deal.sourceEconomics.leadDate = deal.sourceEconomics.leadDate || new Date().toISOString();
+    deal.stage = deal.stage === 'sourced' ? 'analyzed' : deal.stage;
+    deal.updatedAt = new Date().toISOString();
+  }
+
+  saveWholesaleState(state);
+  res.json({
+    success: true,
+    sourceChannel,
+    summary: { inserted, updated, skipped, totalRows: rows.length }
+  });
+});
+
+router.post('/ingestion/merge-score', (req, res) => {
+  const state = loadWholesaleState();
+  const onlyNew = req.body?.onlyPipelineNew !== false;
+  let updated = 0;
+  for (const property of state.properties) {
+    if (onlyNew && property.pipelineStatus && property.pipelineStatus !== 'new') continue;
+    const merged = computeMergedDistress(property);
+    property.analysis = {
+      ...(property.analysis || {}),
+      mergedDistressScore: merged.mergedDistressScore,
+      mergedSignals: merged.mergedSignals,
+      sourceCount: merged.sourceCount,
+      scoredAt: new Date().toISOString()
+    };
+    property.pipelineStatus = 'scored';
+    property.updatedAt = new Date().toISOString();
+    updated += 1;
+  }
+  saveWholesaleState(state);
+  res.json({ success: true, summary: { scoredProperties: updated, onlyPipelineNew: onlyNew } });
+});
+
+router.get('/properties/queue/new', (req, res) => {
+  const state = loadWholesaleState();
+  const properties = state.properties
+    .filter(p => (p.pipelineStatus || 'new') === 'new')
+    .sort((a, b) => asNumber(b.analysis?.mergedDistressScore, 0) - asNumber(a.analysis?.mergedDistressScore, 0));
+  res.json({ success: true, count: properties.length, properties });
 });
 
 router.post('/properties/:id/analyze', (req, res) => {

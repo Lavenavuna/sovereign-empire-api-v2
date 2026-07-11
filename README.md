@@ -16,6 +16,9 @@ Base path: `/api/wholesale`
 - `GET /properties` — list sourced/analyzed properties
 - `POST /properties` — create off-market property lead
 - `PATCH /properties/:id` — update property fields and distress data
+- `POST /ingestion/import-csv` — import lateral county/public channel CSV into properties (tax/foreclosure/probate/divorce/code_enforcement/deed_lien)
+- `POST /ingestion/merge-score` — recompute merged distress scoring and set `pipelineStatus`
+- `GET /properties/queue/new` — review unprocessed properties (`pipelineStatus = new`) for scoring queue
 - `POST /properties/:id/analyze` — run ARV/rehab/MAO/assignment analysis
 - `GET /investors` — list cash buyers/investors
 - `POST /investors` — register investor buy box
@@ -88,6 +91,20 @@ Yes — phone and email are tracked for both seller and buyer/investor contacts 
 - Buyers now support qualification fields (funding source, lender, last close timeline, target areas, preferred deal type, title reference).
 - `proofOfFundsStatus` and `qualificationStatus` are tracked and influence investor match ranking.
 - Optional `channels` and `sourcePlatform` fields help track which marketplaces/networks produced each buyer profile.
+
+## Tarrant tax-roll ingestion (always-on sourcing)
+
+- Ingestion module path: `src/ingestion/tarrant-taxroll`
+- This module ingests county tax-roll records, normalizes distress signals, and upserts directly into `wholesale-state.json` as new sourced properties/deals.
+- Required env:
+  - `TARRANT_TAXROLL_URL` (current weekly download URL)
+- Commands:
+  - `npm run ingest:tarrant`
+  - `npm run ingest:tarrant:scheduler`
+  - `npm run ingest:tarrant:test:build`
+  - `npm run ingest:tarrant:test`
+- `layout-config.js` contains provisional fixed-width offsets and must be validated against Tarrant's official layout before production use.
+- Multi-channel import path is now supported for manual/semi-automated sources that do not expose reliable APIs.
 
 ## Revenue OS (compounding execution fields)
 

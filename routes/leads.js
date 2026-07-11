@@ -25,8 +25,12 @@ function toLeadRows(properties, deals) {
       id: property.id,
       name: `${property.address}, ${property.city}`,
       value: deal?.assignmentPotential || property?.analysis?.assignmentPotential || 0,
+      mergedScore: property?.analysis?.mergedDistressScore ?? 0,
       stage: deal?.stage || property.status || 'sourced',
       source: property.source || 'wholesale-state',
+      sourceChannel: property.source || 'wholesale-state',
+      sourceLists: Array.isArray(property.sourceLists) ? property.sourceLists : [],
+      pipelineStatus: property.pipelineStatus || 'new',
       status: deal?.status || 'active',
       updated: property.updatedAt || property.createdAt || new Date().toISOString()
     };
@@ -86,4 +90,3 @@ router.post('/search', async (req, res) => {
 });
 
 export default router;
-

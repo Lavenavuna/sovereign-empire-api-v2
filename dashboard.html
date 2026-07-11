@@ -125,6 +125,8 @@
         .badge.matched { background: #2a1a4a; color: #b07cf7; }
         .badge.analyzed { background: #1a3a3a; color: #5cd4c8; }
         .badge.sourced { background: #2a2a1a; color: #f5a623; }
+        .badge.new { background: #1a2a4a; color: #6ab0f7; }
+        .badge.scored { background: #1a3a3a; color: #5cd4c8; }
         .badge.approved_and_executed { background: #1a3a2a; color: #7fdb9a; }
         .badge.rejected { background: #3a1a1a; color: #f78b9e; }
         .badge.pending_approval { background: #2a1a4a; color: #b07cf7; }
@@ -275,6 +277,8 @@
     <div style="margin-bottom: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
         <button class="refresh-btn" onclick="fetchAllData()">🔄 Refresh All Data</button>
         <button class="refresh-btn" onclick="runRevenueHunter()">⚡ Run Revenue Hunter</button>
+        <button class="refresh-btn" onclick="runMergeScoring()">🧠 Run Merge Scoring</button>
+        <button class="refresh-btn" onclick="window.open('/api/wholesale/properties/queue/new','_blank')">📥 View New Intake Queue</button>
         <button class="refresh-btn" onclick="window.open('/api/wholesale/overview','_blank')">🏘️ Wholesale Overview API</button>
         <button class="refresh-btn" onclick="window.open('/api/wholesale/market/target-zips','_blank')">📍 View Target ZIP API</button>
         <button class="refresh-btn" onclick="window.open('/api/invoices','_blank')">📄 View Invoice API</button>
@@ -313,13 +317,15 @@
             <thead><tr>
                 <th>Property</th>
                 <th>Assignment Potential (USD)</th>
+                <th>Merged Distress Score</th>
                 <th>Stage</th>
                 <th>Source</th>
+                <th>Pipeline</th>
                 <th>Status</th>
                 <th>Updated</th>
             </tr></thead>
             <tbody id="leadsTableBody">
-                <tr><td colspan="6" class="empty-state">Syncing properties...</td></tr>
+                <tr><td colspan="8" class="empty-state">Syncing properties...</td></tr>
             </tbody>
         </table>
     </div>
@@ -568,14 +574,16 @@
             // ── Render Leads Table ──
             const leadsBody = document.getElementById('leadsTableBody');
             if (!leads.length) {
-                leadsBody.innerHTML = `<tr><td colspan="6" class="empty-state">No properties recorded.</td></tr>`;
+                leadsBody.innerHTML = `<tr><td colspan="8" class="empty-state">No properties recorded.</td></tr>`;
             } else {
                 leadsBody.innerHTML = leads.map(lead => `
                     <tr>
                         <td><strong>${lead.name || lead.company || '-'}</strong></td>
                         <td>$${parseFloat(lead.value || lead.amount || 0).toFixed(2)}</td>
+                        <td>${Number(lead.mergedScore || 0).toFixed(1)}</td>
                         <td>${lead.stage || '-'}</td>
-                        <td>${lead.source || '-'}</td>
+                        <td>${lead.sourceChannel || lead.source || '-'}</td>
+                        <td><span class="badge ${(lead.pipelineStatus || 'new').toLowerCase()}">${lead.pipelineStatus || 'new'}</span></td>
                         <td><span class="badge ${lead.status || 'open'}">${lead.status || 'open'}</span></td>
                         <td>${lead.updated || lead.updatedAt ? new Date(lead.updated || lead.updatedAt).toLocaleDateString() : '-'}</td>
                     </tr>
@@ -898,6 +906,26 @@
             if (!res.ok || data.success === false) {
                 resultEl.textContent = `Revenue hunter failed: ${data.error || 'Request failed'}`;
                 return;
+            }
+
+            async function runMergeScoring() {
+                const resultEl = document.getElementById('copilotResult');
+                try {
+                    const res = await fetch('/api/wholesale/ingestion/merge-score', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ onlyPipelineNew: true })
+                    });
+                    const data = await res.json();
+                    if (!res.ok || data.success === false) {
+                        resultEl.textContent = `Merge scoring failed: ${data.error || 'Request failed'}`;
+                        return;
+                    }
+                    resultEl.textContent = `Merge scoring complete:\n${JSON.stringify(data.summary || {}, null, 2)}`;
+                    fetchAllData();
+                } catch (error) {
+                    resultEl.textContent = `Merge scoring failed: ${error.message}`;
+                }
             }
             resultEl.textContent = `Revenue hunter run complete:\n${JSON.stringify(data.summary || {}, null, 2)}`;
             fetchAllData();
