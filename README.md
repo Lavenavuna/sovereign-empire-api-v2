@@ -23,6 +23,7 @@ Base path: `/api/wholesale`
 - `GET /investors` — list cash buyers/investors
 - `POST /investors` — register investor buy box
 - `POST /buyers/intake` — intake buyers with proof-of-funds and qualification fields
+- `POST /buyers/import-csv` — bulk import buyer/investor rows from CSV text (includes SB17 screening fields)
 - `PATCH /investors/:id/verify` — update proof-of-funds verification and buyer qualification status
 - `PATCH /investors/:id/foreign-screening` — screen/update foreign buyer profile for SB17 compliance
 - `POST /properties/:id/match-investors` — rank investor matches

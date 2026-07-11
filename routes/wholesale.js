@@ -854,6 +854,76 @@ router.post('/buyers/intake', (req, res) => {
   res.status(201).json({ success: true, buyer: investor });
 });
 
+router.post('/buyers/import-csv', (req, res) => {
+  if (!asString(req.body?.csvText)) {
+    return res.status(400).json({ success: false, error: 'csvText is required' });
+  }
+
+  const rows = parseCsvText(req.body.csvText);
+  if (!rows.length) {
+    return res.status(400).json({ success: false, error: 'No data rows found in csvText' });
+  }
+
+  const state = loadWholesaleState();
+  let inserted = 0;
+  let skipped = 0;
+
+  for (const row of rows) {
+    const name = asString(row.name || row.buyer_name || row.investor_name);
+    const strategy = asString(row.strategy || row.preferred_deal_type || 'buy-and-hold');
+    if (!name || !strategy) {
+      skipped += 1;
+      continue;
+    }
+
+    const investor = createInvestorRecord({
+      name,
+      strategy,
+      email: asString(row.email),
+      phone: asString(row.phone),
+      minPrice: asNumber(row.min_price || row.minprice, 0),
+      maxPrice: asNumber(row.max_price || row.maxprice, 1_000_000_000),
+      minArv: asNumber(row.min_arv || row.minarv, 0),
+      maxArv: asNumber(row.max_arv || row.maxarv, 1_000_000_000),
+      maxRehab: asNumber(row.max_rehab || row.maxrehab, 1_000_000_000),
+      zipCodes: normalizeZipCodes(parseSignalList(row.zip_codes || row.zips || row.target_zips).map(v => v.replace(/\D/g, ''))),
+      preferredPropertyTypes: parseSignalList(row.preferred_property_types || row.property_types),
+      conditionTolerance: asString(row.condition_tolerance || 'any'),
+      proofOfFundsStatus: asString(row.proof_of_funds_status || row.proofoffunds || 'unverified').toLowerCase(),
+      proofOfFundsDocumentUrl: asString(row.proof_of_funds_url || row.pof_url),
+      fundingSource: asString(row.funding_source),
+      lender: asString(row.lender),
+      lastClosingTimelineDays: asNumber(row.last_closing_timeline_days || row.closing_days, 0),
+      targetAreas: normalizeZipCodes(parseSignalList(row.target_areas || row.target_zips).map(v => v.replace(/\D/g, ''))),
+      preferredDealType: asString(row.preferred_deal_type),
+      titleReference: asString(row.title_reference),
+      channels: parseSignalList(row.channels || row.channel),
+      sourcePlatform: asString(row.source_platform || row.source),
+      isUsCitizen: String(row.is_us_citizen || '').toLowerCase() === 'true',
+      isLawfulPermanentResident: String(row.is_lawful_permanent_resident || '').toLowerCase() === 'true',
+      domicileCountry: asString(row.domicile_country),
+      citizenshipCountries: parseSignalList(row.citizenship_countries),
+      entityHeadquartersCountry: asString(row.entity_headquarters_country),
+      majorityControlCountries: parseSignalList(row.majority_control_countries),
+      isForeignGovernmentAgent: String(row.is_foreign_government_agent || '').toLowerCase() === 'true',
+      foreignGovernmentAgentCountry: asString(row.foreign_government_agent_country)
+    });
+
+    state.investors.push(investor);
+    inserted += 1;
+  }
+
+  saveWholesaleState(state);
+  res.json({
+    success: true,
+    summary: {
+      inserted,
+      skipped,
+      totalRows: rows.length
+    }
+  });
+});
+
 router.post('/investors', (req, res) => {
   const { name, strategy } = req.body || {};
   if (!name || !strategy) {
