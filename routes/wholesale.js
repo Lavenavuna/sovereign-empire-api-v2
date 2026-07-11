@@ -5,8 +5,10 @@ import { loadPendingApprovals, savePendingApprovals, logAction } from '../lib/au
 import {
   applyComplianceSettings,
   evaluateDealCompliance,
+  evaluateForeignBuyerRisk,
   getDisclosureClause,
   getCompliancePlaybook,
+  getSb17DesignatedCountries,
   normalizePropertyState
 } from '../lib/legalPlaybook.js';
 
@@ -143,6 +145,9 @@ function calculateDealMetrics(property) {
 function scoreInvestor(investor, property, metrics) {
   if (investor.qualificationStatus === 'rejected') {
     return { score: 0, reasons: ['qualification-rejected'] };
+  }
+  if (investor.foreignCompliance?.blocked) {
+    return { score: 0, reasons: ['foreign-buyer-blocked-sb17'] };
   }
 
   let score = 0;
@@ -305,6 +310,68 @@ function normalizeZipCodes(values) {
   return [...new Set(values.map(normalizeZipCode).filter(v => /^\d{5}$/.test(v)))];
 }
 
+function normalizeCountryCodes(values) {
+  if (!Array.isArray(values)) return [];
+  return [...new Set(values.map(v => String(v || '').trim().toUpperCase()).filter(Boolean))];
+}
+
+function buildForeignBuyerProfile(payload) {
+  return {
+    isUsCitizen: Boolean(payload?.isUsCitizen),
+    isLawfulPermanentResident: Boolean(payload?.isLawfulPermanentResident),
+    domicileCountry: String(payload?.domicileCountry || '').trim().toUpperCase(),
+    citizenshipCountries: normalizeCountryCodes(payload?.citizenshipCountries),
+    entityHeadquartersCountry: String(payload?.entityHeadquartersCountry || '').trim().toUpperCase(),
+    majorityControlCountries: normalizeCountryCodes(payload?.majorityControlCountries),
+    isForeignGovernmentAgent: Boolean(payload?.isForeignGovernmentAgent),
+    foreignGovernmentAgentCountry: String(payload?.foreignGovernmentAgentCountry || '').trim().toUpperCase()
+  };
+}
+
+function refreshForeignCompliance(investor) {
+  const profile = investor.foreignBuyerProfile || {};
+  const result = evaluateForeignBuyerRisk(profile);
+  investor.foreignCompliance = {
+    blocked: result.blocked,
+    blockedReasons: result.blockedReasons,
+    checkVersion: result.checkVersion,
+    screenedAt: result.screenedAt,
+    designatedCountries: result.designatedCountries
+  };
+  return investor.foreignCompliance;
+}
+
+function ensureInvestorLegalEligibility(investor) {
+  const compliance = investor.foreignCompliance || refreshForeignCompliance(investor);
+  if (compliance.blocked) {
+    return {
+      ok: false,
+      error: `Investor blocked by foreign buyer compliance gate: ${compliance.blockedReasons.join('; ')}`,
+      compliance
+    };
+  }
+  return { ok: true, compliance };
+}
+
+function resolveInvestorForClose(state, deal, preferredInvestorId) {
+  const investorId = preferredInvestorId || deal.investorMatches?.[0]?.investorId || null;
+  if (!investorId) {
+    return {
+      ok: false,
+      error: 'No eligible investor assigned. Provide investorId or run investor matching first.'
+    };
+  }
+  const investor = state.investors.find(i => i.id === investorId);
+  if (!investor) {
+    return { ok: false, error: 'Investor not found for close request' };
+  }
+  const legal = ensureInvestorLegalEligibility(investor);
+  if (!legal.ok) {
+    return { ok: false, error: legal.error, compliance: legal.compliance };
+  }
+  return { ok: true, investor };
+}
+
 function deriveQualificationStatus(investor) {
   if (investor.proofOfFundsStatus === 'rejected') return 'rejected';
   const q = investor.qualification || {};
@@ -345,12 +412,15 @@ function createInvestorRecord(payload) {
     },
     channels: Array.isArray(payload.channels) ? payload.channels.map(v => String(v).trim()).filter(Boolean) : [],
     sourcePlatform: payload.sourcePlatform ? String(payload.sourcePlatform).trim() : '',
+    foreignBuyerProfile: buildForeignBuyerProfile(payload),
+    foreignCompliance: null,
     qualificationStatus: 'pending',
     status: 'active',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
   investor.qualificationStatus = deriveQualificationStatus(investor);
+  refreshForeignCompliance(investor);
   return investor;
 }
 
@@ -506,6 +576,15 @@ router.get('/investors', (req, res) => {
   res.json({ success: true, count: state.investors.length, investors: state.investors });
 });
 
+router.get('/compliance/foreign-buyers', (req, res) => {
+  res.json({
+    success: true,
+    law: 'TX SB17',
+    effectiveDate: '2025-09-01',
+    designatedCountries: getSb17DesignatedCountries()
+  });
+});
+
 router.post('/buyers/intake', (req, res) => {
   const { name, strategy } = req.body || {};
   if (!name || !strategy) {
@@ -580,9 +659,25 @@ router.patch('/investors/:id/verify', (req, res) => {
 
   investor.proofOfFundsVerifiedAt = status === 'verified' ? new Date().toISOString() : null;
   investor.qualificationStatus = deriveQualificationStatus(investor);
+  refreshForeignCompliance(investor);
   investor.updatedAt = new Date().toISOString();
   saveWholesaleState(state);
   res.json({ success: true, investor });
+});
+
+router.patch('/investors/:id/foreign-screening', (req, res) => {
+  const state = loadWholesaleState();
+  const investor = state.investors.find(i => i.id === req.params.id);
+  if (!investor) return res.status(404).json({ success: false, error: 'Investor not found' });
+
+  investor.foreignBuyerProfile = {
+    ...(investor.foreignBuyerProfile || {}),
+    ...buildForeignBuyerProfile(req.body || {})
+  };
+  const compliance = refreshForeignCompliance(investor);
+  investor.updatedAt = new Date().toISOString();
+  saveWholesaleState(state);
+  res.json({ success: true, investor, foreignCompliance: compliance });
 });
 
 router.post('/properties/:id/match-investors', (req, res) => {
@@ -601,7 +696,9 @@ router.post('/properties/:id/match-investors', (req, res) => {
         investorName: investor.name,
         strategy: investor.strategy,
         score: scored.score,
-        reasons: scored.reasons
+        reasons: scored.reasons,
+        foreignEligible: !(investor.foreignCompliance?.blocked),
+        foreignComplianceBlockedReasons: investor.foreignCompliance?.blockedReasons || []
       };
     })
     .filter(m => m.score > 0)
@@ -1098,9 +1195,13 @@ router.post('/deals/:id/close', (req, res) => {
   }
 
   if (requireApproval) {
+    const investorResolution = resolveInvestorForClose(state, deal, req.body?.investorId);
+    if (!investorResolution.ok) {
+      return res.status(400).json({ success: false, error: investorResolution.error, compliance: investorResolution.compliance });
+    }
     const payload = {
       dealId: deal.id,
-      investorId: req.body?.investorId || null,
+      investorId: investorResolution.investor.id,
       buyerName: req.body?.buyerName || deal.contacts?.buyerName || '',
       buyerEmail: req.body?.buyerEmail || deal.contacts?.buyerEmail || '',
       buyerPhone: req.body?.buyerPhone || deal.contacts?.buyerPhone || '',
@@ -1122,9 +1223,11 @@ router.post('/deals/:id/close', (req, res) => {
   }
 
   const property = state.properties.find(p => p.id === deal.propertyId);
-  const investor = req.body?.investorId
-    ? state.investors.find(i => i.id === req.body.investorId)
-    : null;
+  const investorResolution = resolveInvestorForClose(state, deal, req.body?.investorId);
+  if (!investorResolution.ok) {
+    return res.status(400).json({ success: false, error: investorResolution.error, compliance: investorResolution.compliance });
+  }
+  const investor = investorResolution.investor;
 
   const assignmentFeeUsd = asNumber(req.body?.assignmentFeeUsd, deal.assignmentFeeTarget || deal.assignmentPotential || 0);
   if (assignmentFeeUsd <= 0) {
@@ -1174,7 +1277,7 @@ router.post('/deals/:id/request-close-approval', (req, res) => {
 
   const payload = {
     dealId: deal.id,
-    investorId: req.body?.investorId || null,
+    investorId: null,
     buyerName: req.body?.buyerName || deal.contacts?.buyerName || '',
     buyerEmail: req.body?.buyerEmail || deal.contacts?.buyerEmail || '',
     buyerPhone: req.body?.buyerPhone || deal.contacts?.buyerPhone || '',
@@ -1183,6 +1286,11 @@ router.post('/deals/:id/request-close-approval', (req, res) => {
     dueInDays: asNumber(req.body?.dueInDays, 7),
     legal: deal.legal || {}
   };
+  const investorResolution = resolveInvestorForClose(state, deal, req.body?.investorId);
+  if (!investorResolution.ok) {
+    return res.status(400).json({ success: false, error: investorResolution.error, compliance: investorResolution.compliance });
+  }
+  payload.investorId = investorResolution.investor.id;
 
   if (payload.assignmentFeeUsd <= 0) {
     return res.status(400).json({ success: false, error: 'assignmentFeeUsd must be greater than 0' });
