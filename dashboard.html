@@ -392,12 +392,12 @@
         <table>
             <thead><tr>
                 <th>Deal</th>
-                <th>Audience</th>
-                <th>Name</th>
-                <th>Phone</th>
-                <th>Email</th>
+                <th>Priority</th>
+                <th>Compliance</th>
+                <th>Confidence</th>
+                <th>Contact</th>
                 <th>Draft</th>
-                <th>Action</th>
+                <th>Decision</th>
             </tr></thead>
             <tbody id="outreachQueueBody">
                 <tr><td colspan="7" class="empty-state">Building outreach queue...</td></tr>
@@ -500,6 +500,27 @@
 
     function normalizePhoneForTel(value) {
         return String(value || '').trim().replace(/[^\d+]/g, '');
+    }
+
+    function complianceReadyForOutreach(legal) {
+        if (!legal) return false;
+        return Boolean(
+            legal.sellerDisclosureProvidedAt &&
+            legal.buyerDisclosureProvidedAt &&
+            legal.attorneyReviewedTemplate === true &&
+            String(legal.disclosureVersion || '').trim() &&
+            String(legal.marketingMode || '').trim().toLowerCase() === 'contract_only'
+        );
+    }
+
+    function confidenceBadge(deal) {
+        const offer = deal.offerConfidence || {};
+        const arv = String(offer.arvConfidence || '').toLowerCase();
+        const rehab = String(offer.rehabConfidence || '').toLowerCase();
+        if (arv === 'low' || rehab === 'low') return '<span class="badge pending">Low</span>';
+        if (arv === 'medium' || rehab === 'medium') return '<span class="badge in_review">Medium</span>';
+        if (arv === 'high' && rehab === 'high') return '<span class="badge won">High</span>';
+        return '<span class="badge pending">Unknown</span>';
     }
 
     // ─────────────────────────────────────────────
@@ -694,12 +715,21 @@
 
             // ── Render Human Outreach Queue ──
             const outreachBody = document.getElementById('outreachQueueBody');
+            const leadByProperty = {};
+            for (const lead of leads) {
+                const id = lead.id || lead.propertyId;
+                if (id) leadByProperty[id] = lead;
+            }
             const outreachItems = [];
             for (const d of deals) {
                 const status = String(d.status || '').toLowerCase();
                 if (status === 'closed' || status === 'rejected') continue;
                 const stage = String(d.stage || '').toLowerCase();
                 const contacts = d.contacts || {};
+                const lead = leadByProperty[d.propertyId] || {};
+                const mergedScore = Number(lead.mergedScore || 0);
+                const assignmentPotential = Number(d.assignmentPotential || d.assignmentFeeTarget || 0);
+                const complianceReady = complianceReadyForOutreach(d.legal);
                 const sellerPhone = (contacts.sellerPhone || '').trim();
                 const sellerEmail = (contacts.sellerEmail || '').trim();
                 const buyerPhone = (contacts.buyerPhone || '').trim();
@@ -708,25 +738,36 @@
                 if (sellerPhone || sellerEmail) {
                     outreachItems.push({
                         dealId: d.id,
+                        propertyId: d.propertyId,
                         audience: 'seller',
                         name: contacts.sellerName || 'Seller',
                         phone: sellerPhone,
                         email: sellerEmail,
-                        preferredChannel: sellerPhone ? 'sms' : 'email'
+                        preferredChannel: sellerPhone ? 'sms' : 'email',
+                        mergedScore,
+                        assignmentPotential,
+                        complianceReady,
+                        confidenceHtml: confidenceBadge(d)
                     });
                 }
 
                 if ((stage === 'matched' || stage === 'followup' || stage === 'negotiation') && (buyerPhone || buyerEmail)) {
                     outreachItems.push({
                         dealId: d.id,
+                        propertyId: d.propertyId,
                         audience: 'buyer',
                         name: contacts.buyerName || 'Buyer',
                         phone: buyerPhone,
                         email: buyerEmail,
-                        preferredChannel: buyerPhone ? 'sms' : 'email'
+                        preferredChannel: buyerPhone ? 'sms' : 'email',
+                        mergedScore,
+                        assignmentPotential,
+                        complianceReady,
+                        confidenceHtml: confidenceBadge(d)
                     });
                 }
             }
+            outreachItems.sort((a, b) => b.mergedScore - a.mergedScore || b.assignmentPotential - a.assignmentPotential);
             document.getElementById('outreachQueueCount').textContent = `(${outreachItems.length})`;
             if (!outreachItems.length) {
                 outreachBody.innerHTML = `<tr><td colspan="7" class="empty-state">No seller/buyer contacts loaded yet for outreach queue.</td></tr>`;
@@ -737,15 +778,26 @@
                     const mailHtml = item.email
                         ? `<a class="mini-btn" href="mailto:${item.email}?subject=${encodeURIComponent(`Offer follow-up: ${item.dealId}`)}">Email</a>`
                         : '<span class="last-updated">No email</span>';
+                    const complianceHtml = item.complianceReady
+                        ? '<span class="badge approved_and_executed">Disclosure Ready</span>'
+                        : '<span class="badge pending_approval">Disclosure Missing</span>';
+                    const priorityHtml = `Score ${item.mergedScore.toFixed(1)} · Fee $${item.assignmentPotential.toFixed(0)}`;
+                    const contactHtml = `${item.audience}: ${item.name || '-'}<br>${item.phone || '-'}<br>${item.email || '-'}`;
                     return `
                         <tr>
                             <td><strong>${item.dealId}</strong></td>
-                            <td>${item.audience}</td>
-                            <td>${item.name || '-'}</td>
-                            <td>${item.phone || '-'}</td>
-                            <td>${item.email || '-'}</td>
+                            <td>${priorityHtml}</td>
+                            <td>${complianceHtml}</td>
+                            <td>${item.confidenceHtml}</td>
+                            <td>${contactHtml}</td>
                             <td><button class="mini-btn" onclick="generateOutreachDraft('${item.dealId}','${item.audience}','${item.preferredChannel}')">Draft ${item.preferredChannel.toUpperCase()}</button></td>
-                            <td>${dialHtml}${mailHtml}</td>
+                            <td>
+                                ${dialHtml}${mailHtml}
+                                <button class="mini-btn" onclick="markOutreachSent('${item.dealId}','${item.audience}','${item.preferredChannel}','${(item.name || '').replace(/'/g, "\\'")}','${(item.email || '').replace(/'/g, "\\'")}','${(item.phone || '').replace(/'/g, "\\'")}')">Send Logged</button>
+                                <button class="mini-btn" onclick="holdDeal('${item.dealId}')">Hold</button>
+                                <button class="mini-btn reject" onclick="killDeal('${item.dealId}')">Kill</button>
+                                <button class="mini-btn approve" onclick="approveClosePath('${item.dealId}')">Close Path OK</button>
+                            </td>
                         </tr>
                     `;
                 }).join('');
@@ -1087,6 +1139,105 @@
             resultEl.textContent = `Draft (${audience}/${channel}) for ${dealId}:\n\n${data.draft || '-'}`;
         } catch (error) {
             resultEl.textContent = `Outreach draft failed: ${error.message}`;
+        }
+    }
+
+    async function markOutreachSent(dealId, audience, channel, contactName, email, phone) {
+        const resultEl = document.getElementById('copilotResult');
+        try {
+            const res = await fetch(`/api/wholesale/deals/${dealId}/follow-up`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    outcome: 'sent',
+                    channel,
+                    contactType: audience,
+                    contactName,
+                    email,
+                    phone,
+                    message: 'Human-approved outreach dispatch logged from dashboard'
+                })
+            });
+            const data = await res.json();
+            if (!res.ok || data.success === false) {
+                resultEl.textContent = `Send log failed: ${data.error || 'Request failed'}`;
+                return;
+            }
+            resultEl.textContent = `Outreach logged as sent for ${dealId}`;
+            fetchAllData();
+        } catch (error) {
+            resultEl.textContent = `Send log failed: ${error.message}`;
+        }
+    }
+
+    async function holdDeal(dealId) {
+        const resultEl = document.getElementById('copilotResult');
+        const note = window.prompt('Hold reason for this deal:', 'Manual verification pending');
+        if (note === null) return;
+        try {
+            const res = await fetch(`/api/wholesale/deals/${dealId}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'on_hold', stage: 'review', note })
+            });
+            const data = await res.json();
+            if (!res.ok || data.success === false) {
+                resultEl.textContent = `Hold failed: ${data.error || 'Request failed'}`;
+                return;
+            }
+            resultEl.textContent = `Deal ${dealId} moved to hold`;
+            fetchAllData();
+        } catch (error) {
+            resultEl.textContent = `Hold failed: ${error.message}`;
+        }
+    }
+
+    async function killDeal(dealId) {
+        const resultEl = document.getElementById('copilotResult');
+        const reason = window.prompt('Kill reason code / note:', 'not_interested');
+        if (!reason) return;
+        try {
+            const res = await fetch(`/api/wholesale/deals/${dealId}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'rejected', stage: 'dead', note: `Killed: ${reason}` })
+            });
+            const data = await res.json();
+            if (!res.ok || data.success === false) {
+                resultEl.textContent = `Kill failed: ${data.error || 'Request failed'}`;
+                return;
+            }
+            resultEl.textContent = `Deal ${dealId} marked dead`;
+            fetchAllData();
+        } catch (error) {
+            resultEl.textContent = `Kill failed: ${error.message}`;
+        }
+    }
+
+    async function approveClosePath(dealId) {
+        const resultEl = document.getElementById('copilotResult');
+        const path = String(window.prompt('Close path? (assignment or double_close)', 'assignment') || '').trim().toLowerCase();
+        if (!path) return;
+        if (!['assignment', 'double_close'].includes(path)) {
+            resultEl.textContent = 'Close path must be assignment or double_close';
+            return;
+        }
+        const fundingSourceConfirmed = path === 'double_close' ? window.confirm('Is funding source confirmed for double-close?') : false;
+        try {
+            const res = await fetch(`/api/wholesale/deals/${dealId}/close-path`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path, taggedBeforeBlast: true, fundingSourceConfirmed })
+            });
+            const data = await res.json();
+            if (!res.ok || data.success === false) {
+                resultEl.textContent = `Close path update failed: ${data.error || 'Request failed'}`;
+                return;
+            }
+            resultEl.textContent = `Close path approved for ${dealId}: ${path}`;
+            fetchAllData();
+        } catch (error) {
+            resultEl.textContent = `Close path update failed: ${error.message}`;
         }
     }
 
