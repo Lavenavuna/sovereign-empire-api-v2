@@ -1407,6 +1407,28 @@ router.post('/deals/:id/compliance/disclosures', (req, res) => {
   if (req.body?.notes !== undefined) {
     deal.legal.notes = String(req.body.notes || '').trim();
   }
+  if (req.body?.separateDisclosureDocumentProvidedAt) {
+    deal.legal.separateDisclosureDocumentProvidedAt = req.body.separateDisclosureDocumentProvidedAt;
+  } else if (req.body?.separateDisclosureDocumentProvided === true && !deal.legal.separateDisclosureDocumentProvidedAt) {
+    deal.legal.separateDisclosureDocumentProvidedAt = new Date().toISOString();
+  }
+  if (req.body?.wholesalerRegistrationId !== undefined) {
+    deal.legal.wholesalerRegistrationId = String(req.body.wholesalerRegistrationId || '').trim();
+  }
+  if (req.body?.sellerCancellationWindowDays !== undefined) {
+    deal.legal.sellerCancellationWindowDays = asNumber(req.body.sellerCancellationWindowDays, 0);
+  }
+  if (req.body?.sellerCancellationWindowDisclosedAt) {
+    deal.legal.sellerCancellationWindowDisclosedAt = req.body.sellerCancellationWindowDisclosedAt;
+  } else if (req.body?.sellerCancellationWindowDisclosed === true && !deal.legal.sellerCancellationWindowDisclosedAt) {
+    deal.legal.sellerCancellationWindowDisclosedAt = new Date().toISOString();
+  }
+  if (req.body?.contractSignedAt) {
+    deal.legal.contractSignedAt = req.body.contractSignedAt;
+  }
+  if (req.body?.closeDeadlineAt) {
+    deal.legal.closeDeadlineAt = req.body.closeDeadlineAt;
+  }
 
   deal.updatedAt = new Date().toISOString();
   const compliance = evaluateDealCompliance(state, deal);

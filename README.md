@@ -44,7 +44,7 @@ Base path: `/api/wholesale`
 - `POST /deals/:id/call` — log call outcomes and call notes
 - `POST /deals/:id/close` — move deal to closed-pending-payment and auto-create invoice
 - `POST /deals/:id/request-close-approval` — queue a T2 approval for deal close
-- `POST /deals/:id/compliance/disclosures` — record seller/buyer disclosure attestations + legal metadata
+- `POST /deals/:id/compliance/disclosures` — record seller/buyer disclosure attestations + legal metadata (supports state-specific fields like registration ID, separate disclosure timestamp, cancellation window, and close deadline)
 - `POST /deals/:id/revenue-received` — mark payment received and auto-generate receipt
 - `POST /autopilot/hunt` — run high-velocity revenue hunter pass (draft follow-ups + queue close approvals)
 - `GET /compliance/playbook` — view active state-law playbook, targets, and legal gate requirements
@@ -74,12 +74,18 @@ Yes — phone and email are tracked for both seller and buyer/investor contacts 
 ## State-law compliance playbook (U.S. targeting)
 
 - Compliance is now **fail-closed** for close approvals and auto-hunter close queuing.
-- A deal cannot be closed/queued unless all required legal fields exist:
+- A deal cannot be closed/queued unless all required legal fields exist. Baseline fields:
   - `sellerDisclosureProvidedAt`
   - `buyerDisclosureProvidedAt`
   - `attorneyReviewedTemplate = true`
   - `disclosureVersion`
   - `marketingMode = contract_only`
+- Compliance rules are now **profile-based per state** (not hardcoded TX only). Active profiles include `TX`, `FL`, `GA`, `AZ`, plus placeholder templates for stricter-regulation states (`OH`, `CT`).
+- Placeholder profiles support structured rule fields for expansion:
+  - `separateDisclosureDocumentProvidedAt`
+  - `wholesalerRegistrationId`
+  - `sellerCancellationWindowDays` + `sellerCancellationWindowDisclosedAt`
+  - `contractSignedAt` + `closeDeadlineAt`
 - Default active target is `TX`. Additional state targets are configurable only when a supported legal profile exists.
 - This is an operational compliance layer, not legal advice. Validate each active state with qualified local counsel before scaling.
 
