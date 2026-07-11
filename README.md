@@ -107,7 +107,9 @@ Yes — phone and email are tracked for both seller and buyer/investor contacts 
 - Ingestion module path: `src/ingestion/tarrant-taxroll`
 - This module ingests county tax-roll records, normalizes distress signals, and upserts directly into `wholesale-state.json` as new sourced properties/deals.
 - Required env:
-  - `TARRANT_TAXROLL_URL` (current weekly download URL)
+  - `TARRANT_TAXROLL_URL` (optional explicit zip link)
+  - `TARRANT_TAXROLL_PAGE_URL` (optional listing page; defaults to county tax roll page and auto-resolves zip link)
+  - `TARRANT_TAXROLL_LOCAL_FILE` (optional local-file bypass for manual/local runs)
 - Commands:
   - `npm run ingest:tarrant`
   - `npm run ingest:tarrant:scheduler`
@@ -139,6 +141,7 @@ Yes — phone and email are tracked for both seller and buyer/investor contacts 
 - Optional secrets:
   - `INGEST_API_KEY` (if you add API auth)
   - `CSV_AUTH_HEADER` + `CSV_AUTH_TOKEN` (for protected CSV URLs)
+- Behavior note: the workflow now continues when one channel URL fails and still imports remaining channels; it fails only if zero channels import successfully.
 
 ## Revenue OS (compounding execution fields)
 

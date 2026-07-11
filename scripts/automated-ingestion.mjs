@@ -87,6 +87,7 @@ async function main() {
 
   let importedChannels = 0;
   let importedRowsEstimate = 0;
+  const failures = [];
 
   for (const entry of CHANNELS) {
     if (!shouldRunChannel(entry.name, frequency)) {
@@ -100,29 +101,34 @@ async function main() {
       continue;
     }
 
-    console.log(`[ingest] downloading ${entry.name} CSV from ${sourceUrl}`);
-    const csvText = await fetchCsvText(sourceUrl, csvHeaders);
+    try {
+      console.log(`[ingest] downloading ${entry.name} CSV from ${sourceUrl}`);
+      const csvText = await fetchCsvText(sourceUrl, csvHeaders);
 
-    const result = await postJson(
-      `${baseUrl}/ingestion/import-csv`,
-      {
-        sourceChannel: entry.name,
-        defaultCity,
-        defaultState,
-        csvText
-      },
-      apiHeaders
-    );
+      const result = await postJson(
+        `${baseUrl}/ingestion/import-csv`,
+        {
+          sourceChannel: entry.name,
+          defaultCity,
+          defaultState,
+          csvText
+        },
+        apiHeaders
+      );
 
-    importedChannels += 1;
-    const rows = Number(result?.summary?.totalRows || 0);
-    importedRowsEstimate += rows;
-    console.log(`[ingest] ${entry.name}: ${rows} rows (inserted=${result?.summary?.inserted || 0}, updated=${result?.summary?.updated || 0})`);
+      importedChannels += 1;
+      const rows = Number(result?.summary?.totalRows || 0);
+      importedRowsEstimate += rows;
+      console.log(`[ingest] ${entry.name}: ${rows} rows (inserted=${result?.summary?.inserted || 0}, updated=${result?.summary?.updated || 0})`);
+    } catch (error) {
+      const message = `[ingest] ${entry.name} failed: ${error.message}`;
+      failures.push(message);
+      console.error(message);
+    }
   }
 
   if (importedChannels === 0) {
-    console.log('[ingest] No channel imports ran (no configured URLs for this schedule).');
-    return;
+    throw new Error(`No channel imports succeeded. ${failures.join(' | ') || 'No source URLs configured.'}`);
   }
 
   const mergeResult = await postJson(
@@ -137,6 +143,9 @@ async function main() {
   });
   const queueJson = await queueResponse.json();
   console.log(`[ingest] pending queue size=${queueJson?.count || 0}; importedChannels=${importedChannels}; rows=${importedRowsEstimate}`);
+  if (failures.length) {
+    console.warn(`[ingest] Completed with ${failures.length} channel failure(s).`);
+  }
 }
 
 main().catch((error) => {
