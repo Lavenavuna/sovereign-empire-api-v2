@@ -238,6 +238,22 @@
             border-color: #7a1f2b;
             color: #f78b9e;
         }
+        .one-touch-btn {
+            border-radius: 10px;
+            border: 1px solid #1f7a44;
+            background: #124a2a;
+            color: #d5ffe3;
+            padding: 10px 16px;
+            min-height: 44px;
+            min-width: 150px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+        .one-touch-btn:hover {
+            background: #186236;
+        }
         .section-actions {
             display: inline-flex;
             gap: 8px;
@@ -276,6 +292,7 @@
     <!-- Actions -->
     <div style="margin-bottom: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
         <button class="refresh-btn" onclick="fetchAllData()">🔄 Refresh All Data</button>
+        <button class="refresh-btn" onclick="approveNextPending()">✅ One-Touch Approve Next</button>
         <button class="refresh-btn" onclick="runRevenueHunter()">⚡ Run Revenue Hunter</button>
         <button class="refresh-btn" onclick="runMergeScoring()">🧠 Run Merge Scoring</button>
         <button class="refresh-btn" onclick="window.open('/api/wholesale/properties/queue/new','_blank')">📥 View New Intake Queue</button>
@@ -414,12 +431,13 @@
                 <th>ZIP</th>
                 <th>Stage</th>
                 <th>Target Fee (USD)</th>
+                <th>Escrow</th>
                 <th>Invoice</th>
                 <th>Payment</th>
                 <th>Action</th>
             </tr></thead>
             <tbody id="pipelineTableBody">
-                <tr><td colspan="7" class="empty-state">Syncing revenue pipeline...</td></tr>
+                <tr><td colspan="8" class="empty-state">Syncing revenue pipeline...</td></tr>
             </tbody>
         </table>
     </div>
@@ -705,7 +723,7 @@
                         <td>${a.createdAt ? new Date(a.createdAt).toLocaleString() : '-'}</td>
                         <td>
                             ${a.status === 'pending'
-                                ? `<button class="mini-btn approve" onclick="approveItem('${a.id}')">Approve</button>
+                                ? `<button class="one-touch-btn" onclick="approveItem('${a.id}')">✅ One-Touch Approve</button>
                                    <button class="mini-btn reject" onclick="rejectItem('${a.id}')">Reject</button>`
                                 : '<span class="last-updated">Completed</span>'}
                         </td>
@@ -806,12 +824,13 @@
             // ── Render Revenue Pipeline ──
             const pipelineBody = document.getElementById('pipelineTableBody');
             if (!pipelineDeals.length) {
-                pipelineBody.innerHTML = `<tr><td colspan="7" class="empty-state">No deals in pipeline</td></tr>`;
+                pipelineBody.innerHTML = `<tr><td colspan="8" class="empty-state">No deals in pipeline</td></tr>`;
             } else {
                 pipelineBody.innerHTML = pipelineDeals.map(d => {
                     const fee = Number(d.assignmentFeeTarget || d.assignmentPotential || 0).toFixed(2);
                     const invoice = d.invoiceNumber || '-';
                     const payment = d.invoiceStatus || '-';
+                    const escrow = String(d.escrowStatus || 'not_opened').replace(/_/g, ' ');
                     const zip = d.sourceEconomics?.zip || '-';
                     let actionHtml = '';
                     if (d.invoiceNumber && d.invoiceStatus !== 'paid') {
@@ -827,6 +846,7 @@
                         <td>${zip}</td>
                         <td>${d.stage || '-'}</td>
                         <td>$${fee}</td>
+                        <td><span class="badge ${(d.escrowStatus || 'not_opened').toLowerCase()}">${escrow}</span></td>
                         <td>${invoice}</td>
                         <td><span class="badge ${payment === 'paid' ? 'approved_and_executed' : 'pending'}">${payment}</span></td>
                         <td>${actionHtml}</td>
@@ -1060,6 +1080,26 @@
             fetchAllData();
         } catch (error) {
             resultEl.textContent = `Approval failed: ${error.message}`;
+        }
+    }
+
+    async function approveNextPending() {
+        const resultEl = document.getElementById('copilotResult');
+        try {
+            const res = await fetch('/api/approvals');
+            const data = await res.json();
+            if (!res.ok || data.success === false) {
+                resultEl.textContent = `Load approvals failed: ${data.error || 'Request failed'}`;
+                return;
+            }
+            const pending = (data.approvals || []).find(a => a.status === 'pending');
+            if (!pending) {
+                resultEl.textContent = 'No pending approvals.';
+                return;
+            }
+            await approveItem(pending.id);
+        } catch (error) {
+            resultEl.textContent = `One-touch approve failed: ${error.message}`;
         }
     }
 
