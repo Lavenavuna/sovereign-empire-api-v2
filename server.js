@@ -17,6 +17,12 @@ import {
     listProposals, applyProposal, rejectProposal, getChangelog, analyzeAndPropose
 } from './lib/dnaEvolution.js';
 
+function isLegacySchedulerDemoApproval(approval) {
+    return approval?.source === 'scheduler-cycle'
+        && approval?.query === 'scheduler-cycle deal proposal'
+        && !approval?.actionType;
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -126,7 +132,8 @@ app.post('/api/agent/execute', async (req, res) => {
 
 // ── Approval queue (T2 gate) ──
 app.get('/api/approvals', (req, res) => {
-    res.json({ success: true, approvals: loadPendingApprovals() });
+    const approvals = loadPendingApprovals().filter(a => !isLegacySchedulerDemoApproval(a));
+    res.json({ success: true, approvals });
 });
 
 app.post('/api/approvals/:id/approve', async (req, res) => {
