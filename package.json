@@ -8,10 +8,15 @@
     "start": "node server.js",
     "agent": "node scheduler.js",
     "agent:legacy": "node orchestrator.js",
-    "revenue": "node revenue-engine.js"
+    "revenue": "node revenue-engine.js",
+    "ingest:tarrant": "node src/ingestion/tarrant-taxroll/run-ingest.js",
+    "ingest:tarrant:scheduler": "node src/ingestion/tarrant-taxroll/scheduler.js",
+    "ingest:tarrant:test:build": "node src/ingestion/tarrant-taxroll/test/build-sample.js",
+    "ingest:tarrant:test": "node src/ingestion/tarrant-taxroll/test/test-pipeline.js"
   },
   "dependencies": {
     "@google-cloud/text-to-speech": "^6.4.1",
+    "adm-zip": "^0.5.18",
     "apify-client": "^2.23.4",
     "axios": "^1.18.1",
     "cors": "^2.8.5",
