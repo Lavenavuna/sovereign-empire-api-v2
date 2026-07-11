@@ -32,6 +32,14 @@ const FOLLOWUP_OUTCOMES = [
   'sent'
 ];
 const CLOSE_PATHS = ['assignment', 'double_close'];
+const ESCROW_STATUSES = [
+  'not_opened',
+  'title_opened',
+  'title_cleared',
+  'emd_confirmed',
+  'disbursement_scheduled',
+  'disbursed'
+];
 const IMPORT_SOURCE_CHANNELS = ['tax', 'foreclosure', 'probate', 'divorce', 'code_enforcement', 'deed_lien'];
 const DEFAULT_SIGNAL_BY_SOURCE = {
   tax: 'tax_delinquent',
@@ -95,6 +103,11 @@ function asIsoTimestamp(value) {
 
 function asString(value) {
   return String(value || '').trim();
+}
+
+function normalizeEscrowStatus(value) {
+  const normalized = String(value || '').trim().toLowerCase();
+  return ESCROW_STATUSES.includes(normalized) ? normalized : '';
 }
 
 function ensureCapitalReadinessTodos(state) {
@@ -287,10 +300,15 @@ function ensureDeal(state, propertyId) {
         manualOverrideApprovedAt: null
       },
       dispositionTimeline: {
+        escrowStatus: 'not_opened',
+        titleOpenedAt: null,
+        titleClearedAt: null,
         contractSignedAt: null,
         firstBlastSentAt: null,
         firstResponseAt: null,
         emdReceivedAt: null,
+        disbursementScheduledAt: null,
+        disbursedAt: null,
         closeDate: null,
         slaBreachFlags: []
       },
@@ -1317,7 +1335,17 @@ router.patch('/deals/:id/disposition-timeline', (req, res) => {
   if (!deal) return res.status(404).json({ success: false, error: 'Deal not found' });
   deal.dispositionTimeline = deal.dispositionTimeline || {};
 
-  const fields = ['contractSignedAt', 'firstBlastSentAt', 'firstResponseAt', 'emdReceivedAt', 'closeDate'];
+  const fields = [
+    'titleOpenedAt',
+    'titleClearedAt',
+    'contractSignedAt',
+    'firstBlastSentAt',
+    'firstResponseAt',
+    'emdReceivedAt',
+    'disbursementScheduledAt',
+    'disbursedAt',
+    'closeDate'
+  ];
   for (const field of fields) {
     if (req.body?.[field] === undefined) continue;
     const value = asIsoTimestamp(req.body[field]);
@@ -1326,6 +1354,29 @@ router.patch('/deals/:id/disposition-timeline', (req, res) => {
       return res.status(400).json({ success: false, error: 'closePath.taggedBeforeBlast must be true before firstBlastSentAt' });
     }
     deal.dispositionTimeline[field] = value;
+  }
+
+  if (req.body?.escrowStatus !== undefined) {
+    const escrowStatus = normalizeEscrowStatus(req.body.escrowStatus);
+    if (!escrowStatus) {
+      return res.status(400).json({ success: false, error: `escrowStatus must be one of: ${ESCROW_STATUSES.join(', ')}` });
+    }
+    deal.dispositionTimeline.escrowStatus = escrowStatus;
+  }
+
+  // Auto-advance escrow stage from lifecycle timestamps when not explicitly provided.
+  if (deal.dispositionTimeline.disbursedAt) {
+    deal.dispositionTimeline.escrowStatus = 'disbursed';
+  } else if (deal.dispositionTimeline.disbursementScheduledAt) {
+    deal.dispositionTimeline.escrowStatus = 'disbursement_scheduled';
+  } else if (deal.dispositionTimeline.emdReceivedAt) {
+    deal.dispositionTimeline.escrowStatus = 'emd_confirmed';
+  } else if (deal.dispositionTimeline.titleClearedAt) {
+    deal.dispositionTimeline.escrowStatus = 'title_cleared';
+  } else if (deal.dispositionTimeline.titleOpenedAt) {
+    deal.dispositionTimeline.escrowStatus = 'title_opened';
+  } else if (!deal.dispositionTimeline.escrowStatus) {
+    deal.dispositionTimeline.escrowStatus = 'not_opened';
   }
 
   deal.dispositionTimeline.slaBreachFlags = computeSlaBreaches(deal, state);
@@ -1466,6 +1517,7 @@ router.get('/pipeline', (req, res) => {
       closePath: deal.closePath || null,
       sourceEconomics: deal.sourceEconomics || null,
       dispositionTimeline: deal.dispositionTimeline || null,
+      escrowStatus: deal.dispositionTimeline?.escrowStatus || 'not_opened',
       targetState: compliance.stateCode || '',
       updatedAt: deal.updatedAt
     };
@@ -1705,6 +1757,8 @@ router.post('/deals/:id/close', (req, res) => {
   deal.sourceEconomics.outcome = 'contract';
   deal.sourceEconomics.contractDate = deal.sourceEconomics.contractDate || deal.closedAt;
   deal.dispositionTimeline = deal.dispositionTimeline || {};
+  deal.dispositionTimeline.escrowStatus = deal.dispositionTimeline.escrowStatus || 'title_opened';
+  deal.dispositionTimeline.titleOpenedAt = deal.dispositionTimeline.titleOpenedAt || deal.closedAt;
   deal.dispositionTimeline.contractSignedAt = deal.dispositionTimeline.contractSignedAt || deal.closedAt;
   deal.updatedAt = new Date().toISOString();
   property && (property.status = 'under_contract');
@@ -1888,6 +1942,8 @@ router.post('/deals/:id/revenue-received', (req, res) => {
   if (!deal.dispositionTimeline.closeDate) {
     deal.dispositionTimeline.closeDate = deal.paidAt;
   }
+  deal.dispositionTimeline.disbursedAt = deal.dispositionTimeline.disbursedAt || deal.paidAt;
+  deal.dispositionTimeline.escrowStatus = 'disbursed';
   deal.dispositionTimeline.slaBreachFlags = computeSlaBreaches(deal, state);
   deal.updatedAt = new Date().toISOString();
   if (property) {

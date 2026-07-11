@@ -122,8 +122,12 @@ Yes — phone and email are tracked for both seller and buyer/investor contacts 
 - Every deal now supports:
   - `sourceEconomics` (channel, zip, lead/contract/close dates, outcome, fee actual)
   - `offerConfidence` (ARV/rehab confidence + source, rent comp + source, manual override)
-  - `dispositionTimeline` (contract/blast/response/EMD/close timestamps + SLA breach flags)
+  - `dispositionTimeline` (contract/blast/response/EMD/close timestamps + SLA breach flags + escrow stages)
   - `closePath` (assignment/double-close, funding readiness, tagged-before-blast)
+- Escrow stage tracking is now available via `dispositionTimeline.escrowStatus`:
+  - `not_opened` -> `title_opened` -> `title_cleared` -> `emd_confirmed` -> `disbursement_scheduled` -> `disbursed`
+- `PATCH /deals/:id/disposition-timeline` now supports escrow fields:
+  - `escrowStatus`, `titleOpenedAt`, `titleClearedAt`, `disbursementScheduledAt`, `disbursedAt`
 - Revenue close approvals are now blocked unless compliance + ops gates pass (including low-confidence override and close-path readiness).
 
 ## Run
