@@ -609,7 +609,6 @@
             if (approvalsRes.ok) {
                 const approvalData = await approvalsRes.json();
                 approvals = approvalData.approvals || [];
-                document.getElementById('approvalCount').textContent = `(${approvals.length})`;
             }
 
             const pipelineRes = await fetch('/api/wholesale/pipeline');
@@ -655,6 +654,7 @@
             const totalProperties = overview?.properties ?? leads.length;
             const totalInvestors = overview?.investors ?? investors.length;
             const pendingApprovals = approvals.filter(a => a.status === 'pending').length;
+            document.getElementById('approvalCount').textContent = `(${pendingApprovals})`;
 
             document.getElementById('totalRevenue').textContent = `$${totalRevenue.toFixed(2)}`;
             document.getElementById('totalProperties').textContent = totalProperties;
@@ -764,10 +764,11 @@
 
             // ── Render Approval Queue ──
             const approvalBody = document.getElementById('approvalTableBody');
-            if (!approvals.length) {
+            const pendingOnly = approvals.filter(a => a.status === 'pending');
+            if (!pendingOnly.length) {
                 approvalBody.innerHTML = `<tr><td colspan="6" class="empty-state">No pending approvals</td></tr>`;
             } else {
-                approvalBody.innerHTML = approvals.map(a => `
+                approvalBody.innerHTML = pendingOnly.map(a => `
                     <tr>
                         <td><strong>${a.id || '-'}</strong></td>
                         <td>${a.agent || '-'}</td>
