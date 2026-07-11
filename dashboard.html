@@ -387,6 +387,24 @@
         </table>
     </div>
 
+    <div class="section-title">☎ Human Outreach Queue (One-Click Required) <span class="last-updated" id="outreachQueueCount">(0)</span></div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr>
+                <th>Deal</th>
+                <th>Audience</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Draft</th>
+                <th>Action</th>
+            </tr></thead>
+            <tbody id="outreachQueueBody">
+                <tr><td colspan="7" class="empty-state">Building outreach queue...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
     <!-- Revenue Pipeline -->
     <div class="section-title">💸 Revenue Pipeline <span class="last-updated" id="pipelineCount">(0)</span></div>
     <div class="table-wrap">
@@ -478,6 +496,10 @@
     function isPaidChannel(channel) {
         const value = String(channel || '').toLowerCase();
         return /(paid|ad|ads|ppc|cpc|meta lead|facebook ads|instagram ads|google ads|linkedin ads)/.test(value);
+    }
+
+    function normalizePhoneForTel(value) {
+        return String(value || '').trim().replace(/[^\d+]/g, '');
     }
 
     // ─────────────────────────────────────────────
@@ -668,6 +690,65 @@
                         </td>
                     </tr>
                 `).join('');
+            }
+
+            // ── Render Human Outreach Queue ──
+            const outreachBody = document.getElementById('outreachQueueBody');
+            const outreachItems = [];
+            for (const d of deals) {
+                const status = String(d.status || '').toLowerCase();
+                if (status === 'closed' || status === 'rejected') continue;
+                const stage = String(d.stage || '').toLowerCase();
+                const contacts = d.contacts || {};
+                const sellerPhone = (contacts.sellerPhone || '').trim();
+                const sellerEmail = (contacts.sellerEmail || '').trim();
+                const buyerPhone = (contacts.buyerPhone || '').trim();
+                const buyerEmail = (contacts.buyerEmail || '').trim();
+
+                if (sellerPhone || sellerEmail) {
+                    outreachItems.push({
+                        dealId: d.id,
+                        audience: 'seller',
+                        name: contacts.sellerName || 'Seller',
+                        phone: sellerPhone,
+                        email: sellerEmail,
+                        preferredChannel: sellerPhone ? 'sms' : 'email'
+                    });
+                }
+
+                if ((stage === 'matched' || stage === 'followup' || stage === 'negotiation') && (buyerPhone || buyerEmail)) {
+                    outreachItems.push({
+                        dealId: d.id,
+                        audience: 'buyer',
+                        name: contacts.buyerName || 'Buyer',
+                        phone: buyerPhone,
+                        email: buyerEmail,
+                        preferredChannel: buyerPhone ? 'sms' : 'email'
+                    });
+                }
+            }
+            document.getElementById('outreachQueueCount').textContent = `(${outreachItems.length})`;
+            if (!outreachItems.length) {
+                outreachBody.innerHTML = `<tr><td colspan="7" class="empty-state">No seller/buyer contacts loaded yet for outreach queue.</td></tr>`;
+            } else {
+                outreachBody.innerHTML = outreachItems.map(item => {
+                    const tel = normalizePhoneForTel(item.phone);
+                    const dialHtml = tel ? `<a class="mini-btn approve" href="tel:${tel}">Dial</a>` : '<span class="last-updated">No phone</span>';
+                    const mailHtml = item.email
+                        ? `<a class="mini-btn" href="mailto:${item.email}?subject=${encodeURIComponent(`Offer follow-up: ${item.dealId}`)}">Email</a>`
+                        : '<span class="last-updated">No email</span>';
+                    return `
+                        <tr>
+                            <td><strong>${item.dealId}</strong></td>
+                            <td>${item.audience}</td>
+                            <td>${item.name || '-'}</td>
+                            <td>${item.phone || '-'}</td>
+                            <td>${item.email || '-'}</td>
+                            <td><button class="mini-btn" onclick="generateOutreachDraft('${item.dealId}','${item.audience}','${item.preferredChannel}')">Draft ${item.preferredChannel.toUpperCase()}</button></td>
+                            <td>${dialHtml}${mailHtml}</td>
+                        </tr>
+                    `;
+                }).join('');
             }
 
             // ── Render Revenue Pipeline ──
@@ -963,30 +1044,49 @@
                 resultEl.textContent = `Revenue hunter failed: ${data.error || 'Request failed'}`;
                 return;
             }
-
-            async function runMergeScoring() {
-                const resultEl = document.getElementById('copilotResult');
-                try {
-                    const res = await fetch('/api/wholesale/ingestion/merge-score', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ onlyPipelineNew: true })
-                    });
-                    const data = await res.json();
-                    if (!res.ok || data.success === false) {
-                        resultEl.textContent = `Merge scoring failed: ${data.error || 'Request failed'}`;
-                        return;
-                    }
-                    resultEl.textContent = `Merge scoring complete:\n${JSON.stringify(data.summary || {}, null, 2)}`;
-                    fetchAllData();
-                } catch (error) {
-                    resultEl.textContent = `Merge scoring failed: ${error.message}`;
-                }
-            }
             resultEl.textContent = `Revenue hunter run complete:\n${JSON.stringify(data.summary || {}, null, 2)}`;
             fetchAllData();
         } catch (error) {
             resultEl.textContent = `Revenue hunter failed: ${error.message}`;
+        }
+    }
+
+    async function runMergeScoring() {
+        const resultEl = document.getElementById('copilotResult');
+        try {
+            const res = await fetch('/api/wholesale/ingestion/merge-score', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ onlyPipelineNew: true })
+            });
+            const data = await res.json();
+            if (!res.ok || data.success === false) {
+                resultEl.textContent = `Merge scoring failed: ${data.error || 'Request failed'}`;
+                return;
+            }
+            resultEl.textContent = `Merge scoring complete:\n${JSON.stringify(data.summary || {}, null, 2)}`;
+            fetchAllData();
+        } catch (error) {
+            resultEl.textContent = `Merge scoring failed: ${error.message}`;
+        }
+    }
+
+    async function generateOutreachDraft(dealId, audience = 'seller', channel = 'sms') {
+        const resultEl = document.getElementById('copilotResult');
+        try {
+            const res = await fetch(`/api/wholesale/deals/${dealId}/outreach-draft`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ audience, channel })
+            });
+            const data = await res.json();
+            if (!res.ok || data.success === false) {
+                resultEl.textContent = `Outreach draft failed: ${data.error || 'Request failed'}`;
+                return;
+            }
+            resultEl.textContent = `Draft (${audience}/${channel}) for ${dealId}:\n\n${data.draft || '-'}`;
+        } catch (error) {
+            resultEl.textContent = `Outreach draft failed: ${error.message}`;
         }
     }
 
