@@ -279,10 +279,32 @@
         <button class="refresh-btn" onclick="runRevenueHunter()">⚡ Run Revenue Hunter</button>
         <button class="refresh-btn" onclick="runMergeScoring()">🧠 Run Merge Scoring</button>
         <button class="refresh-btn" onclick="window.open('/api/wholesale/properties/queue/new','_blank')">📥 View New Intake Queue</button>
+        <button class="refresh-btn" onclick="window.open('/api/wholesale/buyers/capital-readiness-todos','_blank')">🧭 Capital Readiness Todos API</button>
         <button class="refresh-btn" onclick="window.open('/api/wholesale/overview','_blank')">🏘️ Wholesale Overview API</button>
         <button class="refresh-btn" onclick="window.open('/api/wholesale/market/target-zips','_blank')">📍 View Target ZIP API</button>
         <button class="refresh-btn" onclick="window.open('/api/invoices','_blank')">📄 View Invoice API</button>
         <button class="refresh-btn" onclick="window.open('/api/approvals','_blank')">🛡️ View Approval Queue</button>
+    </div>
+
+    <div class="section-title">🚀 Channel Readiness (Free Live · Paid Staged)</div>
+    <div class="grid" style="margin-bottom: 20px;">
+        <div class="card"><div class="label">🆓 Free-Channel Revenue (USD)</div><div class="value green" id="freeChannelRevenue">$0</div></div>
+        <div class="card"><div class="label">🆓 Free-Channel Deals</div><div class="value white" id="freeChannelDeals">0</div></div>
+        <div class="card"><div class="label">💳 Paid-Channel Deals (Ready Queue)</div><div class="value blue" id="paidChannelDeals">0</div></div>
+        <div class="card"><div class="label">🧭 Capital Readiness Todos</div><div class="value gold" id="capitalTodoCount">0</div></div>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr>
+                <th>Stage</th>
+                <th>Task</th>
+                <th>Status</th>
+                <th>Notes</th>
+            </tr></thead>
+            <tbody id="capitalTodoBody">
+                <tr><td colspan="4" class="empty-state">Loading capital readiness checklist...</td></tr>
+            </tbody>
+        </table>
     </div>
 
     <!-- Invoices Table (LIVE from /api/invoices) -->
@@ -453,6 +475,11 @@
         return (e.getTime() - s.getTime()) / 36e5;
     }
 
+    function isPaidChannel(channel) {
+        const value = String(channel || '').toLowerCase();
+        return /(paid|ad|ads|ppc|cpc|meta lead|facebook ads|instagram ads|google ads|linkedin ads)/.test(value);
+    }
+
     // ─────────────────────────────────────────────
     // 1. FETCH LIVE DATA FROM YOUR BACKEND
     // ─────────────────────────────────────────────
@@ -515,6 +542,13 @@
                 document.getElementById('pipelineCount').textContent = `(${pipelineDeals.length})`;
             }
 
+            const readinessRes = await fetch('/api/wholesale/buyers/capital-readiness-todos');
+            let capitalTodos = [];
+            if (readinessRes.ok) {
+                const readinessData = await readinessRes.json();
+                capitalTodos = readinessData.todos || [];
+            }
+
             const currentMonth = new Date().toISOString().slice(0, 7);
             document.getElementById('kpiMonthLabel').textContent = `(${currentMonth})`;
             let kpiTarget = null;
@@ -551,6 +585,14 @@
             document.getElementById('dealsClosed').textContent = dealsClosed;
             document.getElementById('pendingApprovals').textContent = pendingApprovals;
             document.getElementById('lastUpdated').textContent = `Updated: ${new Date().toLocaleString()}`;
+
+            const freeChannelDeals = deals.filter(d => !isPaidChannel(d.sourceEconomics?.channel));
+            const paidChannelDeals = deals.filter(d => isPaidChannel(d.sourceEconomics?.channel));
+            const freeRevenue = freeChannelDeals.reduce((sum, d) => sum + Number(d.sourceEconomics?.feeActual || d.revenueAmountUsd || 0), 0);
+            document.getElementById('freeChannelRevenue').textContent = `$${freeRevenue.toFixed(2)}`;
+            document.getElementById('freeChannelDeals').textContent = String(freeChannelDeals.length);
+            document.getElementById('paidChannelDeals').textContent = String(paidChannelDeals.length);
+            document.getElementById('capitalTodoCount').textContent = String(capitalTodos.length);
 
             // ── Render Invoices Table ──
             const invBody = document.getElementById('invoiceTableBody');
@@ -772,15 +814,29 @@
                 }).join('');
             }
 
+            const capitalTodoBody = document.getElementById('capitalTodoBody');
+            if (!capitalTodos.length) {
+                capitalTodoBody.innerHTML = `<tr><td colspan="4" class="empty-state">No capital readiness todos configured.</td></tr>`;
+            } else {
+                capitalTodoBody.innerHTML = capitalTodos.map(todo => `
+                    <tr>
+                        <td>${(todo.stage || '').replace(/_/g, ' ') || '-'}</td>
+                        <td><strong>${todo.title || '-'}</strong></td>
+                        <td><span class="badge ${(todo.status || 'pending').toLowerCase()}">${todo.status || 'pending'}</span></td>
+                        <td>${todo.notes || '-'}</td>
+                    </tr>
+                `).join('');
+            }
+
             // ── Update Overall Status ──
             const overall = document.getElementById('overallStatus');
             if (overall) {
-                if (invRes.ok && leadsRes.ok && overviewRes.ok && investorsRes.ok && approvalsRes.ok && agentsRes.ok && pipelineRes.ok) {
+                if (invRes.ok && leadsRes.ok && overviewRes.ok && investorsRes.ok && approvalsRes.ok && agentsRes.ok && pipelineRes.ok && readinessRes.ok) {
                     overall.textContent = pendingApprovals > 0
                         ? `Operational · ${pendingApprovals} approval(s) waiting`
                         : 'All Systems Operational';
                     overall.className = 'status-badge status-online';
-                } else if (!invRes.ok || !leadsRes.ok || !overviewRes.ok || !investorsRes.ok || !approvalsRes.ok || !agentsRes.ok || !pipelineRes.ok) {
+                } else if (!invRes.ok || !leadsRes.ok || !overviewRes.ok || !investorsRes.ok || !approvalsRes.ok || !agentsRes.ok || !pipelineRes.ok || !readinessRes.ok) {
                     overall.textContent = 'Some Systems Degraded';
                     overall.className = 'status-badge status-degraded';
                 } else {
