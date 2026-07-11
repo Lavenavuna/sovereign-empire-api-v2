@@ -21,6 +21,7 @@ Base path: `/api/wholesale`
 - `POST /investors` — register investor buy box
 - `POST /buyers/intake` — intake buyers with proof-of-funds and qualification fields
 - `PATCH /investors/:id/verify` — update proof-of-funds verification and buyer qualification status
+- `PATCH /investors/:id/foreign-screening` — screen/update foreign buyer profile for SB17 compliance
 - `POST /properties/:id/match-investors` — rank investor matches
 - `GET /deals` — list active deal records
 - `GET /pipeline` — revenue pipeline view (deal + invoice + payment status)
@@ -40,6 +41,7 @@ Base path: `/api/wholesale`
 - `POST /deals/:id/revenue-received` — mark payment received and auto-generate receipt
 - `POST /autopilot/hunt` — run high-velocity revenue hunter pass (draft follow-ups + queue close approvals)
 - `GET /compliance/playbook` — view active state-law playbook, targets, and legal gate requirements
+- `GET /compliance/foreign-buyers` — show active SB17-designated country list used by the gate
 - `PATCH /compliance/settings` — set active target states (only supported profiles can be targeted)
 
 State is persisted in `wholesale-state.json`.
@@ -73,6 +75,13 @@ Yes — phone and email are tracked for both seller and buyer/investor contacts 
   - `marketingMode = contract_only`
 - Default active target is `TX`. Additional state targets are configurable only when a supported legal profile exists.
 - This is an operational compliance layer, not legal advice. Validate each active state with qualified local counsel before scaling.
+
+## Foreign buyer compliance gate (TX SB17)
+
+- Investor profiles now include `foreignBuyerProfile` screening data.
+- Matching and close execution fail closed when a buyer is blocked by the SB17 designated-country gate.
+- Close requests require an eligible matched investor (`investorId`) so the gate can be enforced and logged.
+- Current designated-country list in code: `CN, RU, IR, KP`.
 
 ## Buyer qualification and segmentation
 
