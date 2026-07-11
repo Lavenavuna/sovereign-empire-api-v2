@@ -1,0 +1,50 @@
+name: Automated Property Data Ingestion
+
+on:
+  schedule:
+    # Daily at 1:00 AM UTC
+    - cron: '0 1 * * *'
+    # Weekly on Sunday at 2:00 AM UTC
+    - cron: '0 2 * * 0'
+    # Monthly on day 1 at 3:00 AM UTC
+    - cron: '0 3 1 * *'
+  workflow_dispatch:
+    inputs:
+      run_frequency:
+        description: 'Override frequency (daily|weekly|monthly|manual)'
+        required: false
+        type: string
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run automated ingestion
+        env:
+          SCHEDULE_CRON: ${{ github.event.schedule }}
+          RUN_FREQUENCY_OVERRIDE: ${{ github.event.inputs.run_frequency }}
+          # Example: https://sovereign-empire-api-v2-production.up.railway.app/api/wholesale
+          INGEST_API_BASE_URL: ${{ secrets.INGEST_API_BASE_URL }}
+          # Optional if you later add API auth for ingestion routes.
+          INGEST_API_KEY: ${{ secrets.INGEST_API_KEY }}
+          # Optional shared auth for protected CSV endpoints.
+          CSV_AUTH_HEADER: ${{ secrets.CSV_AUTH_HEADER }}
+          CSV_AUTH_TOKEN: ${{ secrets.CSV_AUTH_TOKEN }}
+          INGEST_DEFAULT_CITY: Fort Worth
+          INGEST_DEFAULT_STATE: TX
+          # Channel source URLs (CSV endpoints or signed download URLs)
+          CSV_URL_TAX: ${{ secrets.CSV_URL_TAX }}
+          CSV_URL_FORECLOSURE: ${{ secrets.CSV_URL_FORECLOSURE }}
+          CSV_URL_PROBATE: ${{ secrets.CSV_URL_PROBATE }}
+          CSV_URL_DIVORCE: ${{ secrets.CSV_URL_DIVORCE }}
+          CSV_URL_CODE_ENFORCEMENT: ${{ secrets.CSV_URL_CODE_ENFORCEMENT }}
+          CSV_URL_DEED_LIEN: ${{ secrets.CSV_URL_DEED_LIEN }}
+        run: node scripts/automated-ingestion.mjs

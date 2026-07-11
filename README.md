@@ -116,6 +116,30 @@ Yes — phone and email are tracked for both seller and buyer/investor contacts 
 - `layout-config.js` contains provisional fixed-width offsets and must be validated against Tarrant's official layout before production use.
 - Multi-channel import path is now supported for manual/semi-automated sources that do not expose reliable APIs.
 
+## Automated ingestion workflow (GitHub Actions -> production API)
+
+- Workflow file: `.github/workflows/automated-property-ingestion.yml`
+- Runtime script: `scripts/automated-ingestion.mjs`
+- This workflow uses your existing JSON-state architecture by calling the live API:
+  - `POST /api/wholesale/ingestion/import-csv`
+  - `POST /api/wholesale/ingestion/merge-score`
+- Schedule behavior:
+  - `daily` cron -> imports non-tax channels
+  - `weekly/monthly` cron -> imports all configured channels (including tax)
+  - manual dispatch -> imports all configured channels
+- Required repository secret:
+  - `INGEST_API_BASE_URL` (example: `https://sovereign-empire-api-v2-production.up.railway.app/api/wholesale`)
+- Channel source secrets (set whichever you have ready):
+  - `CSV_URL_TAX`
+  - `CSV_URL_FORECLOSURE`
+  - `CSV_URL_PROBATE`
+  - `CSV_URL_DIVORCE`
+  - `CSV_URL_CODE_ENFORCEMENT`
+  - `CSV_URL_DEED_LIEN`
+- Optional secrets:
+  - `INGEST_API_KEY` (if you add API auth)
+  - `CSV_AUTH_HEADER` + `CSV_AUTH_TOKEN` (for protected CSV URLs)
+
 ## Revenue OS (compounding execution fields)
 
 - Monthly KPI targets are persisted in `meta.kpiTargets` (`revenueTarget`, `avgFeeTarget`, `closesTarget`, `contractsTarget`, `leadsTarget`, `daysToCloseTarget`).
