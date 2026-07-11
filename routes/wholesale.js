@@ -51,6 +51,36 @@ const SIGNAL_WEIGHTS = {
   absentee_owner: 2,
   vacant: 2
 };
+const CAPITAL_READINESS_DEFAULT_TODOS = [
+  {
+    id: 'free-intake-link-live',
+    stage: 'no_cost_now',
+    title: 'Publishing buyer intake link in REIA/Facebook/BiggerPockets',
+    status: 'pending',
+    notes: 'Post once weekly and route all responses to /api/wholesale/buyers/webhook/free-intake'
+  },
+  {
+    id: 'free-csv-batch-cycle',
+    stage: 'no_cost_now',
+    title: 'Running weekly CSV imports for properties and buyers',
+    status: 'pending',
+    notes: 'Use /ingestion/import-csv and /buyers/import-csv, then run /ingestion/merge-score'
+  },
+  {
+    id: 'paid-meta-lead-ads-prereqs',
+    stage: 'capital_later',
+    title: 'Preparing Meta Lead Ads webhook channel',
+    status: 'pending',
+    notes: 'Ad account, lead form fields, webhook verify token, budget guardrails'
+  },
+  {
+    id: 'paid-form-automation-upgrade',
+    stage: 'capital_later',
+    title: 'Upgrading intake automation with Typeform/Zapier',
+    status: 'pending',
+    notes: 'Switch manual posting links to tracked campaign URLs and automated routing'
+  }
+];
 
 function asNumber(value, fallback = 0) {
   const n = Number(value);
@@ -65,6 +95,14 @@ function asIsoTimestamp(value) {
 
 function asString(value) {
   return String(value || '').trim();
+}
+
+function ensureCapitalReadinessTodos(state) {
+  state.meta = state.meta || {};
+  state.meta.capitalReadinessTodos = Array.isArray(state.meta.capitalReadinessTodos)
+    ? state.meta.capitalReadinessTodos
+    : CAPITAL_READINESS_DEFAULT_TODOS.map(todo => ({ ...todo, updatedAt: new Date().toISOString() }));
+  return state.meta.capitalReadinessTodos;
 }
 
 function monthKey(value) {
@@ -829,6 +867,32 @@ router.get('/investors', (req, res) => {
   res.json({ success: true, count: state.investors.length, investors: state.investors });
 });
 
+router.get('/buyers/capital-readiness-todos', (req, res) => {
+  const state = loadWholesaleState();
+  const todos = ensureCapitalReadinessTodos(state);
+  saveWholesaleState(state);
+  res.json({ success: true, count: todos.length, todos });
+});
+
+router.patch('/buyers/capital-readiness-todos/:id', (req, res) => {
+  const state = loadWholesaleState();
+  const todos = ensureCapitalReadinessTodos(state);
+  const todo = todos.find(t => t.id === req.params.id);
+  if (!todo) return res.status(404).json({ success: false, error: 'Todo not found' });
+  if (req.body?.status !== undefined) {
+    const status = asString(req.body.status).toLowerCase();
+    const allowed = ['pending', 'in_progress', 'done', 'blocked'];
+    if (!allowed.includes(status)) {
+      return res.status(400).json({ success: false, error: `status must be one of: ${allowed.join(', ')}` });
+    }
+    todo.status = status;
+  }
+  if (req.body?.notes !== undefined) todo.notes = asString(req.body.notes);
+  todo.updatedAt = new Date().toISOString();
+  saveWholesaleState(state);
+  res.json({ success: true, todo });
+});
+
 router.get('/compliance/foreign-buyers', (req, res) => {
   res.json({
     success: true,
@@ -852,6 +916,41 @@ router.post('/buyers/intake', (req, res) => {
   state.investors.push(investor);
   saveWholesaleState(state);
   res.status(201).json({ success: true, buyer: investor });
+});
+
+router.post('/buyers/webhook/free-intake', (req, res) => {
+  const body = req.body || {};
+  const payload = body.data || body.lead || body;
+  const name = asString(payload.name || payload.fullName || payload.buyer_name || payload.investor_name);
+  const strategy = asString(payload.strategy || payload.preferredDealType || 'buy-and-hold');
+  if (!name) {
+    return res.status(400).json({ success: false, error: 'name is required in webhook payload' });
+  }
+
+  const state = loadWholesaleState();
+  const investor = createInvestorRecord({
+    name,
+    strategy,
+    email: asString(payload.email),
+    phone: asString(payload.phone),
+    zipCodes: normalizeZipCodes(parseSignalList(payload.zipCodes || payload.targetZips || payload.target_areas).map(v => v.replace(/\D/g, ''))),
+    preferredDealType: asString(payload.preferredDealType || payload.preferred_deal_type),
+    proofOfFundsStatus: asString(payload.proofOfFundsStatus || 'unverified').toLowerCase(),
+    sourcePlatform: asString(payload.sourcePlatform || payload.source || 'free-intake-form'),
+    channels: parseSignalList(payload.channels || 'organic'),
+    isUsCitizen: String(payload.isUsCitizen || '').toLowerCase() === 'true',
+    isLawfulPermanentResident: String(payload.isLawfulPermanentResident || '').toLowerCase() === 'true',
+    domicileCountry: asString(payload.domicileCountry),
+    citizenshipCountries: parseSignalList(payload.citizenshipCountries),
+    entityHeadquartersCountry: asString(payload.entityHeadquartersCountry),
+    majorityControlCountries: parseSignalList(payload.majorityControlCountries),
+    isForeignGovernmentAgent: String(payload.isForeignGovernmentAgent || '').toLowerCase() === 'true',
+    foreignGovernmentAgentCountry: asString(payload.foreignGovernmentAgentCountry)
+  });
+
+  state.investors.push(investor);
+  saveWholesaleState(state);
+  res.status(201).json({ success: true, buyer: investor, source: 'free-intake-webhook' });
 });
 
 router.post('/buyers/import-csv', (req, res) => {
