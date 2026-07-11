@@ -324,6 +324,23 @@
         </table>
     </div>
 
+    <div class="section-title">🛰 Distress Channel Coverage</div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr>
+                <th>Channel</th>
+                <th>Properties Loaded</th>
+                <th>Pipeline New</th>
+                <th>Pipeline Scored</th>
+                <th>Last Seen</th>
+                <th>Status</th>
+            </tr></thead>
+            <tbody id="channelCoverageBody">
+                <tr><td colspan="6" class="empty-state">Loading channel coverage...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
     <!-- Invoices Table (LIVE from /api/invoices) -->
     <div class="section-title">📄 Recent Invoices <span class="last-updated" id="invoiceCount">(0)</span></div>
     <div class="table-wrap">
@@ -654,6 +671,42 @@
             document.getElementById('freeChannelDeals').textContent = String(freeChannelDeals.length);
             document.getElementById('paidChannelDeals').textContent = String(paidChannelDeals.length);
             document.getElementById('capitalTodoCount').textContent = String(capitalTodos.length);
+
+            // ── Render Distress Channel Coverage ──
+            const channelBody = document.getElementById('channelCoverageBody');
+            const trackedChannels = ['tax', 'foreclosure', 'probate', 'divorce', 'code_enforcement', 'deed_lien'];
+            const byChannel = {};
+            for (const c of trackedChannels) {
+                byChannel[c] = { total: 0, pipelineNew: 0, pipelineScored: 0, lastSeen: null };
+            }
+            for (const lead of leads) {
+                const channel = String(lead.sourceChannel || lead.source || '').toLowerCase();
+                if (!byChannel[channel]) continue;
+                const row = byChannel[channel];
+                row.total += 1;
+                const ps = String(lead.pipelineStatus || 'new').toLowerCase();
+                if (ps === 'new') row.pipelineNew += 1;
+                if (ps === 'scored') row.pipelineScored += 1;
+                const seenAt = lead.updated || lead.updatedAt || lead.createdAt || null;
+                if (seenAt && (!row.lastSeen || new Date(seenAt) > new Date(row.lastSeen))) row.lastSeen = seenAt;
+            }
+            channelBody.innerHTML = trackedChannels.map(c => {
+                const row = byChannel[c];
+                const healthy = row.total > 0;
+                const statusHtml = healthy
+                    ? '<span class="badge approved_and_executed">Loaded</span>'
+                    : '<span class="badge pending_approval">Missing</span>';
+                return `
+                    <tr>
+                        <td><strong>${c}</strong></td>
+                        <td>${row.total}</td>
+                        <td>${row.pipelineNew}</td>
+                        <td>${row.pipelineScored}</td>
+                        <td>${row.lastSeen ? new Date(row.lastSeen).toLocaleString() : '-'}</td>
+                        <td>${statusHtml}</td>
+                    </tr>
+                `;
+            }).join('');
 
             // ── Render Invoices Table ──
             const invBody = document.getElementById('invoiceTableBody');
