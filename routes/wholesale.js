@@ -7,10 +7,19 @@ import {
   evaluateDealCompliance,
   evaluateForeignBuyerRisk,
   getDisclosureClause,
-  getCompliancePlaybook,
+ getCompliancePlaybook,
   getSb17DesignatedCountries,
   normalizePropertyState
 } from '../lib/legalPlaybook.js';
+
+import { Pool } from 'pg';
+
+const taxRollPool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL?.includes('railway')
+    ? { rejectUnauthorized: false }
+    : undefined,
+});
 
 const router = express.Router();
 const DEFAULT_DFW_TARGET_ZIPS = [
@@ -584,7 +593,7 @@ function createInvestorRecord(payload) {
   return investor;
 }
 
-router.get('/overview', (req, res) => {
+router.get('/overview', async (req, res) => {
   const state = loadWholesaleState();
   const pendingProperties = state.properties.filter(p => p.status !== 'closed').length;
   const avgAssignmentPotential = state.deals.length
@@ -603,6 +612,14 @@ router.get('/overview', (req, res) => {
     .filter(i => i.status !== 'paid')
     .reduce((sum, i) => sum + asNumber(i.totalUsd, 0), 0);
 
+  let taxRollIngestedLive = null;
+  try {
+    const result = await taxRollPool.query('SELECT COUNT(*) FROM properties');
+    taxRollIngestedLive = Number(result.rows[0].count);
+  } catch (err) {
+    console.error('taxRollIngestedLive query failed:', err.message);
+  }
+
   res.json({
     success: true,
     vision: state.meta.vision,
@@ -614,11 +631,11 @@ router.get('/overview', (req, res) => {
       deals: state.deals.length,
       avgAssignmentPotential,
       recognizedRevenueUsd: Number(recognizedRevenueUsd.toFixed(2)),
-      pendingRevenueUsd: Number(pendingRevenueUsd.toFixed(2))
+      pendingRevenueUsd: Number(pendingRevenueUsd.toFixed(2)),
+      taxRollIngestedLive
     }
   });
 });
-
 router.get('/properties', (req, res) => {
   const state = loadWholesaleState();
   const status = req.query.status;
