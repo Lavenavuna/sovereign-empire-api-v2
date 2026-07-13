@@ -680,7 +680,10 @@
                 byChannel[c] = { total: 0, pipelineNew: 0, pipelineScored: 0, lastSeen: null };
             }
             for (const lead of leads) {
-                const channel = String(lead.sourceChannel || lead.source || '').toLowerCase();
+                let channel = String(
+                    lead.importMeta?.sourceChannel || lead.sourceChannel || lead.source || ''
+                ).toLowerCase();
+                if (channel === 'tarrant_tax_roll') channel = 'tax';
                 if (!byChannel[channel]) continue;
                 const row = byChannel[channel];
                 row.total += 1;

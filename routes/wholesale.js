@@ -7,19 +7,10 @@ import {
   evaluateDealCompliance,
   evaluateForeignBuyerRisk,
   getDisclosureClause,
- getCompliancePlaybook,
+  getCompliancePlaybook,
   getSb17DesignatedCountries,
   normalizePropertyState
 } from '../lib/legalPlaybook.js';
-
-import { Pool } from 'pg';
-
-const taxRollPool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL?.includes('railway')
-    ? { rejectUnauthorized: false }
-    : undefined,
-});
 
 const router = express.Router();
 const DEFAULT_DFW_TARGET_ZIPS = [
@@ -479,6 +470,19 @@ function computeMergedDistress(property) {
   };
 }
 
+function isTaxRollProperty(property) {
+  const source = asString(property?.source).toLowerCase();
+  if (source === 'tax' || source === 'tarrant_tax_roll') return true;
+
+  const importChannel = asString(property?.importMeta?.sourceChannel).toLowerCase();
+  if (importChannel === 'tax') return true;
+
+  const sourceLists = Array.isArray(property?.sourceLists)
+    ? property.sourceLists.map((value) => asString(value).toLowerCase())
+    : [];
+  return sourceLists.includes('tax') || sourceLists.includes('county-tax-roll');
+}
+
 function normalizeCountryCodes(values) {
   if (!Array.isArray(values)) return [];
   return [...new Set(values.map(v => String(v || '').trim().toUpperCase()).filter(Boolean))];
@@ -593,7 +597,7 @@ function createInvestorRecord(payload) {
   return investor;
 }
 
-router.get('/overview', async (req, res) => {
+router.get('/overview', (req, res) => {
   const state = loadWholesaleState();
   const pendingProperties = state.properties.filter(p => p.status !== 'closed').length;
   const avgAssignmentPotential = state.deals.length
@@ -611,14 +615,7 @@ router.get('/overview', async (req, res) => {
   const pendingRevenueUsd = invoices
     .filter(i => i.status !== 'paid')
     .reduce((sum, i) => sum + asNumber(i.totalUsd, 0), 0);
-
-  let taxRollIngestedLive = null;
-  try {
-    const result = await taxRollPool.query('SELECT COUNT(*) FROM properties');
-    taxRollIngestedLive = Number(result.rows[0].count);
-  } catch (err) {
-    console.error('taxRollIngestedLive query failed:', err.message);
-  }
+  const taxRollIngestedLive = state.properties.filter(isTaxRollProperty).length;
 
   res.json({
     success: true,
