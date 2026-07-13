@@ -88,6 +88,36 @@ export const AGENTS = {
         description: 'Researches wholesaling market signals (RAG-loop grounded)',
         prompt: 'You are a real-estate wholesaling market researcher. Focus on distressed inventory, buyer demand, comp movement, and time-to-close dynamics.'
     },
+    'comp-sourcing-agent': {
+        triggers: ['comp source', 'comps', 'arv support', 'comparable sales'],
+        description: 'Collects ARV support and comp evidence for underwritten wholesale leads',
+        prompt: 'You gather comparable-sale support for distressed wholesale leads. Return only evidence, source references, and confidence notes; do not set legal approvals or close actions.'
+    },
+    'rehab-estimator-agent': {
+        triggers: ['rehab estimate', 'repair budget', 'scope of work'],
+        description: 'Builds repair-cost ranges and confidence for distressed properties',
+        prompt: 'You estimate rehab ranges for wholesale leads using available condition signals. State assumptions, confidence, and what would raise or lower the estimate.'
+    },
+    'underwriting-agent': {
+        triggers: ['underwrite', 'mao', 'max allowable offer', 'assignment potential', 'fee target'],
+        description: 'Turns comp and rehab inputs into MAO, ask guidance, and fee targets',
+        prompt: 'You are a wholesale deal underwriter. Combine ARV evidence, rehab assumptions, and closing costs into MAO, ask guidance, assignment potential, and fee target. Flag low-confidence numbers clearly.'
+    },
+    'buyer-fit-disposition-agent': {
+        triggers: ['buyer fit', 'investor match', 'disposition prep', 'cash buyer match'],
+        description: 'Matches underwritten deals to investor criteria and drafts disposition prep',
+        prompt: 'You match underwritten wholesale deals to investor buy boxes, rank fit, and prepare compliant disposition handoff notes. Do not approve, dispatch, or mark deals closed.'
+    },
+    'revenue-velocity-watchdog': {
+        triggers: ['velocity watchdog', 'stuck deals', 'cycle time', 'fee leakage'],
+        description: 'Monitors conversion speed, stalled stages, and assignment-fee leakage',
+        prompt: 'You monitor wholesale deal velocity. Flag stalled stages, slow approvals, weak investor response, and assignment-fee leakage using the live pipeline state.'
+    },
+    'data-quality-watchdog': {
+        triggers: ['data quality', 'parse errors', 'duplicate leads', 'stale channel'],
+        description: 'Flags ingestion drift, null economics, duplicates, and stale channels',
+        prompt: 'You audit the wholesale data flow for duplicate leads, stale channels, null underwriting fields, and parser drift. Report issues without mutating execution state.'
+    },
     'customer-feedback': {
         triggers: ['seller feedback', 'investor feedback', 'customer feedback', 'feedback analysis'],
         description: 'Analyzes seller/investor feedback for workflow improvements',
@@ -137,12 +167,18 @@ export const AGENT_TIER = {
     'video-script': 'T0',
     'business-strategist': 'T0',
     'market-researcher': 'T0',
+    'revenue-velocity-watchdog': 'T0',
+    'data-quality-watchdog': 'T0',
     'customer-feedback': 'T0',
     'product-analyzer': 'T0',
     'email-writer': 'T1',
     'social-media': 'T1',
     'sales-consultant': 'T1',
     'capital-readiness-orchestrator': 'T1',
+    'comp-sourcing-agent': 'T1',
+    'rehab-estimator-agent': 'T1',
+    'underwriting-agent': 'T1',
+    'buyer-fit-disposition-agent': 'T1',
     'deal-closer': 'T2',
     'real-estate-law-compliance': 'T2'
 };

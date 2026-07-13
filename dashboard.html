@@ -572,13 +572,13 @@
                 document.getElementById('invoiceCount').textContent = `(${invoices.length})`;
             }
 
-            // ── Fetch LIVE Leads/Properties from /api/leads ──
-            const leadsRes = await fetch('/api/leads');
-            let leads = [];
-            if (leadsRes.ok) {
-                const leadsData = await leadsRes.json();
-                leads = leadsData.leads || leadsData.data || [];
-                document.getElementById('leadsCount').textContent = `(${leads.length})`;
+            // ── Fetch LIVE Wholesale Properties ──
+            const propertiesRes = await fetch('/api/wholesale/properties');
+            let properties = [];
+            if (propertiesRes.ok) {
+                const propertiesData = await propertiesRes.json();
+                properties = propertiesData.properties || [];
+                document.getElementById('leadsCount').textContent = `(${properties.length})`;
             }
 
             // ── Fetch wholesaling overview/deals/investors ──
@@ -648,10 +648,10 @@
             }
 
             // ── Update KPI Cards ──
-            const totalRevenue = invoices.reduce((sum, inv) => sum + parseFloat(inv.totalUsd || 0), 0);
+            const totalRevenue = Number(overview?.recognizedRevenueUsd || 0);
             const dealsClosed = deals.filter(d => d.status === 'closed' || d.stage === 'closed_won').length;
             const dealsOpen = deals.filter(d => d.status !== 'closed' && d.status !== 'rejected').length;
-            const totalProperties = overview?.properties ?? leads.length;
+            const totalProperties = overview?.properties ?? properties.length;
             const totalInvestors = overview?.investors ?? investors.length;
             const pendingApprovals = approvals.filter(a => a.status === 'pending').length;
             document.getElementById('approvalCount').textContent = `(${pendingApprovals})`;
@@ -679,7 +679,7 @@
             for (const c of trackedChannels) {
                 byChannel[c] = { total: 0, pipelineNew: 0, pipelineScored: 0, lastSeen: null };
             }
-            for (const lead of leads) {
+            for (const lead of properties) {
                 let channel = String(
                     lead.importMeta?.sourceChannel || lead.sourceChannel || lead.source || ''
                 ).toLowerCase();
