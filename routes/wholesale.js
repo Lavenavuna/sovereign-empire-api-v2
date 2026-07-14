@@ -12,6 +12,14 @@ import {
   normalizePropertyState
 } from '../lib/legalPlaybook.js';
 
+import { Pool } from 'pg';
+
+const taxRollPool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL?.includes('proxy.rlwy.net') || process.env.DATABASE_URL?.includes('railway.internal')
+    ? { rejectUnauthorized: false }
+    : undefined,
+});
 const router = express.Router();
 const DEFAULT_DFW_TARGET_ZIPS = [
   '76179', '76104', '76105', '76115', '76103', '76060',
@@ -755,7 +763,7 @@ function createInvestorRecord(payload) {
   return investor;
 }
 
-router.get('/overview', (req, res) => {
+router.get('/overview', async (req, res) => {
   const state = loadWholesaleState();
   const pendingProperties = state.properties.filter(p => p.status !== 'closed').length;
   const underwrittenDeals = state.deals.filter(d => asNumber(d.assignmentFeeTarget || d.assignmentPotential, 0) > 0).length;
@@ -779,7 +787,13 @@ router.get('/overview', (req, res) => {
   const pendingRevenueUsd = invoices
     .filter(i => i.status !== 'paid')
     .reduce((sum, i) => sum + asNumber(i.totalUsd, 0), 0);
-  const taxRollIngestedLive = state.properties.filter(isTaxRollProperty).length;
+  let taxRollIngestedLive = state.properties.filter(isTaxRollProperty).length;
+try {
+  const liveCount = await taxRollPool.query('SELECT COUNT(*) FROM properties');
+  taxRollIngestedLive = Number(liveCount.rows[0].count);
+} catch (err) {
+  console.error('taxRollIngestedLive live query failed, using JSON fallback:', err.message);
+}
 
   res.json({
     success: true,
