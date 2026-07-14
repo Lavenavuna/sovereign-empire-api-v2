@@ -7,19 +7,10 @@ import {
   evaluateDealCompliance,
   evaluateForeignBuyerRisk,
   getDisclosureClause,
- getCompliancePlaybook,
+  getCompliancePlaybook,
   getSb17DesignatedCountries,
   normalizePropertyState
 } from '../lib/legalPlaybook.js';
-
-import { Pool } from 'pg';
-
-const taxRollPool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL?.includes('railway')
-    ? { rejectUnauthorized: false }
-    : undefined,
-});
 
 const router = express.Router();
 const DEFAULT_DFW_TARGET_ZIPS = [
@@ -98,6 +89,16 @@ const CAPITAL_READINESS_DEFAULT_TODOS = [
     notes: 'Switch manual posting links to tracked campaign URLs and automated routing'
   }
 ];
+const PRELIMINARY_UNDERWRITING_STAGE = 'underwritten';
+const PRELIMINARY_UNDERWRITING_BASIS = 'tax-roll-heuristic';
+
+function distressSignalSet(property) {
+  return new Set(
+    (Array.isArray(property?.distressSignals) ? property.distressSignals : [])
+      .map((value) => asString(value).toLowerCase())
+      .filter(Boolean)
+  );
+}
 
 function asNumber(value, fallback = 0) {
   const n = Number(value);
@@ -225,6 +226,119 @@ function calculateDealMetrics(property) {
   };
 }
 
+function inferTaxRollArv(property) {
+  return asNumber(
+    property?.arv
+    || property?.taxRollMeta?.totalAppraisedValue
+    || property?.importMeta?.totalAppraisedValue
+    || 0,
+    0
+  );
+}
+
+function estimateRehabRatio(property) {
+  const signals = distressSignalSet(property);
+  let ratio = 0.08;
+  if (signals.has('tax_delinquent')) ratio += 0.03;
+  if (signals.has('foreclosure_notice')) ratio += 0.05;
+  if (signals.has('probate_filing')) ratio += 0.02;
+  if (signals.has('divorce_filing')) ratio += 0.02;
+  if (signals.has('code_violation')) ratio += 0.08;
+  if (signals.has('vacant')) ratio += 0.07;
+  if (signals.has('absentee_owner')) ratio += 0.02;
+  if (signals.has('lien_or_transfer_signal')) ratio += 0.03;
+  if (property?.taxRollMeta?.isChronicDelinquent) ratio += 0.03;
+  return Math.min(0.35, Math.max(0.08, ratio));
+}
+
+function applyPreliminaryUnderwriting(property, deal) {
+  if (!property || !deal) {
+    return { applied: false, reason: 'missing_property_or_deal' };
+  }
+
+  const hasExistingEconomics = (
+    asNumber(property.arv, 0) > 0
+    && asNumber(property.rehabEstimate, 0) > 0
+    && asNumber(property.purchasePrice ?? property.askPrice, 0) > 0
+    && asNumber(deal.assignmentFeeTarget || deal.assignmentPotential, 0) > 0
+  );
+  if (hasExistingEconomics) {
+    return { applied: false, reason: 'existing_economics_present', metrics: calculateDealMetrics(property) };
+  }
+
+  const inferredArv = inferTaxRollArv(property);
+  if (inferredArv <= 0) {
+    return { applied: false, reason: 'missing_arv_proxy' };
+  }
+
+  property.closingCosts = asNumber(property.closingCosts, 5000) || 5000;
+  property.arv = inferredArv;
+  const rehabEstimate = Math.max(
+    asNumber(property.rehabEstimate, 0),
+    Math.round(inferredArv * estimateRehabRatio(property))
+  );
+  property.rehabEstimate = rehabEstimate;
+
+  const preliminaryMetrics = calculateDealMetrics({
+    ...property,
+    purchasePrice: 0,
+    askPrice: 0
+  });
+  if (preliminaryMetrics.maxAllowableOffer <= 0) {
+    return { applied: false, reason: 'non_positive_mao', metrics: preliminaryMetrics };
+  }
+
+  const targetFeeFloor = Math.max(2500, Math.round(inferredArv * 0.03));
+  const targetFeeCap = Math.max(0, Math.round(preliminaryMetrics.maxAllowableOffer * 0.15));
+  const assignmentFeeTarget = Math.min(15000, Math.min(targetFeeFloor, targetFeeCap) || targetFeeCap);
+  if (assignmentFeeTarget <= 0) {
+    return { applied: false, reason: 'non_positive_fee_target', metrics: preliminaryMetrics };
+  }
+
+  const targetPurchasePrice = Math.max(0, preliminaryMetrics.maxAllowableOffer - assignmentFeeTarget);
+  property.purchasePrice = asNumber(property.purchasePrice, targetPurchasePrice) || targetPurchasePrice;
+  property.askPrice = asNumber(property.askPrice, targetPurchasePrice) || targetPurchasePrice;
+
+  const metrics = calculateDealMetrics(property);
+  property.analysis = {
+    ...(property.analysis || {}),
+    ...metrics,
+    underwritingStatus: 'preliminary',
+    underwritingBasis: PRELIMINARY_UNDERWRITING_BASIS,
+    compSource: 'county-appraised-value-proxy',
+    compConfidence: 'low',
+    rehabConfidence: 'low',
+    assignmentFeeTarget,
+    underwrittenAt: new Date().toISOString()
+  };
+  property.status = property.status === 'closed' ? property.status : PRELIMINARY_UNDERWRITING_STAGE;
+  property.updatedAt = new Date().toISOString();
+
+  deal.assignmentPotential = metrics.assignmentPotential;
+  deal.assignmentFeeTarget = assignmentFeeTarget;
+  deal.stage = ['sourced', 'analyzed'].includes(deal.stage) ? PRELIMINARY_UNDERWRITING_STAGE : deal.stage;
+  deal.offerConfidence = {
+    ...(deal.offerConfidence || {}),
+    arvConfidence: 'low',
+    arvSource: 'county-appraised-value-proxy',
+    rehabConfidence: 'low',
+    rehabSource: PRELIMINARY_UNDERWRITING_BASIS
+  };
+  deal.notes = Array.isArray(deal.notes) ? deal.notes : [];
+  deal.notes.push({
+    note: `Preliminary underwriting applied from ${PRELIMINARY_UNDERWRITING_BASIS}`,
+    timestamp: new Date().toISOString()
+  });
+  deal.updatedAt = new Date().toISOString();
+
+  return {
+    applied: true,
+    reason: 'preliminary_underwriting_applied',
+    metrics,
+    assignmentFeeTarget
+  };
+}
+
 function scoreInvestor(investor, property, metrics) {
   if (investor.qualificationStatus === 'rejected') {
     return { score: 0, reasons: ['qualification-rejected'] };
@@ -272,6 +386,41 @@ function scoreInvestor(investor, property, metrics) {
   }
 
   return { score, reasons };
+}
+
+function matchInvestorsForProperty(state, property) {
+  const metrics = property.analysis || calculateDealMetrics(property);
+  const matches = state.investors
+    .map(investor => {
+      const scored = scoreInvestor(investor, property, metrics);
+      return {
+        investorId: investor.id,
+        investorName: investor.name,
+        strategy: investor.strategy,
+        score: scored.score,
+        reasons: scored.reasons,
+        foreignEligible: !(investor.foreignCompliance?.blocked),
+        foreignComplianceBlockedReasons: investor.foreignCompliance?.blockedReasons || []
+      };
+    })
+    .filter(m => m.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  const deal = ensureDeal(state, property.id);
+  deal.investorMatches = matches;
+  deal.stage = matches.length ? 'matched' : deal.stage;
+  deal.contacts.sellerName = property.seller?.name || deal.contacts.sellerName;
+  deal.contacts.sellerEmail = property.seller?.email || deal.contacts.sellerEmail;
+  deal.contacts.sellerPhone = property.seller?.phone || deal.contacts.sellerPhone;
+  deal.updatedAt = new Date().toISOString();
+
+  property.analysis = {
+    ...metrics,
+    matchedAt: new Date().toISOString()
+  };
+  property.updatedAt = new Date().toISOString();
+
+  return { matches, metrics, deal };
 }
 
 function ensureDeal(state, propertyId) {
@@ -479,6 +628,19 @@ function computeMergedDistress(property) {
   };
 }
 
+function isTaxRollProperty(property) {
+  const source = asString(property?.source).toLowerCase();
+  if (source === 'tax' || source === 'tarrant_tax_roll') return true;
+
+  const importChannel = asString(property?.importMeta?.sourceChannel).toLowerCase();
+  if (importChannel === 'tax') return true;
+
+  const sourceLists = Array.isArray(property?.sourceLists)
+    ? property.sourceLists.map((value) => asString(value).toLowerCase())
+    : [];
+  return sourceLists.includes('tax') || sourceLists.includes('county-tax-roll');
+}
+
 function normalizeCountryCodes(values) {
   if (!Array.isArray(values)) return [];
   return [...new Set(values.map(v => String(v || '').trim().toUpperCase()).filter(Boolean))];
@@ -593,9 +755,15 @@ function createInvestorRecord(payload) {
   return investor;
 }
 
-router.get('/overview', async (req, res) => {
+router.get('/overview', (req, res) => {
   const state = loadWholesaleState();
   const pendingProperties = state.properties.filter(p => p.status !== 'closed').length;
+  const underwrittenDeals = state.deals.filter(d => asNumber(d.assignmentFeeTarget || d.assignmentPotential, 0) > 0).length;
+  const matchedDeals = state.deals.filter(d => Array.isArray(d.investorMatches) && d.investorMatches.length > 0).length;
+  const readyToCloseDeals = state.deals.filter((deal) => {
+    const hasMatches = Array.isArray(deal.investorMatches) && deal.investorMatches.length > 0;
+    return hasMatches && ['matched', 'followup', 'negotiation', 'approval_pending'].includes(deal.stage);
+  }).length;
   const avgAssignmentPotential = state.deals.length
     ? Number(
         (
@@ -611,14 +779,7 @@ router.get('/overview', async (req, res) => {
   const pendingRevenueUsd = invoices
     .filter(i => i.status !== 'paid')
     .reduce((sum, i) => sum + asNumber(i.totalUsd, 0), 0);
-
-  let taxRollIngestedLive = null;
-  try {
-    const result = await taxRollPool.query('SELECT COUNT(*) FROM properties');
-    taxRollIngestedLive = Number(result.rows[0].count);
-  } catch (err) {
-    console.error('taxRollIngestedLive query failed:', err.message);
-  }
+  const taxRollIngestedLive = state.properties.filter(isTaxRollProperty).length;
 
   res.json({
     success: true,
@@ -629,6 +790,9 @@ router.get('/overview', async (req, res) => {
       pendingProperties,
       investors: state.investors.length,
       deals: state.deals.length,
+      underwrittenDeals,
+      matchedDeals,
+      readyToCloseDeals,
       avgAssignmentPotential,
       recognizedRevenueUsd: Number(recognizedRevenueUsd.toFixed(2)),
       pendingRevenueUsd: Number(pendingRevenueUsd.toFixed(2)),
@@ -1144,36 +1308,7 @@ router.post('/properties/:id/match-investors', (req, res) => {
     return res.status(404).json({ success: false, error: 'Property not found' });
   }
 
-  const metrics = property.analysis || calculateDealMetrics(property);
-  const matches = state.investors
-    .map(investor => {
-      const scored = scoreInvestor(investor, property, metrics);
-      return {
-        investorId: investor.id,
-        investorName: investor.name,
-        strategy: investor.strategy,
-        score: scored.score,
-        reasons: scored.reasons,
-        foreignEligible: !(investor.foreignCompliance?.blocked),
-        foreignComplianceBlockedReasons: investor.foreignCompliance?.blockedReasons || []
-      };
-    })
-    .filter(m => m.score > 0)
-    .sort((a, b) => b.score - a.score);
-
-  const deal = ensureDeal(state, property.id);
-  deal.investorMatches = matches;
-  deal.stage = matches.length ? 'matched' : deal.stage;
-  deal.contacts.sellerName = property.seller?.name || deal.contacts.sellerName;
-  deal.contacts.sellerEmail = property.seller?.email || deal.contacts.sellerEmail;
-  deal.contacts.sellerPhone = property.seller?.phone || deal.contacts.sellerPhone;
-  deal.updatedAt = new Date().toISOString();
-
-  property.analysis = {
-    ...metrics,
-    matchedAt: new Date().toISOString()
-  };
-  property.updatedAt = new Date().toISOString();
+  const { matches } = matchInvestorsForProperty(state, property);
 
   saveWholesaleState(state);
   res.json({ success: true, propertyId: property.id, matches });
@@ -1838,6 +1973,9 @@ router.post('/deals/:id/request-close-approval', (req, res) => {
 
 router.post('/autopilot/hunt', (req, res) => {
   const state = loadWholesaleState();
+  let underwrittenDeals = 0;
+  let skippedUnderwriting = 0;
+  let investorMatchesCreated = 0;
   let followUpsDrafted = 0;
   let approvalsQueued = 0;
   let dealsMarkedForApproval = 0;
@@ -1847,6 +1985,23 @@ router.post('/autopilot/hunt', (req, res) => {
   for (const deal of state.deals) {
     if (deal.status !== 'active' && deal.status !== 'awaiting_payment') continue;
     if (deal.invoiceNumber || deal.status === 'closed') continue;
+
+    const property = state.properties.find(p => p.id === deal.propertyId);
+    if (property) {
+      const underwriteResult = applyPreliminaryUnderwriting(property, deal);
+      if (underwriteResult.applied) {
+        underwrittenDeals++;
+      } else if (underwriteResult.reason !== 'existing_economics_present') {
+        skippedUnderwriting++;
+      }
+
+      const shouldAttemptMatch = asNumber(deal.assignmentFeeTarget || deal.assignmentPotential, 0) > 0
+        && (!Array.isArray(deal.investorMatches) || deal.investorMatches.length === 0);
+      if (shouldAttemptMatch && state.investors.length > 0) {
+        const { matches } = matchInvestorsForProperty(state, property);
+        if (matches.length) investorMatchesCreated++;
+      }
+    }
 
     const hasMatches = Array.isArray(deal.investorMatches) && deal.investorMatches.length > 0;
     if (hasMatches && (!deal.followUps || deal.followUps.length === 0)) {
@@ -1918,6 +2073,9 @@ router.post('/autopilot/hunt', (req, res) => {
   res.json({
     success: true,
     summary: {
+      underwrittenDeals,
+      skippedUnderwriting,
+      investorMatchesCreated,
       followUpsDrafted,
       approvalsQueued,
       dealsMarkedForApproval,
