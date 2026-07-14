@@ -789,10 +789,12 @@ router.get('/overview', async (req, res) => {
     .reduce((sum, i) => sum + asNumber(i.totalUsd, 0), 0);
   let taxRollIngestedLive = state.properties.filter(isTaxRollProperty).length;
 try {
+  console.log('taxRollIngestedLive query STARTING');
   const liveCount = await taxRollPool.query('SELECT COUNT(*) FROM properties');
   taxRollIngestedLive = Number(liveCount.rows[0].count);
+  console.log('taxRollIngestedLive query SUCCEEDED, count:', taxRollIngestedLive);
 } catch (err) {
-  console.error('taxRollIngestedLive live query failed, using JSON fallback:', err.message);
+  console.error('taxRollIngestedLive query FAILED:', err.message);
 }
 
   res.json({
