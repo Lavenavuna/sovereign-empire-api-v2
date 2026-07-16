@@ -235,10 +235,14 @@ function calculateDealMetrics(property) {
 }
 
 function inferTaxRollArv(property) {
+  const landValue = asNumber(property?.taxRollMeta?.landValue, 0);
+  const improvementValue = asNumber(property?.taxRollMeta?.improvementValue, 0);
+  const landPlusImprovement = landValue + improvementValue;
   return asNumber(
     property?.arv
     || property?.taxRollMeta?.totalAppraisedValue
     || property?.importMeta?.totalAppraisedValue
+    || (landPlusImprovement > 0 ? landPlusImprovement : 0)
     || 0,
     0
   );
@@ -633,6 +637,47 @@ async function promotePropertiesToDeals(options) {
   }
 
   return { promoted: promoted, skipped: skipped, totalRows: rows.length, deals: dealSummaries };
+}
+function reunderwritePromotedProperties(state) {
+  let reunderwritten = 0;
+  let stillMissing = 0;
+  const results = [];
+
+  for (const property of state.properties) {
+    if (property.source !== 'tarrant_tax_roll') {
+      continue;
+    }
+    const deal = state.deals.find((d) => d.propertyId === property.id);
+    if (!deal) {
+      continue;
+    }
+    if (asNumber(deal.assignmentPotential, 0) > 0) {
+      continue;
+    }
+
+    property.arv = 0;
+    property.rehabEstimate = 0;
+    property.purchasePrice = 0;
+    property.askPrice = 0;
+    deal.assignmentFeeTarget = 0;
+    deal.assignmentPotential = 0;
+
+    const underwriteResult = applyPreliminaryUnderwriting(property, deal);
+    if (underwriteResult.applied) {
+      reunderwritten += 1;
+    } else {
+      stillMissing += 1;
+    }
+    results.push({
+      propertyId: property.id,
+      dealId: deal.id,
+      assignmentPotential: deal.assignmentPotential,
+      underwritingApplied: underwriteResult.applied,
+      underwritingReason: underwriteResult.reason || null
+    });
+  }
+
+  return { reunderwritten, stillMissing, results };
 }
 function hasPendingCloseApproval(dealId) {
   const approvals = loadPendingApprovals();
@@ -1179,6 +1224,17 @@ router.post('/promote-from-taxroll', async (req, res) => {
     res.json({ success: true, ...result });
   } catch (err) {
     console.error('promote-from-taxroll FAILED:', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+router.post('/reunderwrite-taxroll', (req, res) => {
+  try {
+    const state = loadWholesaleState();
+    const result = reunderwritePromotedProperties(state);
+    saveWholesaleState(state);
+    res.json({ success: true, ...result });
+  } catch (err) {
+    console.error('reunderwrite-taxroll FAILED:', err.message);
     res.status(500).json({ success: false, error: err.message });
   }
 });
