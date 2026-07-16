@@ -564,7 +564,7 @@ async function promotePropertiesToDeals(options) {
   const state = loadWholesaleState();
 
   const params = [];
-  const whereClauses = ["pipeline_status = 'new'"];
+  const whereClauses = ["pipeline_status = 'new'", "total_appraised_value > 0"];
   if (minScore > 0) {
     params.push(minScore);
     whereClauses.push('single_source_score >= $' + params.length);
@@ -580,7 +580,7 @@ async function promotePropertiesToDeals(options) {
     'SELECT *',
     'FROM properties',
     'WHERE ' + whereClauses.join(' AND '),
-    'ORDER BY single_source_score DESC, total_appraised_value DESC',
+    'ORDER BY single_source_score DESC NULLS LAST, total_appraised_value DESC NULLS LAST',
     'LIMIT ' + limitParam
   ].join(' ');
 
