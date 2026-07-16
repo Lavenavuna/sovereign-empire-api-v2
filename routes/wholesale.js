@@ -501,7 +501,139 @@ function ensureDeal(state, propertyId) {
   }
   return deal;
 }
+function mapTaxRollRowToProperty(row) {
+  const signals = Array.isArray(row.single_source_signals) ? row.single_source_signals : [];
+  return {
+    id: createId('prop'),
+    address: row.situs_address || '',
+    city: row.situs_city || 'Fort Worth',
+    state: 'TX',
+    zipCode: normalizeZipCode(row.situs_zip),
+    market: 'DFW',
+    source: 'tarrant_tax_roll',
+    sourceLists: ['county-tax-roll'],
+    distressSignals: signals,
+    propertyType: 'single-family',
+    purchasePrice: 0,
+    askPrice: 0,
+    arv: asNumber(row.total_appraised_value, 0),
+    rehabEstimate: 0,
+    closingCosts: 5000,
+    status: 'sourced',
+    pipelineStatus: 'new',
+    seller: {
+      name: row.owner_name || '',
+      email: '',
+      phone: ''
+    },
+    taxRollMeta: {
+      sourceAccountId: row.source_account_id,
+      county: row.county || 'Tarrant',
+      ownerMailingAddress: row.owner_mailing_address || '',
+      ownerMailingCity: row.owner_mailing_city || '',
+      ownerMailingState: row.owner_mailing_state || '',
+      ownerMailingZip: row.owner_mailing_zip || '',
+      isAbsenteeOwner: Boolean(row.is_absentee_owner),
+      landValue: asNumber(row.land_value, 0),
+      improvementValue: asNumber(row.improvement_value, 0),
+      totalAppraisedValue: asNumber(row.total_appraised_value, 0),
+      taxDelinquentAmount: asNumber(row.tax_delinquent_amount, 0),
+      taxDelinquentSinceYear: asNumber(row.tax_delinquent_since_year, 0),
+      taxDelinquentYearsCount: asNumber(row.tax_delinquent_years_count, 0),
+      isChronicDelinquent: Boolean(row.is_chronic_delinquent),
+      lastPaymentDate: row.last_payment_date || null,
+      deedDate: row.deed_date || null,
+      singleSourceScore: asNumber(row.single_source_score, 0),
+      singleSourceSignals: signals,
+      ingestedAt: row.ingested_at ? new Date(row.ingested_at).toISOString() : new Date().toISOString(),
+      rawSourceRef: row.raw_source_ref || row.source_account_id || ''
+    },
+    updatedAt: new Date().toISOString(),
+    createdAt: new Date().toISOString()
+  };
+}
 
+async function promotePropertiesToDeals(options) {
+  var limit = (options && options.limit) || 50;
+  var minScore = (options && options.minScore) || 0;
+  var targetZips = (options && options.targetZips) || null;
+  const state = loadWholesaleState();
+
+  const params = [];
+  const whereClauses = ["pipeline_status = 'new'"];
+  if (minScore > 0) {
+    params.push(minScore);
+    whereClauses.push('single_source_score >= $' + params.length);
+  }
+  if (Array.isArray(targetZips) && targetZips.length) {
+    params.push(targetZips);
+    whereClauses.push('situs_zip = ANY($' + params.length + ')');
+  }
+  params.push(limit);
+  const limitParam = '$' + params.length;
+
+  const sql = [
+    'SELECT *',
+    'FROM properties',
+    'WHERE ' + whereClauses.join(' AND '),
+    'ORDER BY single_source_score DESC, total_appraised_value DESC',
+    'LIMIT ' + limitParam
+  ].join(' ');
+
+  const rowsResult = await taxRollPool.query(sql, params);
+  const rows = rowsResult.rows;
+
+  let promoted = 0;
+  let skipped = 0;
+  const promotedSourceAccountIds = [];
+  const dealSummaries = [];
+
+  for (const row of rows) {
+    const alreadyPromoted = state.properties.find(
+      (p) => p.source === 'tarrant_tax_roll' && p.taxRollMeta?.sourceAccountId === row.source_account_id
+    );
+    if (alreadyPromoted) {
+      skipped += 1;
+      continue;
+    }
+
+    const property = mapTaxRollRowToProperty(row);
+    state.properties.push(property);
+
+    const deal = ensureDeal(state, property.id);
+    deal.sourceEconomics = deal.sourceEconomics || {};
+    deal.sourceEconomics.channel = 'county';
+    deal.sourceEconomics.zip = property.zipCode || '';
+    deal.stage = deal.stage === 'sourced' ? 'analyzed' : deal.stage;
+
+    const underwriteResult = applyPreliminaryUnderwriting(property, deal);
+    deal.updatedAt = new Date().toISOString();
+
+    promoted += 1;
+    promotedSourceAccountIds.push(row.source_account_id);
+    dealSummaries.push({
+      propertyId: property.id,
+      dealId: deal.id,
+      address: property.address,
+      zipCode: property.zipCode,
+      assignmentPotential: deal.assignmentPotential,
+      assignmentFeeTarget: deal.assignmentFeeTarget,
+      underwritingApplied: underwriteResult.applied,
+      underwritingReason: underwriteResult.reason || null
+    });
+  }
+
+  saveWholesaleState(state);
+
+  if (promotedSourceAccountIds.length) {
+    await taxRollPool.query(
+      "UPDATE properties SET pipeline_status = 'queued' WHERE source_account_id = ANY($1)",
+      [promotedSourceAccountIds]
+    );
+  }
+
+  return { promoted: promoted, skipped: skipped, totalRows: rows.length, deals: dealSummaries };
+}
 function hasPendingCloseApproval(dealId) {
   const approvals = loadPendingApprovals();
   return approvals.some(
@@ -1035,7 +1167,21 @@ router.post('/ingestion/merge-score', (req, res) => {
   saveWholesaleState(state);
   res.json({ success: true, summary: { scoredProperties: updated, onlyPipelineNew: onlyNew } });
 });
+router.post('/promote-from-taxroll', async (req, res) => {
+  try {
+    const limit = Math.min(500, Math.max(1, Math.round(asNumber(req.body?.limit, 50))));
+    const minScore = asNumber(req.body?.minScore, 0);
+    const targetZips = Array.isArray(req.body?.zips) && req.body.zips.length
+      ? req.body.zips.map((z) => normalizeZipCode(z)).filter(Boolean)
+      : null;
 
+    const result = await promotePropertiesToDeals({ limit, minScore, targetZips });
+    res.json({ success: true, ...result });
+  } catch (err) {
+    console.error('promote-from-taxroll FAILED:', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 router.get('/properties/queue/new', (req, res) => {
   const state = loadWholesaleState();
   const properties = state.properties
