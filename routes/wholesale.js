@@ -26,6 +26,19 @@ const DEFAULT_DFW_TARGET_ZIPS = [
   '75210', '75215', '75216', '75217', '75224', '75232', '75241', '75212'
 ];
 const DEAL_SOURCE_CHANNELS = ['propstream', 'batch', 'county', 'dfd', 'referral', 'manual'];
+// Sanity backstop against corrupted tax-roll ingestion output (see the
+// 2026-07-12 stale-run incident: byte-offset parsing failures produced
+// situs_address values that were literally the account number restated,
+// e.g. "000000068583648", paired with a fabricated total_appraised_value).
+// A flat dollar ceiling can't do this alone — legitimate Tarrant County
+// commercial/institutional parcels (AT&T Stadium, Globe Life Field, DFW
+// Airport, Alliance-corridor industrial parks) run from tens of millions
+// into the billions, overlapping the exact range corrupted values land
+// in. The numeric-only-address check is the precise signal (no real US
+// street address is ever pure digits); MAX_PLAUSIBLE_APPRAISED_VALUE is
+// only a distant backstop for future corruption that isn't shaped this
+// same way, not the primary filter.
+const MAX_PLAUSIBLE_APPRAISED_VALUE = 250_000_000;
 const DEAL_OUTCOMES = ['lead', 'dead', 'contract', 'closed'];
 const CONFIDENCE_LEVELS = ['high', 'medium', 'low'];
 const FOLLOWUP_OUTCOMES = [
@@ -569,8 +582,11 @@ async function promotePropertiesToDeals(options) {
     "total_appraised_value > 0",
     "situs_address IS NOT NULL",
     "trim(situs_address) <> ''",
-    "situs_address !~ '^0+$'"
+    "situs_address !~ '^0+$'",
+    "situs_address !~ '^[0-9]+$'"
   ];
+  params.push(MAX_PLAUSIBLE_APPRAISED_VALUE);
+  whereClauses.push('total_appraised_value <= $' + params.length);
   if (minScore > 0) {
     params.push(minScore);
     whereClauses.push('single_source_score >= $' + params.length);
